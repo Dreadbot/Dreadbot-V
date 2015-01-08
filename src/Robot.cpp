@@ -1,6 +1,7 @@
 #include "WPILib.h"
 #include "MecanumDrive.h"
 
+
 class Robot: public IterativeRobot {
 private:
 	LiveWindow *lw;
@@ -12,7 +13,7 @@ public:
 	}
 
 	void AutonomousInit() {
-
+		drivebase->EnableControl();
 	}
 
 	void AutonomousPeriodic() {
@@ -20,7 +21,7 @@ public:
 	}
 
 	void TeleopInit() {
-
+		drivebase->DisableControl();
 	}
 
 	void TeleopPeriodic() {

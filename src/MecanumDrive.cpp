@@ -1,6 +1,5 @@
 #include "MecanumDrive.h"
 
-
 MecanumDrive::MecanumDrive(uint32_t frontLeftMotorChannel, uint32_t rearLeftMotorChannel, uint32_t frontRightMotorChannel, uint32_t rearRightMotorChannel) {
 	m_frontLeftMotor = new CANTalon(frontLeftMotorChannel);
 	m_frontRightMotor = new CANTalon(rearLeftMotorChannel);
@@ -39,12 +38,13 @@ void MecanumDrive::Drive_p(float dx, float dy, float rotation) {
  * @param rotation The rate of rotation for the robot that is completely independent of
  * the translation. [-1.0..1.0]
  */
+
 void MecanumDrive::Drive_v(float x, float y, float rotation) {
 	double xIn = x;
 	double yIn = y;
 	// Negate y for the joystick.
 	yIn = -yIn;
-	// Compenstate for gyro angle.
+	// Compensate for gyro angle.
 	RotateVector(xIn, yIn, (double) gyroscope->GetAngle());
 
 	double wheelSpeeds[4];
@@ -64,6 +64,7 @@ void MecanumDrive::Drive_v(float x, float y, float rotation) {
 /**
  * Normalize all wheel speeds if the magnitude of any wheel is greater than 1.0.
  */
+
 void MecanumDrive::Normalize(double *wheelSpeeds) {
 	double maxMagnitude = fabs(wheelSpeeds[0]);
 	int8_t i;
@@ -79,7 +80,6 @@ void MecanumDrive::Normalize(double *wheelSpeeds) {
 	}
 }
 
-
 void MecanumDrive::RotateVector(double &x, double &y, double angle) {
 	angle *= 0.01745329251;
 	double cosA = cos(angle);
@@ -89,7 +89,6 @@ void MecanumDrive::RotateVector(double &x, double &y, double angle) {
 	x = xOut;
 	y = yOut;
 }
-
 
 void MecanumDrive::EnableControl() {
 	if (m_frontLeftMotor != NULL)
@@ -101,7 +100,6 @@ void MecanumDrive::EnableControl() {
 	if (m_rearRightMotor != NULL)
 		m_rearRightMotor->EnableControl();
 }
-
 
 void MecanumDrive::DisableControl() {
 	if (m_frontLeftMotor != NULL)
