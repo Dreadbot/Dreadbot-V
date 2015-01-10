@@ -1,6 +1,7 @@
 #include "WPILib.h"
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
+#include "Keycodes.h"
 
 
 class Robot: public IterativeRobot {
