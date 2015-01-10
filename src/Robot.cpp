@@ -2,6 +2,7 @@
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "Keycodes.h"
+#include "BaseController.h"
 
 
 class Robot: public IterativeRobot {
