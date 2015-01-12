@@ -2,7 +2,7 @@
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "Keycodes.h"
-#include "BaseController.h"
+#include "lib/pugixml.hpp"
 
 
 class Robot: public IterativeRobot {
