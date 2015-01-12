@@ -1,5 +1,7 @@
-#include "WPIlib.h"
 #pragma once
+#include <WPILib.h>
+#include "lib/pugixml.hpp"
+#include "MecanumDrive.h"
 
 #define DIRECTMODE_DMODE
 #define DIRECTMODE_XMODE
@@ -40,7 +42,7 @@
 	#define X_BUTTON_RB 6
 	#define X_BUTTON_BACK 7
 	#define X_BUTTON_START 8
-	#define X_BUTTON_LJOY 9	
+	#define X_BUTTON_LJOY 9
 	#define X_BUTTON_RJOY 10
 	#define X_AXIS_LJOY_X 1
 	#define X_AXIS_LJOY_Y 2
@@ -49,3 +51,37 @@
 	#define X_AXIS_RJOY_Y 5
 	#define X_AXIS_DPAD_X 6
 #endif
+
+/*
+ * Uses an XML config file to create custom control settings
+ * ...yeah, there's more stuff coming here soon.
+ */
+
+namespace XMLInput
+{
+	enum contrMode {xMode, dMode};
+	enum buttonType {toggle, IOSwitch, pressHold};
+
+	//Button struct used for XMLInput class
+	struct button
+	{
+		button(CANTalon* newMotor, Joystick* newGamepad);
+		contrMode mode;
+		int contrID;
+		int buttonID;
+		buttonType type;
+		CANTalon* motor;
+		Joystick* gamepad;
+		float speed;
+		float dur;
+	};
+
+	//Axis struct used for XMLInput class
+	struct axis
+	{
+		axis(CANTalon* newMotor, Joystick* newGamepad);
+		CANTalon* motor;
+		Joystick* gamepad;
+		float deadzone;
+	};
+};

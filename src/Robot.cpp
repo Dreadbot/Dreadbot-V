@@ -1,9 +1,7 @@
 #include "WPILib.h"
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
-#include "Keycodes.h"
-#include "lib/pugixml.hpp"
-
+#include "XMLInput.h"
 
 class Robot: public IterativeRobot {
 private:
