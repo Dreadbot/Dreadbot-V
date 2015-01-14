@@ -1,2 +1,4 @@
-# Recycle-Rush
-TWERTY FIVTEN FERST GAME YAAY
+Recycle Rush
+============
+
+Code repository for the 2015 FRC game, Recycle Rush.
