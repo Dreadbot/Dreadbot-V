@@ -1,35 +1,49 @@
 #include "WPILib.h"
 #include "MecanumDrive.h"
+//#include "XMLInput.h"
 
-class Robot: public IterativeRobot {
-private:
-	LiveWindow *lw;
-	MecanumDrive *drivebase;
+namespace dreadbot {
+	class Robot: public IterativeRobot {
+	private:
+		DriverStation *ds;
+		LiveWindow *lw;
+		Joystick* gamepad;
 
-public:
-	void RobotInit() {
-		lw = LiveWindow::GetInstance();
-	}
+		PowerDistributionPanel *pdp;
+		MecanumDrive *drivebase;
 
-	void AutonomousInit() {
+	public:
+		void RobotInit() {
+			ds = DriverStation::GetInstance();
+			SmartDashboard::init();
+			lw = LiveWindow::GetInstance();
+			gamepad = new Joystick(0);
 
-	}
+			pdp = new PowerDistributionPanel();
+			drivebase = new MecanumDrive(0, 1, 2, 3);
+		}
 
-	void AutonomousPeriodic() {
+		void AutonomousInit() {}
 
-	}
+		void AutonomousPeriodic() {}
 
-	void TeleopInit() {
+		void TeleopInit() {
+			drivebase->Engage();
+		}
 
-	}
+		void TeleopPeriodic() {
+			drivebase->SDGetPID();
+			drivebase->SDOutputDiagnostics();
+			drivebase->Drive(
+				gamepad->GetRawAxis(1),
+				gamepad->GetRawAxis(2),
+				gamepad->GetRawAxis(3));
 
-	void TeleopPeriodic() {
+		}
 
-	}
-
-	void TestPeriodic() {
-		lw->Run();
-	}
-};
-
-START_ROBOT_CLASS(Robot);
+		void TestPeriodic() {
+			lw->Run();
+		}
+	};
+}
+START_ROBOT_CLASS(dreadbot::Robot);
