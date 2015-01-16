@@ -1,0 +1,17 @@
+All files in this directory are not the property of Team 3656. They are third 
+party files used with the parameters of their respective licenses. Any 
+data deemed relevant is displayed below.
+________________________________________________________________________________
+
+DriverStationLCD:
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) FIRST 2008. All Rights Reserved.							  */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
+/*----------------------------------------------------------------------------*/
+________________________________________________________________________________
+
+PugiXML:
+This software is based on pugixml library (http://pugixml.org).
+pugixml is Copyright (C) 2006-2014 Arseny Kapoulkine. 
+________________________________________________________________________________

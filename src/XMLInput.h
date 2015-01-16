@@ -2,86 +2,69 @@
 #include <WPILib.h>
 #include "lib/pugixml.hpp"
 #include "MecanumDrive.h"
-
-#define DIRECTMODE_DMODE
-#define DIRECTMODE_XMODE
-
-#ifdef DIRECTMODE_DMODE
-	#define D_BUTTON_COUNT 12
-	#define D_AXIS_COUNT 6
-
-	#define D_BUTTON_X 1
-	#define D_BUTTON_A 2
-	#define D_BUTTON_B 3
-	#define D_BUTTON_Y 4
-	#define D_BUTTON_LB 5
-	#define D_BUTTON_RB 6
-	#define D_BUTTON_LT 7
-	#define D_BUTTON_RT 8
-	#define D_BUTTON_BACK 9
-	#define D_BUTTON_START 10
-	#define D_BUTTON_LJOY 11
-	#define D_BUTTON_RJOY 12
-	#define D_AXIS_LJOY_X 1
-	#define D_AXIS_LJOY_Y 2
-	#define D_AXIS_RJOY_X 3
-	#define D_AXIS_RJOY_Y 4
-	#define D_AXIS_DPAD_X 5
-	#define D_AXIS_DPAD_Y 6
-#endif
-
-#ifdef DIRECTMODE_XMODE
-	#define X_BUTTON_COUNT 10
-	#define X_AXIS_COUNT 6
-
-	#define X_BUTTON_A 1
-	#define X_BUTTON_B 2
-	#define X_BUTTON_X 3
-	#define X_BUTTON_Y 4
-	#define X_BUTTON_LB 5
-	#define X_BUTTON_RB 6
-	#define X_BUTTON_BACK 7
-	#define X_BUTTON_START 8
-	#define X_BUTTON_LJOY 9
-	#define X_BUTTON_RJOY 10
-	#define X_AXIS_LJOY_X 1
-	#define X_AXIS_LJOY_Y 2
-	#define X_AXIS_TRIGGERS 3
-	#define X_AXIS_RJOY_X 4
-	#define X_AXIS_RJOY_Y 5
-	#define X_AXIS_DPAD_X 6
-#endif
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
 
 /*
  * Uses an XML config file to create custom control settings
- * ...yeah, there's more stuff coming here soon.
+ * Documentation coming soon. Functions should be self
+ * explanatory, but the XML config stuff itself needs some
+ * documentation
  */
 
-namespace XMLInput
+namespace Input
 {
-	enum contrMode {xMode, dMode};
-	enum buttonType {toggle, IOSwitch, pressHold};
+	#define MAX_CONTROLLERS 5
+	enum bindType {axis, toggle, stateChange, holdForActive};
 
-	//Button struct used for XMLInput class
-	struct button
+	struct motorBinding
 	{
-		button(CANTalon* newMotor, Joystick* newGamepad);
-		contrMode mode;
-		int contrID;
-		int buttonID;
-		buttonType type;
-		CANTalon* motor;
-		Joystick* gamepad;
-		float speed;
-		float dur;
+		motorBinding();
+		~motorBinding();
+		int inputID;			//The control that this motor is bound to.
+		int motorSlot;			//Used to get individual motors, also a simple identifier.
+		float deadzone;			//Deadzone for axis mode
+		float activeCooldown;	//How much cooldown is actually left?
+		float cooldown;			//Cooldown for button mode
+		bindType type;			//The type of control this motor is bound to
+		bool inverse;			//If axis, multiples value by -1. If button, inverts the output of the button.
+		string name;			//Can be used to find individual motors by name rather than by ID
+		bool enable;			//Used for stateChange and toggle modes
+		float speed;			//The speed of the motor if it's button controlled.
+
+		Joystick* controller;
+		Talon* motor;
 	};
 
-	//Axis struct used for XMLInput class
-	struct axis
+	class XMLInput
 	{
-		axis(CANTalon* newMotor, Joystick* newGamepad);
-		CANTalon* motor;
-		Joystick* gamepad;
-		float deadzone;
+	public:
+		static XMLInput* getInstance();
+		void setDrivebase(dreadbot::MecanumDrive* newDrivebase);
+		void loadXMLConfig(string filename);
+		void updateDrivebase();
+		void updateMotors();
+		Talon* getMotor(int ID = 0);
+		Talon* getMotor(string searchName);
+		Joystick* getController(int ID);
+	private:
+		XMLInput();
+		dreadbot::MecanumDrive* drivebase;
+		static XMLInput* singlePtr;
+		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
+		vector<motorBinding> motors;
+
+		//Axis stuff for drivebase-specific controls
+		int transXAxis;
+		int transYAxis;
+		int rotAxis;
+		float transXDeadzone;
+		float transYDeadzone;
+		float rotDeadzone; //Rot Deadzone. I call that as a band name.
+		int driveController;
+
+		DISALLOW_COPY_AND_ASSIGN(XMLInput); //Prevents copying/assigning - critical for a singleton.
 	};
 };

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dreadbot version="5.0">
+	<Drivebase type="Mecanum">
+		<CAN>true</CAN>
+		<PID>true</PID>
+		<motors>
+			<motor position="frontLeft">0</motor>
+			<motor position="frontRight">1</motor>
+			<motor position="backLeft">2</motor>
+			<motor position="backRight">3</motor>
+		</motors>
+		<controller ID="1">
+			<axis dir="transY">
+				<ID>2</ID>
+				<deadzone>0.1</deadzone>
+			</axis>
+			<axis dir="transX">
+				<ID>4</ID>
+				<deadzone>0.1</deadzone>
+			</axis>
+			<axis dir="rot">
+				<ID>1</ID>
+				<deadzone>0.1</deadzone>
+			</axis>
+		</controller>
+	</Drivebase>
+	<indMotors>
+		<motor ID="5" type="toggle">
+			<inputID>3</inputID>
+			<contrID>1</contrID>
+			<cooldown>50</cooldown>
+		</motor>
+		<motor ID="6" type="axis">
+			<inputID>3</inputID>
+			<contrID>0</contrID>
+			<deadzone>0.1</deadzone>
+		</motor>
+	</indMotors>
+</Dreadbot>
