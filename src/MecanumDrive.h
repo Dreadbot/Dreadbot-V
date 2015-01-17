@@ -49,6 +49,30 @@ namespace dreadbot {
 
 		}
 
+		void Set(int adr_0, int adr_1, int adr_2, int adr_3) {
+			for (int i = 0; i < 4; i++)
+				delete motors[i];
+			mode = drivemode::relative;
+
+			motors[leftFront] = new CANTalon(adr_0);
+			motors[rightFront] = new CANTalon(adr_1);
+			motors[leftRear] = new CANTalon(adr_2);
+			motors[rightRear] = new CANTalon(adr_3);
+
+			motors[leftFront]->SetSensorDirection(true);
+			motors[rightFront]->SetSensorDirection(false);
+			motors[leftRear]->SetSensorDirection(true);
+			motors[rightRear]->SetSensorDirection(false);
+
+			for (uint8_t i = 0; i < 4; ++i) {
+				motors[i]->SetPosition(0.0);
+				motors[i]->ConfigMaxOutputVoltage(12.0);
+				motors[i]->ConfigEncoderCodesPerRev(1024);
+				motors[i]->SelectProfileSlot(0);
+			}
+
+		}
+
 		~MecanumDrive() {
 			for (uint8_t i = 0; i < 4; ++i) {
 				delete motors[i];

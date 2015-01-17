@@ -182,7 +182,7 @@ namespace Input
 			else if (motorPos == "backRight")
 				motorList[3] = atoi(motor.child_value());
 		}
-		//drivebase->SetMotors(motorList[0], motorList[1], motorList[2], motorList[3]); //Use these motors as drivebase motors
+		drivebase->Set(motorList[0], motorList[1], motorList[2], motorList[3]); //Use these motors as drivebase motors
 
 		//Drivebase control loading - rig joystick
 		int controlID = base.child("controller").attribute("ID").as_int();
@@ -266,4 +266,4 @@ namespace Input
 			motors.push_back(binding);
 		}
 	}
-};
+}
