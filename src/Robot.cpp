@@ -2,6 +2,7 @@
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
+#include <fstream>
 
 namespace dreadbot {
 	class Robot: public IterativeRobot {
@@ -9,6 +10,7 @@ namespace dreadbot {
 		DriverStation *ds;
 		LiveWindow *lw;
 		Joystick* gamepad;
+		Input::XMLInput* input;
 
 		PowerDistributionPanel *pdp;
 		MecanumDrive *drivebase;
@@ -22,6 +24,9 @@ namespace dreadbot {
 
 			pdp = new PowerDistributionPanel();
 			drivebase = new MecanumDrive(0, 1, 2, 3);
+			input = Input::XMLInput::getInstance();
+			input->setDrivebase(drivebase);
+			//input->loadXMLConfig("/XML Bot Config.xml");
 		}
 
 		void AutonomousInit() {}
@@ -39,6 +44,7 @@ namespace dreadbot {
 				gamepad->GetRawAxis(1),
 				gamepad->GetRawAxis(2),
 				gamepad->GetRawAxis(3));
+			//input->updateDrivebase();
 
 		}
 

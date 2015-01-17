@@ -46,6 +46,10 @@ namespace Input
 			singlePtr = new XMLInput;
 		return singlePtr;
 	}
+	void XMLInput::setDrivebase(dreadbot::MecanumDrive* newDrivebase)
+	{
+		drivebase = newDrivebase;
+	}
 	void XMLInput::updateMotors()
 	{
 		for (auto iter = motors.begin(); iter != motors.end(); iter++)
