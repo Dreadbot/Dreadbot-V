@@ -203,13 +203,11 @@ namespace Input
 			{
 				transXAxis = atoi(axis.child_value("ID"));
 				transXDeadzone = atof(axis.child_value("deadzone"));
-				break;
 			}
 			else if (axisDir == "rot")
 			{
 				rotAxis = atoi(axis.child_value("ID"));
 				rotDeadzone = atof(axis.child_value("deadzone"));
-				break;
 			}
 		}
 
