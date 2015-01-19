@@ -2,7 +2,6 @@
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
-#include <fstream>
 
 namespace dreadbot {
 	class Robot: public IterativeRobot {
