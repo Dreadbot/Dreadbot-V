@@ -15,11 +15,11 @@
 				<deadzone>0.1</deadzone>
 			</axis>
 			<axis dir="transX">
-				<ID>4</ID>
+				<ID>1</ID>
 				<deadzone>0.1</deadzone>
 			</axis>
 			<axis dir="rot">
-				<ID>1</ID>
+				<ID>3</ID>
 				<deadzone>0.1</deadzone>
 			</axis>
 		</controller>
