@@ -37,13 +37,13 @@ namespace dreadbot {
 		}
 
 		void TeleopPeriodic() {
-			drivebase->SDGetPID();
-			drivebase->SDOutputDiagnostics();
-			drivebase->Drive(
-				gamepad->GetRawAxis(1),
-				gamepad->GetRawAxis(2),
-				gamepad->GetRawAxis(3));
-			//input->updateDrivebase();
+//			drivebase->SDGetPID();
+//			drivebase->SDOutputDiagnostics();
+//			drivebase->Drive(
+//				gamepad->GetRawAxis(1),
+//				gamepad->GetRawAxis(2),
+//				gamepad->GetRawAxis(3));
+			input->updateDrivebase();
 
 		}
 

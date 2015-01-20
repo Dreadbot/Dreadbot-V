@@ -166,7 +166,7 @@ namespace dreadbot {
 				SmartDashboard::PutNumber(motorNames[i] + "/temperature", motors[i]->GetTemperature());
 				SmartDashboard::PutNumber(motorNames[i] + "/encoder position", motors[i]->GetPosition());
 				SmartDashboard::PutNumber(motorNames[i] + "/encoder velocity", motors[i]->GetSpeed());
-				SmartDashboard::PutNumber(motorNames[i] + "/bus voltage", motors[i]->GetBusVoltage());
+				//SmartDashboard::PutNumber(motorNames[i] + "/bus voltage", motors[i]->GetBusVoltage());
 				SmartDashboard::PutNumber(motorNames[i] + "/output current", motors[i]->GetOutputCurrent());
 				SmartDashboard::PutNumber(motorNames[i] + "/error", motors[i]->GetClosedLoopError());
 				SmartDashboard::PutBoolean(motorNames[i] + "/alive", motors[i]->IsAlive());
