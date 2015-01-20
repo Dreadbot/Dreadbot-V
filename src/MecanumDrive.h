@@ -41,10 +41,11 @@ namespace dreadbot {
 			motors[rightRear]->SetSensorDirection(false);
 
 			for (uint8_t i = 0; i < 4; ++i) {
-				motors[i]->SetPosition(0.0);
-				motors[i]->ConfigMaxOutputVoltage(12.0);
-				motors[i]->ConfigEncoderCodesPerRev(1024);
-				motors[i]->SelectProfileSlot(0);
+				motors[i]->SetSensorDirection(!(i % 2));
+				//motors[i]->SetPosition(0.0);
+				//motors[i]->ConfigMaxOutputVoltage(12.0);
+				//motors[i]->ConfigEncoderCodesPerRev(1024);
+				//motors[i]->SelectProfileSlot(0);
 			}
 
 		}
@@ -65,10 +66,11 @@ namespace dreadbot {
 			motors[rightRear]->SetSensorDirection(false);
 
 			for (uint8_t i = 0; i < 4; ++i) {
-				motors[i]->SetPosition(0.0);
-				motors[i]->ConfigMaxOutputVoltage(12.0);
-				motors[i]->ConfigEncoderCodesPerRev(1024);
-				motors[i]->SelectProfileSlot(0);
+				motors[i]->SetSensorDirection(!(i % 2));
+				//motors[i]->SetPosition(0.0);
+				//motors[i]->ConfigMaxOutputVoltage(12.0);
+				//motors[i]->ConfigEncoderCodesPerRev(1024);
+				//motors[i]->SelectProfileSlot(0);
 			}
 
 		}
@@ -161,14 +163,13 @@ namespace dreadbot {
 
 		void SDOutputDiagnostics() {
 			for (uint8_t i = 0; i < 4; ++i) {
-				SmartDashboard::PutNumber(motorNames[i] + " temperature", motors[i]->GetTemperature());
-				SmartDashboard::PutNumber(motorNames[i] + " encoder position", motors[i]->GetPosition());
-				SmartDashboard::PutNumber(motorNames[i] + " encoder velocity", motors[i]->GetSpeed());
-				SmartDashboard::PutNumber(motorNames[i] + " bus voltage", motors[i]->GetBusVoltage());
-				SmartDashboard::PutNumber(motorNames[i] + " output current", motors[i]->GetOutputCurrent());
-				SmartDashboard::PutNumber(motorNames[i] + " error", motors[i]->GetClosedLoopError());
-				SmartDashboard::PutBoolean(motorNames[i] + " alive", motors[i]->IsAlive());
-				SmartDashboard::PutNumber(motorNames[i] + " firmware version", motors[i]->GetFirmwareVersion());
+				SmartDashboard::PutNumber(motorNames[i] + "/temperature", motors[i]->GetTemperature());
+				SmartDashboard::PutNumber(motorNames[i] + "/encoder position", motors[i]->GetPosition());
+				SmartDashboard::PutNumber(motorNames[i] + "/encoder velocity", motors[i]->GetSpeed());
+				SmartDashboard::PutNumber(motorNames[i] + "/bus voltage", motors[i]->GetBusVoltage());
+				SmartDashboard::PutNumber(motorNames[i] + "/output current", motors[i]->GetOutputCurrent());
+				SmartDashboard::PutNumber(motorNames[i] + "/error", motors[i]->GetClosedLoopError());
+				SmartDashboard::PutBoolean(motorNames[i] + "/alive", motors[i]->IsAlive());
 			}
 		}
 

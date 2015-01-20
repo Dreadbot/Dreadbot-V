@@ -22,10 +22,9 @@ namespace dreadbot {
 			gamepad = new Joystick(0);
 
 			pdp = new PowerDistributionPanel();
-			drivebase = new MecanumDrive(0, 1, 2, 3);
+			drivebase = new MecanumDrive(1, 2, 3, 4);
 			input = Input::XMLInput::getInstance();
 			input->setDrivebase(drivebase);
-			//input->loadXMLConfig("/XML Bot Config.xml");
 		}
 
 		void AutonomousInit() {}
@@ -33,6 +32,7 @@ namespace dreadbot {
 		void AutonomousPeriodic() {}
 
 		void TeleopInit() {
+			input->loadXMLConfig("/XML Bot Config.xml");
 			drivebase->Engage();
 		}
 
