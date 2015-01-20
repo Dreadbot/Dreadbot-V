@@ -4,10 +4,10 @@
 		<CAN>true</CAN>
 		<PID>true</PID>
 		<motors>
-			<motor position="frontLeft">0</motor>
-			<motor position="frontRight">1</motor>
-			<motor position="backLeft">2</motor>
-			<motor position="backRight">3</motor>
+			<motor position="frontLeft">1</motor>
+			<motor position="frontRight">2</motor>
+			<motor position="backLeft">3</motor>
+			<motor position="backRight">4</motor>
 		</motors>
 		<controller ID="1">
 			<axis dir="transY">
