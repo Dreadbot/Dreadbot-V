@@ -12,28 +12,16 @@
 		<controller ID="1">
 			<axis dir="transY">
 				<ID>2</ID>
-				<deadzone>0.1</deadzone>
+				<deadzone>0.025</deadzone>
 			</axis>
 			<axis dir="transX">
-				<ID>1</ID>
-				<deadzone>0.1</deadzone>
+				<ID>4</ID>
+				<deadzone>0.025</deadzone>
 			</axis>
 			<axis dir="rot">
 				<ID>3</ID>
-				<deadzone>0.1</deadzone>
+				<deadzone>0.025</deadzone>
 			</axis>
 		</controller>
 	</Drivebase>
-	<indMotors>
-		<motor ID="5" type="toggle">
-			<inputID>3</inputID>
-			<contrID>1</contrID>
-			<cooldown>50</cooldown>
-		</motor>
-		<motor ID="6" type="axis">
-			<inputID>3</inputID>
-			<contrID>0</contrID>
-			<deadzone>0.1</deadzone>
-		</motor>
-	</indMotors>
 </Dreadbot>
