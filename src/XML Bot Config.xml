@@ -24,4 +24,8 @@
 			</axis>
 		</controller>
 	</Drivebase>
+	<solenoids>
+		<solenoid ID="1" type
+		</solenoid>
+	</solenoids>
 </Dreadbot>

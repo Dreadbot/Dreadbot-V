@@ -32,7 +32,7 @@ namespace dreadbot {
 		void AutonomousPeriodic() {}
 
 		void TeleopInit() {
-			input->loadXMLConfig("/XML Bot Config.xml");
+		//	input->loadXMLConfig("/XML Bot Config.xml");
 			drivebase->Engage();
 		}
 

@@ -14,27 +14,45 @@ using std::vector;
  * documentation
  */
 
+
 namespace Input
 {
 	#define MAX_CONTROLLERS 5
 	enum bindType {axis, toggle, stateChange, holdForActive};
+	enum outType {tMotor, pneumatic};
 
-	struct motorBinding
+	class control
 	{
-		motorBinding();
-		~motorBinding();
+	public:
+		control();
+		bindType controlType;	//The type of control this motor is bound to
 		int inputID;			//The control that this motor is bound to.
-		int motorSlot;			//Used to get individual motors, also a simple identifier.
 		float deadzone;			//Deadzone for axis mode
 		float activeCooldown;	//How much cooldown is actually left?
 		float cooldown;			//Cooldown for button mode
-		bindType type;			//The type of control this motor is bound to
-		bool inverse;			//If axis, multiples value by -1. If button, inverts the output of the button.
-		string name;			//Can be used to find individual motors by name rather than by ID
+		bool inverse;			//If axis, multiples value by -1. If button, inverts the output of the button or axis.
 		bool enable;			//Used for stateChange and toggle modes
-		float speed;			//The speed of the motor if it's button controlled.
-
 		Joystick* controller;
+	};
+	class binding
+	{
+	public:
+		binding();
+		~binding();
+		virtual void update()=0;	//Updates the state of the output device
+		int outputSlot;				//Used to get individual outputs, also a simple identifier.
+		outType type; 				//The output type of this motor
+		string name;				//Can be used to find individual motors by name rather than by ID
+		vector<control> inputs;		//All inputs bound to this output
+	};
+
+	class motorBinding : protected binding
+	{
+	public:
+		motorBinding();
+		~motorBinding();
+		void update();
+		float speed;	//The speed of the motor if its button controlled.
 		Talon* motor;
 	};
 
@@ -46,15 +64,13 @@ namespace Input
 		void loadXMLConfig(string filename);
 		void updateDrivebase();
 		void updateMotors();
-		Talon* getMotor(int ID = 0);
-		Talon* getMotor(string searchName);
 		Joystick* getController(int ID);
 	private:
 		XMLInput();
 		dreadbot::MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
-		vector<motorBinding> motors;
+		vector<binding*> bindings;
 
 		//Axis stuff for drivebase-specific controls
 		int transXAxis;
