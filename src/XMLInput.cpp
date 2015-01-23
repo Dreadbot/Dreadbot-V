@@ -35,33 +35,130 @@ namespace Input
 	{
 		delete motor;
 	}
-
+	pneumBinding::pneumBinding()
+	{
+		outputSlot = -1;
+		type = pneumatic;
+		name = "Not a Control";
+		state = DoubleSolenoid::kOff;
+		solenoid = NULL;
+	}
+	pneumBinding::~pneumBinding()
+	{
+		delete solenoid;
+	}
 	void motorBinding::update()
 	{
-		bool sumEnabled = true;
 		for (auto iter = inputs.begin(); iter != inputs.end(); iter++)
 		{
-			if (iter->enable == false)
-				sumEnabled = false;
 			float input = 0;
-
 			//For axes
 			if (iter->controlType == axis)
 			{
 				//Get actual input
 				input = iter->controller->GetRawAxis(iter->inputID);
-				if (inverse) input = -1;
+				if (iter->inverse) input = -1;
 
 				//Deadzone
 				if (fabs(input) < fabs(iter->deadzone))
 					input = 0;
 			}
+			//For buttons
 			else
 			{
 				//This is probably a button. Probably.
+				if (iter->activeCooldown > 0)
+				{
+					iter->activeCooldown--;
+					continue;
+				}
+				iter->activeCooldown = abs(iter->cooldown); //Set a cooldown so the button can't be spammed. abs() is a stupid check - a check for stupid.
 				bool bInput = iter->controller->GetRawButton(iter->inputID);
+
+				//Inverse button output
 				if (iter->inverse)
 					bInput = !bInput;
+				input = (int) bInput;
+
+			}
+
+			//Apply inputs to actual output
+			if (iter->controlType == axis)
+				motor->Set(input);
+			else
+			{
+				if (iter->controlType == holdForActive)
+					motor->Set(speed);
+				if (iter->controlType == stateChange)
+				{
+					speed = -speed;
+					motor->Set(speed);
+				}
+				if (iter->controlType == toggle)
+				{
+					iter->enable = !-iter->enable;
+					motor->Set(speed);
+				}
+			}
+		}
+	}
+	void pneumBinding::update()
+	{
+		for (auto iter = inputs.begin(); iter != inputs.end(); iter++)
+		{
+			float input = 0;
+			//For axes
+			if (iter->controlType == axis)
+			{
+				//Get actual input
+				input = iter->controller->GetRawAxis(iter->inputID);
+				if (iter->inverse) input = -1;
+				//Deadzone
+				if (fabs(input) < fabs(iter->deadzone))
+					input = 0;
+			}
+			//For buttons
+			else
+			{
+				//This is probably a button. Probably.
+				if (iter->activeCooldown > 0)
+				{
+					iter->activeCooldown--;
+					continue;
+				}
+				iter->activeCooldown = abs(iter->cooldown); //Set a cooldown so the button can't be spammed. abs() is a stupid check - a check for stupid.
+				bool bInput = iter->controller->GetRawButton(iter->inputID);
+
+				//Inverse button output
+				if (iter->inverse)
+					bInput = !bInput;
+				input = (int) bInput;
+
+			}
+
+			//Apply settings
+			if (iter->controlType == axis)
+			{
+				if (input > 0)
+					solenoid->Set(DoubleSolenoid::kForward);
+				else if (input < 0)
+					solenoid->Set(DoubleSolenoid::kReverse);
+				else
+					solenoid->Set(DoubleSolenoid::kOff);
+			}
+			else
+			{
+				//This is a button. Almost certainly.
+				if (iter->controlType == holdForActive)
+					solenoid->Set(state);
+				else if (iter->controlType == toggle)
+				{
+					if (state == DoubleSolenoid::kForward)
+						state = DoubleSolenoid::kReverse;
+					else
+						state = DoubleSolenoid::kForward;
+					solenoid->set(state);
+				}
 			}
 		}
 	}

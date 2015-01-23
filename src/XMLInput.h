@@ -55,6 +55,16 @@ namespace Input
 		float speed;	//The speed of the motor if its button controlled.
 		Talon* motor;
 	};
+	class pneumBinding : protected binding
+	{
+	public:
+		pneumBinding();
+		~pneumBinding();
+		void update();
+		DoubleSolenoid::Value state;
+		DoubleSolenoid* solenoid;
+
+	};
 
 	class XMLInput
 	{
