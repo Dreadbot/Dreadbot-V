@@ -16,8 +16,6 @@ namespace Input
 	binding::binding()
 	{
 		outputSlot = -1;
-		type = tMotor;
-		name = "Not a Control";
 	}
 	binding::~binding()
 	{
@@ -26,26 +24,21 @@ namespace Input
 	motorBinding::motorBinding()
 	{
 		outputSlot = -1;
-		type = tMotor;
-		name = "Not a Control";
 		speed = 0.25f;
 		motor = NULL;
 	}
 	motorBinding::~motorBinding()
 	{
-		delete motor;
 	}
 	pneumBinding::pneumBinding()
 	{
 		outputSlot = -1;
-		type = pneumatic;
-		name = "Not a Control";
+		reverseSlot = -2;
 		state = DoubleSolenoid::kOff;
 		solenoid = NULL;
 	}
 	pneumBinding::~pneumBinding()
 	{
-		delete solenoid;
 	}
 	void motorBinding::update()
 	{
@@ -87,7 +80,7 @@ namespace Input
 				motor->Set(input);
 			else
 			{
-				if (iter->controlType == holdForActive)
+				if (iter->controlType == holdForActive && input)
 					motor->Set(speed);
 				if (iter->controlType == stateChange)
 				{
@@ -149,7 +142,7 @@ namespace Input
 			else
 			{
 				//This is a button. Almost certainly.
-				if (iter->controlType == holdForActive)
+				if (iter->controlType == holdForActive && input)
 					solenoid->Set(state);
 				else if (iter->controlType == toggle)
 				{
@@ -157,7 +150,7 @@ namespace Input
 						state = DoubleSolenoid::kReverse;
 					else
 						state = DoubleSolenoid::kForward;
-					solenoid->set(state);
+					solenoid->Set(state);
 				}
 			}
 		}
@@ -170,6 +163,10 @@ namespace Input
 		drivebase = NULL;
 		for (int i = 0; i < MAX_CONTROLLERS; i++)
 			controllers[i] = NULL;
+		for (int i = 0; i < MAX_MOTORS; i++)
+			motors[i] = NULL;
+		for (int i = 0; i < MAX_PNEUMS; i++)
+			pneums[i] = NULL;
 
 		transXAxis = 0;
 		transYAxis = 0;
@@ -203,9 +200,24 @@ namespace Input
 		if (fabs(rInput) < rotDeadzone)
 			rInput = 0;
 
+		//Invert
+		if (invertX)
+			xInput = -xInput;
+		if (invertY)
+			yInput = -yInput;
+		if (invertR)
+			rInput = -rInput;
+
 		if (drivebase != NULL) //Idiot check
 			drivebase->Drive(xInput, yInput, rInput);
 		//TODO: Add error logging - DriverStationLCD
+	}
+	void XMLInput::updateInds()
+	{
+		for (auto iter = mBindings.begin(); iter != mBindings.end(); iter++)
+			iter->update();
+		for (auto iter = pBindings.begin(); iter != pBindings.end(); iter++)
+			iter->update();
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -213,116 +225,186 @@ namespace Input
 			return controllers[ID];
 		return NULL;
 	}
-//	void XMLInput::loadXMLConfig(string filename)
-//	{
-//		//Clear anything currently present
-//		controls.clear();
-//		for (int i = 0; i < MAX_CONTROLLERS; i++)
-//		{
-//			delete controllers[i];
-//			controllers[i] = NULL;
-//		}
-//
-//		pugi::xml_document doc;
-//		pugi::xml_parse_result result = doc.load_file(filename.c_str());
-//		SmartDashboard::PutString("XML Load Result: ", result.description());
-//
-//		//Load drivebase motors
-//		int motorList[4];
-//		pugi::xml_node base = doc.child("Dreadbot").child("Drivebase");
-//		for (auto motor = base.child("motors").child("motor"); motor; motor = motor.next_sibling())
-//		{
-//			string motorPos = motor.attribute("position").as_string();
-//
-//			if (motorPos == "frontLeft")
-//				motorList[0] = atoi(motor.child_value());
-//			else if (motorPos == "frontRight")
-//				motorList[1] = atoi(motor.child_value());
-//			else if (motorPos == "backLeft")
-//				motorList[2] = atoi(motor.child_value());
-//			else if (motorPos == "backRight")
-//				motorList[3] = atoi(motor.child_value());
-//		}
-//		drivebase->Set(motorList[0], motorList[1], motorList[2], motorList[3]); //Use these motors as drivebase motors
-//
-//		//Drivebase control loading - rig joystick
-//		int controlID = base.child("controller").attribute("ID").as_int();
-//		if (controllers[controlID] == NULL)
-//			controllers[controlID] = new Joystick(controlID);
-//		driveController = controlID;
-//
-//		//Drivebase control loading - get axes
-//		for (auto axis = base.child("controller").child("axis"); axis; axis = axis.next_sibling())
-//		{
-//			string axisDir = axis.attribute("dir").as_string();
-//			if (axisDir == "transY")
-//			{
-//				transYAxis = atoi(axis.child_value("ID"));
-//				transYDeadzone = atof(axis.child_value("deadzone"));
-//			}
-//			else if (axisDir == "transX")
-//			{
-//				transXAxis = atoi(axis.child_value("ID"));
-//				transXDeadzone = atof(axis.child_value("deadzone"));
-//			}
-//			else if (axisDir == "rot")
-//			{
-//				rotAxis = atoi(axis.child_value("ID"));
-//				rotDeadzone = atof(axis.child_value("deadzone"));
-//			}
-//		}
-//
-//		//Single motor loading
-//		pugi::xml_node indMotors = doc.child("IndMotors");
-//		for (auto motor = indMotors.child("motor"); motor; motor = motor.next_sibling())
-//		{
-//			//Assign motor
-//			motorBinding binding;
-//			binding.motorSlot = motor.attribute("ID").as_int();
-//			binding.motor = new Talon(binding.motorSlot);
-//
-//			//Controller work - set the controller.
-//			binding.inputID = atoi(motor.child_value("inputID"));
-//			int contrID = atoi(motor.child_value("contrID"));
-//			if (controllers[contrID] != NULL)
-//				controllers[contrID] = new Joystick(contrID);
-//			binding.controller = controllers[contrID];
-//
-//			//Set type and do type-specific work.
-//			string type = motor.attribute("type").as_string();
-//			if (type == "axis")
-//				binding.type = axis;
-//			if (type == "toggle")
-//				binding.type = toggle;
-//			if (type == "stateChange")
-//				binding.type = stateChange;
-//			if (type == "holdForActive")
-//				binding.type = holdForActive;
-//
-//			if (binding.type == axis)
-//			{
-//				//Load deadzone information
-//				binding.deadzone = atof(motor.child_value("deadzone"));
-//			}
-//			else
-//			{
-//				//Load other information... hopefully, it won't freak out too badly
-//				//if information is missing... I hope.
-//				if (motor.child_value("inverse") == "true")
-//					binding.inverse = true;
-//				else
-//					binding.inverse = false;
-//				if (motor.child_value("enable") == "true")
-//					binding.enable = true;
-//				else
-//					binding.enable = false;
-//				binding.cooldown = atof(motor.child_value("cooldown"));
-//				binding.name = motor.attribute("name").as_string();
-//				binding.speed = atof(motor.child_value("speed"));
-//			}
-//
-//			//Push the new control binding onto the binding list
-//			motors.push_back(binding);
-//		}
-//	}
+	Talon* XMLInput::getMotor(int ID)
+	{
+		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
+			return motors[ID];
+		return NULL;
+	}
+	DoubleSolenoid* XMLInput::getPneum(int ID)
+	{
+		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
+			return pneums[ID];
+		return NULL;
+	}
+	void XMLInput::loadXMLConfig(string filename)
+	{
+		//Clear anything currently present
+		mBindings.clear();
+		pBindings.clear();
+		for (int i = 0; i < MAX_CONTROLLERS; i++)
+		{
+			delete controllers[i];
+			controllers[i] = NULL;
+		}
+
+		pugi::xml_document doc;
+		pugi::xml_parse_result result = doc.load_file(filename.c_str());
+		SmartDashboard::PutString("XML Load Result: ", result.description());
+
+		//Load drivebase motors
+		int motorList[4];
+		pugi::xml_node base = doc.child("Dreadbot").child("Drivebase");
+		for (auto motor = base.child("motors").child("motor"); motor; motor = motor.next_sibling())
+		{
+			string motorPos = motor.attribute("position").as_string();
+
+			if (motorPos == "frontLeft")
+				motorList[0] = atoi(motor.child_value());
+			else if (motorPos == "frontRight")
+				motorList[1] = atoi(motor.child_value());
+			else if (motorPos == "backLeft")
+				motorList[2] = atoi(motor.child_value());
+			else if (motorPos == "backRight")
+				motorList[3] = atoi(motor.child_value());
+		}
+		drivebase->Set(motorList[0], motorList[1], motorList[2], motorList[3]); //Use these motors as drivebase motors
+
+		//Drivebase control loading - rig joystick
+		int controlID = base.child("controller").attribute("ID").as_int();
+		if (controllers[controlID] == NULL)
+			controllers[controlID] = new Joystick(controlID);
+		driveController = controlID;
+
+		//Drivebase control loading - get axes
+		for (auto axis = base.child("controller").child("axis"); axis; axis = axis.next_sibling())
+		{
+			string axisDir = axis.attribute("dir").as_string();
+			if (axisDir == "transY")
+			{
+				transYAxis = atoi(axis.child_value("ID"));
+				transYDeadzone = atof(axis.child_value("deadzone"));
+				if (axis.child_value("invert") == "true")
+					invertY = true;
+				else
+					invertY = false;
+			}
+			else if (axisDir == "transX")
+			{
+				transXAxis = atoi(axis.child_value("ID"));
+				transXDeadzone = atof(axis.child_value("deadzone"));
+				if (axis.child_value("invert") == "true")
+					invertX = true;
+				else
+					invertX = false;
+			}
+			else if (axisDir == "rot")
+			{
+				rotAxis = atoi(axis.child_value("ID"));
+				rotDeadzone = atof(axis.child_value("deadzone"));
+				if (axis.child_value("invert") == "true")
+					invertR = true;
+				else
+					invertR = false;
+			}
+		}
+
+		//Single motor loading
+		pugi::xml_node XMLMotors = doc.child("motors");
+		for (auto motor = XMLMotors.child("motor"); motor; motor = motor.next_sibling())
+		{
+			motorBinding newMotor;
+			newMotor.outputSlot = motor.attribute("outputID").as_int();
+			//Create motor object
+			if (motors[newMotor.outputSlot] == NULL)
+				motors[newMotor.outputSlot] = new Talon(newMotor.outputSlot);
+			newMotor.motor = motors[newMotor.outputSlot];
+			newMotor.speed = atof(motor.child_value("speed"));
+
+			//Load control settings
+			for (auto XMLControl = motor.child("controls").child("control"); XMLControl; XMLControl = XMLControl.next_sibling())
+			{
+				control newControl;
+
+				//Assign joystick
+				int controllerID = XMLControl.attribute("controllerID").as_int();
+				if (controllers[controllerID] == NULL)
+					controllers[controllerID] = new Joystick(controllerID);
+				newControl.controller = controllers[controllerID];
+
+				newControl.cooldown = atoi(XMLControl.child_value("cooldown"));
+				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
+				newControl.inputID =  atoi(XMLControl.child_value("inputID"));
+				if (XMLControl.child_value("invert") == "true")
+					newControl.inverse = true;
+				else
+					newControl.inverse = false;
+
+				string controlType = XMLControl.attribute("type").as_string();
+				if (controlType == "axis")
+					newControl.controlType = axis;
+				else if (controlType == "toggle")
+					newControl.controlType = toggle;
+				else if (controlType == "stateChange")
+					newControl.controlType = stateChange;
+				else if (controlType == "holdForActive")
+					newControl.controlType = holdForActive;
+
+				newMotor.inputs.push_back(newControl);
+			}
+		}
+
+		//Single pneumatic loading
+		pugi::xml_node XMLPneums = doc.child("pneumatics");
+		for (auto pneum = XMLPneums.child("pneumatic"); pneum; pneum = pneum.next_sibling())
+		{
+			pneumBinding newPneum;
+			newPneum.outputSlot = pneum.attribute("forwardID").as_int();
+			newPneum.reverseSlot = pneum.attribute("reverseID").as_int();
+			//Create motor object
+			if (pneums[newPneum.outputSlot] == NULL)
+				pneums[newPneum.outputSlot] = new DoubleSolenoid(newPneum.outputSlot, newPneum.reverseSlot);
+			newPneum.solenoid = pneums[newPneum.outputSlot];
+			string state = pneum.child_value("state");
+			if (state == "kOff")
+				newPneum.state = DoubleSolenoid::kOff;
+			if (state == "kForward")
+				newPneum.state = DoubleSolenoid::kForward;
+			if (state == "kReverse")
+				newPneum.state = DoubleSolenoid::kReverse;
+
+			//Load control settings
+			for (auto XMLControl = pneum.child("controls").child("control"); XMLControl; XMLControl = XMLControl.next_sibling())
+			{
+				control newControl;
+
+				//Assign joystick
+				int controllerID = XMLControl.attribute("controllerID").as_int();
+				if (controllers[controllerID] == NULL)
+					controllers[controllerID] = new Joystick(controllerID);
+				newControl.controller = controllers[controllerID];
+
+				newControl.cooldown = atoi(XMLControl.child_value("cooldown"));
+				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
+				newControl.inputID =  atoi(XMLControl.child_value("inputID"));
+				if (XMLControl.child_value("invert") == "true")
+					newControl.inverse = true;
+				else
+					newControl.inverse = false;
+
+				string controlType = XMLControl.attribute("type").as_string();
+				if (controlType == "axis")
+					newControl.controlType = axis;
+				else if (controlType == "toggle")
+					newControl.controlType = toggle;
+				else if (controlType == "stateChange")
+					newControl.controlType = stateChange;
+				else if (controlType == "holdForActive")
+					newControl.controlType = holdForActive;
+
+				newPneum.inputs.push_back(newControl);
+			}
+		}
+	}
 }
+

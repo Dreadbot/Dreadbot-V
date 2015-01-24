@@ -7,6 +7,7 @@
 using std::string;
 using std::vector;
 
+
 /*
  * Uses an XML config file to create custom control settings
  * Documentation coming soon. Functions should be self
@@ -14,12 +15,12 @@ using std::vector;
  * documentation
  */
 
-
 namespace Input
 {
-	#define MAX_CONTROLLERS 5
+	const int MAX_CONTROLLERS = 5;
+	const int MAX_MOTORS = 10;
+	const int MAX_PNEUMS = 10;
 	enum bindType {axis, toggle, stateChange, holdForActive};
-	enum outType {tMotor, pneumatic};
 
 	class control
 	{
@@ -41,12 +42,9 @@ namespace Input
 		~binding();
 		virtual void update()=0;	//Updates the state of the output device
 		int outputSlot;				//Used to get individual outputs, also a simple identifier.
-		outType type; 				//The output type of this motor
-		string name;				//Can be used to find individual motors by name rather than by ID
 		vector<control> inputs;		//All inputs bound to this output
 	};
-
-	class motorBinding : protected binding
+	class motorBinding : public binding
 	{
 	public:
 		motorBinding();
@@ -55,7 +53,7 @@ namespace Input
 		float speed;	//The speed of the motor if its button controlled.
 		Talon* motor;
 	};
-	class pneumBinding : protected binding
+	class pneumBinding : public binding
 	{
 	public:
 		pneumBinding();
@@ -63,7 +61,7 @@ namespace Input
 		void update();
 		DoubleSolenoid::Value state;
 		DoubleSolenoid* solenoid;
-
+		int reverseSlot; //The outputSlot is assumed to be the forward ID.
 	};
 
 	class XMLInput
@@ -73,14 +71,20 @@ namespace Input
 		void setDrivebase(dreadbot::MecanumDrive* newDrivebase);
 		void loadXMLConfig(string filename);
 		void updateDrivebase();
-		void updateMotors();
+		void updateInds();
 		Joystick* getController(int ID);
+		Talon* getMotor(int ID);
+		DoubleSolenoid* getPneum(int ID);
 	private:
 		XMLInput();
 		dreadbot::MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
-		vector<binding*> bindings;
+		Talon* motors[MAX_MOTORS];
+		DoubleSolenoid* pneums[MAX_PNEUMS];
+
+		vector<motorBinding> mBindings;
+		vector<pneumBinding> pBindings;
 
 		//Axis stuff for drivebase-specific controls
 		int transXAxis;
@@ -94,6 +98,6 @@ namespace Input
 		float rotDeadzone; //Rot Deadzone. I call that as a band name.
 		int driveController;
 
-		DISALLOW_COPY_AND_ASSIGN(XMLInput); //Prevents copying/assigning - critical for a singleton.
+		DISALLOW_COPY_AND_ASSIGN(XMLInput); //Prevents copying/assigning - critical for a singleton. That's a cool macro.
 	};
 };
