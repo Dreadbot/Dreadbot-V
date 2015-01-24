@@ -1,7 +1,7 @@
 #include "WPILib.h"
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
-#include "XMLInput.h"
+//#include "XMLInput.h"
 
 namespace dreadbot {
 	class Robot: public IterativeRobot {
@@ -9,7 +9,6 @@ namespace dreadbot {
 		DriverStation *ds;
 		LiveWindow *lw;
 		Joystick* gamepad;
-		Input::XMLInput* input;
 
 		PowerDistributionPanel *pdp;
 		MecanumDrive *drivebase;
@@ -20,31 +19,25 @@ namespace dreadbot {
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
 			gamepad = new Joystick(0);
-
 			pdp = new PowerDistributionPanel();
 			drivebase = new MecanumDrive(1, 2, 3, 4);
-			input = Input::XMLInput::getInstance();
-			input->setDrivebase(drivebase);
 		}
 
-		void AutonomousInit() {}
+		void AutonomousInit() {
+			drivebase->Engage();
+
+		}
 
 		void AutonomousPeriodic() {}
 
 		void TeleopInit() {
-		//	input->loadXMLConfig("/XML Bot Config.xml");
 			drivebase->Engage();
 		}
 
 		void TeleopPeriodic() {
-//			drivebase->SDGetPID();
-//			drivebase->SDOutputDiagnostics();
-//			drivebase->Drive(
-//				gamepad->GetRawAxis(1),
-//				gamepad->GetRawAxis(2),
-//				gamepad->GetRawAxis(3));
-			input->updateDrivebase();
-
+			drivebase->SD_RetrievePID();
+			drivebase->SD_OutputDiagnostics();
+			drivebase->Drive_v(gamepad->GetRawAxis(0), gamepad->GetRawAxis(1), gamepad->GetRawAxis(2));
 		}
 
 		void TestPeriodic() {
@@ -52,4 +45,5 @@ namespace dreadbot {
 		}
 	};
 }
+
 START_ROBOT_CLASS(dreadbot::Robot);
