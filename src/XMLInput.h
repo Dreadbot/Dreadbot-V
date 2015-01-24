@@ -86,6 +86,9 @@ namespace Input
 		int transXAxis;
 		int transYAxis;
 		int rotAxis;
+		bool invertX;
+		bool invertY;
+		bool invertR;
 		float transXDeadzone;
 		float transYDeadzone;
 		float rotDeadzone; //Rot Deadzone. I call that as a band name.
