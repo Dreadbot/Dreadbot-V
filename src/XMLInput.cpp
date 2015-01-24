@@ -208,9 +208,11 @@ namespace Input
 		if (invertR)
 			rInput = -rInput;
 
-		if (drivebase != NULL) //Idiot check
-			drivebase->Drive(xInput, yInput, rInput);
-		//TODO: Add error logging - DriverStationLCD
+		//if (drivebase != NULL) //Idiot check
+		//	drivebase->Drive(xInput, yInput, rInput);
+		SmartDashboard::PutNumber("xInput:", xInput);
+		SmartDashboard::PutNumber("yInput:", yInput);
+		SmartDashboard::PutNumber("rInput:", rInput);
 	}
 	void XMLInput::updateInds()
 	{
