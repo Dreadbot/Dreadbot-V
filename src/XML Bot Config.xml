@@ -25,31 +25,4 @@
 			</axis>
 		</controller>
 	</Drivebase>
-	<motors>
-		<motor ouputID="1">
-			<speed>0.25</speed>
-			<controls>
-				<control controllerID="1" type="axis">
-					<inputID>3</inputID>
-					<deadzone>0.05</deadzone>
-					<invert>false</invert>
-				</control>
-				<control controllerID="1" type="toggle">
-					<inputID>5</inputID>
-					<cooldown>50</cooldown>
-				</control>
-			</controls>
-		</motor>
-	</motors>
-	<pneumatics>
-		<pneumatic forwardID="7" reverseID="8">
-			<state>kOff</state>
-			<controls>
-				<control controllerID = "1" type="toggle">
-					<inputID>8</inputID>
-					<cooldown>20</cooldown>
-				</control>
-			</controls>
-		</pneumatic>
-	</pneumatics>
 </Dreadbot>

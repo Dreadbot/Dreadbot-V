@@ -175,6 +175,9 @@ namespace Input
 		transYDeadzone = 0;
 		rotDeadzone = 0;
 		driveController = 1;
+		invertX = false;
+		invertY = false;
+		invertR = false;
 	}
 	XMLInput* XMLInput::getInstance()
 	{
