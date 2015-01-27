@@ -213,8 +213,8 @@ namespace Input
 		if (invertR)
 			rInput = -rInput;
 
-		//if (drivebase != NULL) //Idiot check
-		//	drivebase->Drive(xInput, yInput, rInput);
+		if (drivebase != NULL) //Idiot check
+			drivebase->Drive_p(xInput, yInput, rInput);
 		SmartDashboard::PutNumber("xInput:", xInput);
 		SmartDashboard::PutNumber("yInput:", yInput);
 		SmartDashboard::PutNumber("rInput:", rInput);
@@ -278,11 +278,11 @@ namespace Input
 		drivebase->Set(motorList[0], motorList[1], motorList[2], motorList[3]);
 
 		//Drivebase control loading - rig joystick
-		int controlID = base.child("controller").attribute("ID").as_int();
+		int controlID = base.child("controller").attribute("controllerID").as_int();
 		if (controllers[controlID] == NULL)
 			controllers[controlID] = new Joystick(controlID);
 		driveController = controlID;
-
+		SmartDashboard::PutNumber("driveController", driveController);
 		//Drivebase control loading - get axes
 		for (auto axis = base.child("controller").child("axis"); axis; axis = axis.next_sibling())
 		{
@@ -315,6 +315,9 @@ namespace Input
 					invertR = false;
 			}
 		}
+		SmartDashboard::PutNumber("transXAxis:", transXAxis);
+		SmartDashboard::PutNumber("transYAxis:", transYAxis);
+		SmartDashboard::PutNumber("rotAxis:", rotAxis);
 
 		//Single motor loading
 		pugi::xml_node XMLMotors = doc.child("motors");

@@ -10,17 +10,17 @@
 		<controller controllerID="1">
 			<axis dir="transY">
 				<ID>2</ID>
-				<deadzone>0.025</deadzone>
+				<deadzone>0.01</deadzone>
 				<invert>false</invert>
 			</axis>
 			<axis dir="transX">
 				<ID>3</ID>
-				<deadzone>0.025</deadzone>
+				<deadzone>0.01</deadzone>
 				<invert>false</invert>
 			</axis>
 			<axis dir="rot">
 				<ID>1</ID>
-				<deadzone>0.025</deadzone>
+				<deadzone>0.01</deadzone>
 				<invert>false</invert>
 			</axis>
 		</controller>
