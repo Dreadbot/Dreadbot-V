@@ -34,7 +34,7 @@ namespace dreadbot {
 		void AutonomousPeriodic() {}
 
 		void TeleopInit() {
-			Input->loadXMLConfig("XML Bot Config.xml");
+			Input->loadXMLConfig("/XML Bot Config.xml");
 			//drivebase->Engage();
 		}
 
@@ -42,7 +42,7 @@ namespace dreadbot {
 		//	drivebase->SD_RetrievePID();
 		//	drivebase->SD_OutputDiagnostics();
 		//	drivebase->Drive_v(gamepad->GetRawAxis(0), gamepad->GetRawAxis(1), gamepad->GetRawAxis(2));
-		//	Input->updateDrivebase();
+			Input->updateDrivebase();
 		}
 
 		void TestPeriodic() {
