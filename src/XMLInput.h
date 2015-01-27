@@ -1,6 +1,6 @@
 #pragma once
 #include <WPILib.h>
-#include "lib/pugixml.hpp"
+#include "../lib/pugixml.hpp"
 #include "MecanumDrive.h"
 #include <string>
 #include <vector>
