@@ -58,6 +58,31 @@ namespace dreadbot {
 			}
 		}
 
+		void Set(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr) {
+			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) 	{
+				delete motors[i];
+			}
+
+			mode = drivemode::relative;
+
+			motors[m_leftFront] = new CANTalon(motorId_lf);
+			motors[m_rightFront] = new CANTalon(motorId_rf);
+			motors[m_leftRear] = new CANTalon(motorId_lr);
+			motors[m_rightRear] = new CANTalon(motorId_rr);
+
+			motors[m_leftFront]->SetSensorDirection(true);
+			motors[m_rightFront]->SetSensorDirection(false);
+			motors[m_leftRear]->SetSensorDirection(true);
+			motors[m_rightRear]->SetSensorDirection(false);
+
+			// Configure loop parameters
+			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+				motors[i]->SetPosition(0.0);
+				motors[i]->ConfigEncoderCodesPerRev(1024);
+				motors[i]->SelectProfileSlot(0);
+			}
+		}
+
 		void Drive_p(double x, double y, double rotation) {
 			if (mode == drivemode::absolute) {
 				//vec_out.rotate((double) gyroscope->GetAngle());
@@ -173,33 +198,4 @@ namespace dreadbot {
 		DISALLOW_COPY_AND_ASSIGN(MecanumDrive);
 	};
 
-
-	// Assign multiple motors to one output value.
-	class MotorGroup {
-	public:
-		explicit MotorGroup(std::vector<uint16_t> addresses) {
-			motors();
-			for (uint16_t i = 0; i <= addresses.size(); ++i) {
-				motors[i] = new CANTalon(addresses[i]);
-			}
-		}
-
-		void Set(float sp, uint8_t syncGroup) {
-			for (uint16_t i = 0; i < motors.size(); ++i) {
-				motors[i]->Set(sp, syncGroup);
-			}
-		}
-
-		void SetEnabled(bool enabled) {
-			for (uint16_t i = 0; i < motors.size(); ++i) {
-				if (enabled) {
-					motors[i]->EnableControl();
-				} else {
-					motors[i]->Disable();
-				}
-			}
-		}
-	private:
-		std::vector<CANTalon*> motors;
-	};
 }

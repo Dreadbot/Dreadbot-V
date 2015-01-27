@@ -270,7 +270,7 @@ namespace Input
 			else if (motorPos == "backRight")
 				motorList[3] = atoi(motor.child_value());
 		}
-		drivebase->Set(motorList[0], motorList[1], motorList[2], motorList[3]); //Use these motors as drivebase motors
+		drivebase->Set(motorList[0], motorList[1], motorList[2], motorList[3]);
 
 		//Drivebase control loading - rig joystick
 		int controlID = base.child("controller").attribute("ID").as_int();
