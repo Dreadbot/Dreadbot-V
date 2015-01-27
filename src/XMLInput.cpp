@@ -178,12 +178,14 @@ namespace Input
 		invertX = false;
 		invertY = false;
 		invertR = false;
+		SmartDashboard::PutString("XMLInput Constructor:", "Loaded");
 	}
 	XMLInput* XMLInput::getInstance()
 	{
 		if (singlePtr == NULL)
 			singlePtr = new XMLInput;
 		return singlePtr;
+		SmartDashboard::PutNumber("Pointer to XMLInput:", (int)singlePtr);
 	}
 	void XMLInput::setDrivebase(dreadbot::MecanumDrive* newDrivebase)
 	{
