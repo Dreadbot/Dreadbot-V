@@ -1,0 +1,3 @@
+[submodule "lib/WPILib"]
+	path = lib/WPILib
+	url = http://github.com/Dreadbot/WPILib
