@@ -232,7 +232,7 @@ namespace Input
 			return controllers[ID];
 		return NULL;
 	}
-	Talon* XMLInput::getMotor(int ID)
+	CANTalon* XMLInput::getMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
 			return motors[ID];
@@ -327,7 +327,7 @@ namespace Input
 			newMotor.outputSlot = motor.attribute("outputID").as_int();
 			//Create motor object
 			if (motors[newMotor.outputSlot] == NULL)
-				motors[newMotor.outputSlot] = new Talon(newMotor.outputSlot);
+				motors[newMotor.outputSlot] = new CANTalon(newMotor.outputSlot);
 			newMotor.motor = motors[newMotor.outputSlot];
 			newMotor.speed = atof(motor.child_value("speed"));
 
