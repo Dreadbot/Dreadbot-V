@@ -1,8 +1,6 @@
-#include <Vector2.h>
+#include "mathutil.h"
 #include <cmath>
-#include <thread>
 #include "WPILib.h"
-#include "Vector2.h"
 
 namespace dreadbot {
 	// Stores position, velocity, rotational position, and rotational velocity
