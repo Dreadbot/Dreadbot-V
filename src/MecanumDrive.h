@@ -1,22 +1,23 @@
 #pragma once
 
 #include "WPILib.h"
+#include "Vector2.h"
+#include "rps.h"
+#include "SimplePID.h"
 #include <algorithm>
 #include <cmath>
-#include "mathutil.h"
-#include <vector>
-//#include "Tracker.h"
+/**
+ * Maximum v in all directions for an unloaded CIM at 12 volts is 600 encoder ticks/second
+ * Motor drive and sensor directions should be inverted for the left side of the robot
+ */
 
-
-#define SQUARE_INPUTS
+//#define SQUARE_INPUTS
 #define OUTPUT_EVERYTHING
-
 #define MOTOR_COUNT 4
-#define STALL_MOTOR_CURRENT 40
-
+#define STALL_MOTOR_CURRENT 50
+#define CONTROL_PERIOD 10
 
 namespace dreadbot {
-
 	class MecanumDrive {
 	public:
 		enum class drivemode {
@@ -31,13 +32,13 @@ namespace dreadbot {
 			m_rightRear = 3
 		};
 
-		MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr) {
+		void Set(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr) {
 			mode = drivemode::relative;
 
-			motors[m_leftFront] = new CANTalon(motorId_lf);
-			motors[m_rightFront] = new CANTalon(motorId_rf);
-			motors[m_leftRear] = new CANTalon(motorId_lr);
-			motors[m_rightRear] = new CANTalon(motorId_rr);
+			motors[m_leftFront] = new CANTalon(motorId_lf, CONTROL_PERIOD);
+			motors[m_rightFront] = new CANTalon(motorId_rf, CONTROL_PERIOD);
+			motors[m_leftRear] = new CANTalon(motorId_lr, CONTROL_PERIOD);
+			motors[m_rightRear] = new CANTalon(motorId_rr, CONTROL_PERIOD);
 
 			motors[m_leftFront]->SetSensorDirection(true);
 			motors[m_rightFront]->SetSensorDirection(false);
@@ -46,40 +47,24 @@ namespace dreadbot {
 
 			// Configure loop parameters
 			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+				motors[i]->SetControlMode(CANSpeedController::ControlMode::kSpeed);
 				motors[i]->SetPosition(0.0);
-				motors[i]->ConfigEncoderCodesPerRev(1024);
 				motors[i]->SelectProfileSlot(0);
+				motors[i]->SetPID(0.2, 0, 0, 0);
 			}
+
+			x_ctrl = new SimplePID(0.2, 0, 0, false);
+			y_ctrl = new SimplePID(0.2, 0, 0, false);
+			r_ctrl = new SimplePID(0.2, 0, 0, true);
+		}
+
+		MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr) {
+			Set(motorId_lf, motorId_rf, motorId_lr, motorId_rr);
 		}
 
 		~MecanumDrive() {
 			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 				delete motors[i];
-			}
-		}
-
-		void Set(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr) {
-			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) 	{
-				delete motors[i];
-			}
-
-			mode = drivemode::relative;
-
-			motors[m_leftFront] = new CANTalon(motorId_lf);
-			motors[m_rightFront] = new CANTalon(motorId_rf);
-			motors[m_leftRear] = new CANTalon(motorId_lr);
-			motors[m_rightRear] = new CANTalon(motorId_rr);
-
-			motors[m_leftFront]->SetSensorDirection(true);
-			motors[m_rightFront]->SetSensorDirection(false);
-			motors[m_leftRear]->SetSensorDirection(true);
-			motors[m_rightRear]->SetSensorDirection(false);
-
-			// Configure loop parameters
-			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-				motors[i]->SetPosition(0.0);
-				motors[i]->ConfigEncoderCodesPerRev(1024);
-				motors[i]->SelectProfileSlot(0);
 			}
 		}
 
@@ -93,13 +78,14 @@ namespace dreadbot {
 
 		void Drive_v(double x, double y, double rotation) {
 			Vector2<double> vec_out(x, -y);
-			double rot_out;
+			vec_out.x = (std::abs(vec_out.x) < 0.01) ? 0.0 : vec_out.x;
+			vec_out.y = (std::abs(vec_out.y) < 0.01) ? 0.0 : vec_out.y;
+			double rot_out = rotation;
 
 			if (mode == drivemode::relative) {
 				#ifdef SQUARE_INPUTS
 					vec_out = vec_out*vec_out;
 				#endif
-				rot_out = rotation;
 			}
 
 			double wspeeds[4];
@@ -115,7 +101,6 @@ namespace dreadbot {
 				}
 			}
 
-			//soft breaker
 			bool stall = false;
 			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 				// files.andymark.com/CIM-motor-curve.pdf
@@ -125,11 +110,9 @@ namespace dreadbot {
 			#ifdef OUTPUT_EVERYTHING
 				SmartDashboard::PutBoolean("Overcurrent", stall);
 			#endif
+			stall = !stall;
 			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-				#ifdef OUTPUT_EVERYTHING
-					SmartDashboard::PutNumber(motorNames[i] + ".SP", wspeeds[i]);
-				#endif
-				motors[i]->Set(wspeeds[i]*(!stall)*motorReversals[i], syncGroup);
+				motors[i]->Set(wspeeds[i]*motorReversals[i]*6000, syncGroup); // *stall
 			}
 		}
 
@@ -158,44 +141,35 @@ namespace dreadbot {
 			}
 		}
 
-		void SetPID(double p, double i, double d) {
-			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-				motors[i]->SetPID(p, i, d);
-			}
-		}
-
 		void SD_RetrievePID() {
-			SetPID (SmartDashboard::GetNumber("P", 0.5),
-					SmartDashboard::GetNumber("I", 0.0),
-					SmartDashboard::GetNumber("D", 0.0));
+			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+				motors[i]->SetPID(SmartDashboard::GetNumber("P", 0.5), SmartDashboard::GetNumber("I", 0.0),SmartDashboard::GetNumber("D", 0.0));
+			}
 		}
 
 		void SD_OutputDiagnostics() {
 			for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 				SmartDashboard::PutNumber(motorNames[i] + ".temp", motors[i]->GetTemperature());
-				SmartDashboard::PutNumber(motorNames[i] + ".encoder p", motors[i]->GetPosition());
-				SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetSpeed());
-				SmartDashboard::PutNumber(motorNames[i] + ".output current", motors[i]->GetOutputCurrent());
-				SmartDashboard::PutNumber(motorNames[i] + ".PID error", motors[i]->GetClosedLoopError());
-				SmartDashboard::PutBoolean(motorNames[i] + ".alive", motors[i]->IsAlive());
+				SmartDashboard::PutNumber(motorNames[i] + ".setpoint", motors[i]->GetSetpoint());
+				//SmartDashboard::PutNumber(motorNames[i] + ".encoder p", motors[i]->GetPosition());
+				SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetEncVel());
+				SmartDashboard::PutNumber(motorNames[i] + ".error", motors[i]->GetClosedLoopError());
 			}
 		}
 
 	protected:
 		// CAN sync group
-		const uint8_t syncGroup = 0x00;
-
+		const uint8_t syncGroup = 0;
 		const std::string motorNames[MOTOR_COUNT] = {"Left-front", "Right-front", "Left-rear", "Right-rear"};
-
-		// specify reverse outputs ((2*(!(i%2)))-1)
-		const int motorReversals[MOTOR_COUNT] = {1, -1, 1, -1};
-
-		// command method.
+		const double motorReversals[MOTOR_COUNT] = {-1.0, 1.0, -1.0, 1.0};
+		SimplePID* x_ctrl;
+		SimplePID* y_ctrl;
+		SimplePID* r_ctrl;
 		drivemode mode;
+		//rps* positioner;
 		CANTalon* motors[4];
 
 	private:
 		DISALLOW_COPY_AND_ASSIGN(MecanumDrive);
 	};
-
 }
