@@ -61,8 +61,6 @@ void MecanumDrive::Drive_p(double x, double y, double rotation) {
 // Drive with wheel velocity
 void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	Vector2<double> vec_out(x, -y);
-	vec_out.x = (std::abs(vec_out.x) < DEADZONE) ? 0.0 : vec_out.x;
-	vec_out.y = (std::abs(vec_out.y) < DEADZONE) ? 0.0 : vec_out.y;
 	double rot_out = (std::abs(rotation) < DEADZONE) ? 0.0 : -rotation;
 
 	if (mode == drivemode::relative) {

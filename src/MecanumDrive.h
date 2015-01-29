@@ -11,7 +11,6 @@
 #define MOTOR_COUNT 4
 #define STALL_MOTOR_CURRENT 50
 #define CONTROL_PERIOD 10
-#define DEADZONE 0.01
 
 
 namespace dreadbot {
