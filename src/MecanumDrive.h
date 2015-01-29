@@ -16,6 +16,8 @@
 #define MOTOR_COUNT 4
 #define STALL_MOTOR_CURRENT 50
 #define CONTROL_PERIOD 10
+#define DEADZONE 0.01
+
 
 namespace dreadbot {
 	class MecanumDrive {
@@ -72,19 +74,21 @@ namespace dreadbot {
 			if (mode == drivemode::absolute) {
 				//vec_out.rotate((double) gyroscope->GetAngle());
 				// yield thread until the robot has passed within a certain tolerance of the target?
-				// a callback might work as well
+				// a callback might work?
 			}
 		}
 
 		void Drive_v(double x, double y, double rotation) {
 			Vector2<double> vec_out(x, -y);
-			vec_out.x = (std::abs(vec_out.x) < 0.01) ? 0.0 : vec_out.x;
-			vec_out.y = (std::abs(vec_out.y) < 0.01) ? 0.0 : vec_out.y;
-			double rot_out = rotation;
+			vec_out.x = (std::abs(vec_out.x) < DEADZONE) ? 0.0 : vec_out.x;
+			vec_out.y = (std::abs(vec_out.y) < DEADZONE) ? 0.0 : vec_out.y;
+			double rot_out = (std::abs(rotation) < DEADZONE) ? 0.0 : -rotation;
 
 			if (mode == drivemode::relative) {
 				#ifdef SQUARE_INPUTS
-					vec_out = vec_out*vec_out;
+					vec_out.x = vec_out.x*std::abs(vec_out.x);
+					vec_out.y = vec_out.y*std::abs(vec_out.y);
+					rot_out = rot_out*std::abs(rot_out);
 				#endif
 			}
 
