@@ -1,7 +1,7 @@
 #pragma once
 
 #include "WPILib.h"
-#include "Vector2.h"
+#include "mathutil.h"
 #include "rps.h"
 #include "SimplePID.h"
 #include <algorithm>
