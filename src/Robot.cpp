@@ -1,7 +1,8 @@
-#include "WPILib.h"
+#include <WPILib.h>
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
+#include "Vision.h"
 
 namespace dreadbot {
 	class Robot: public IterativeRobot {
@@ -10,7 +11,7 @@ namespace dreadbot {
 		LiveWindow *lw;
 		Joystick* gamepad;
 		Input::XMLInput* Input;
-
+		AxisCamera* camera;
 		PowerDistributionPanel *pdp;
 		MecanumDrive *drivebase;
 
@@ -24,6 +25,7 @@ namespace dreadbot {
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = Input::XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+			camera = new AxisCamera;
 		}
 
 		void AutonomousInit() {
@@ -31,11 +33,13 @@ namespace dreadbot {
 
 		}
 
-		void AutonomousPeriodic() {}
+		void AutonomousPeriodic() {
+			visionTest();
+		}
 
 		void TeleopInit() {
 			Input->loadXMLConfig("/XML Bot Config.xml");
-			//drivebase->Engage();
+			drivebase->Engage();
 		}
 
 		void TeleopPeriodic() {
