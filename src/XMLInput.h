@@ -26,6 +26,7 @@ namespace Input
 	{
 	public:
 		control();
+		float speed;
 		bindType controlType;	//The type of control this motor is bound to
 		int inputID;			//The control that this motor is bound to.
 		float deadzone;			//Deadzone for axis mode
@@ -50,7 +51,6 @@ namespace Input
 		motorBinding();
 		~motorBinding();
 		void update();
-		float speed;	//The speed of the motor if its button controlled.
 		CANTalon* motor;
 	};
 	class pneumBinding : public binding

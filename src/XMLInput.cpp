@@ -4,6 +4,7 @@ namespace Input
 {
 	control::control()
 	{
+		speed = 0.25f;
 		controlType = axis;
 		inputID = -1;
 		deadzone = 0.025f;
@@ -24,7 +25,6 @@ namespace Input
 	motorBinding::motorBinding()
 	{
 		outputSlot = -1;
-		speed = 0.25f;
 		motor = NULL;
 	}
 	motorBinding::~motorBinding()
@@ -60,7 +60,7 @@ namespace Input
 			else
 			{
 				//This is probably a button. Probably.
-				if (iter->activeCooldown > 0)
+				if (iter->activeCooldown > 0 && iter->controlType != holdForActive)
 				{
 					iter->activeCooldown--;
 					continue;
@@ -80,17 +80,22 @@ namespace Input
 				motor->Set(input);
 			else
 			{
-				if (iter->controlType == holdForActive && input)
-					motor->Set(speed);
+				if (iter->controlType == holdForActive)
+				{
+					if (input)
+						motor->Set(iter->speed);
+					else
+						motor->Set(0);
+				}
 				if (iter->controlType == stateChange)
 				{
-					speed = -speed;
-					motor->Set(speed);
+					iter->speed = -iter->speed;
+					motor->Set(iter->speed);
 				}
 				if (iter->controlType == toggle)
 				{
 					iter->enable = !-iter->enable;
-					motor->Set(speed);
+					motor->Set(iter->speed);
 				}
 			}
 		}
@@ -329,7 +334,6 @@ namespace Input
 			if (motors[newMotor.outputSlot] == NULL)
 				motors[newMotor.outputSlot] = new CANTalon(newMotor.outputSlot);
 			newMotor.motor = motors[newMotor.outputSlot];
-			newMotor.speed = atof(motor.child_value("speed"));
 
 			//Load control settings
 			for (auto XMLControl = motor.child("controls").child("control"); XMLControl; XMLControl = XMLControl.next_sibling())
@@ -345,6 +349,7 @@ namespace Input
 				newControl.cooldown = atoi(XMLControl.child_value("cooldown"));
 				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
 				newControl.inputID =  atoi(XMLControl.child_value("inputID"));
+				newControl.speed = atoi(XMLControl.child_value("speed"));
 				if (XMLControl.child_value("invert") == "true")
 					newControl.inverse = true;
 				else
