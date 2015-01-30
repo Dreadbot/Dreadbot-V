@@ -25,4 +25,30 @@
 			</axis>
 		</controller>
 	</Drivebase>
+	<motors>
+		<motor outputID="5"> <!--Intake motor 1-->
+			<controls>
+				<control controllerID="1" type="holdForActive"> <!--Right button - intake-->
+					<inputID>6</inputID>
+					<speed>1.0</speed>
+				</control>
+				<control controllerID="1" type="holdForActive"> <!--Left button - outtake-->
+					<inputID>5</inputID>
+					<speed>-1.0</speed>
+				</control>
+			</controls>
+		</motor>
+		<motor outputID="5"> <!--Intake motor 2-->
+			<controls>
+				<control controllerID="1" type="holdForActive"> <!--Right button - intake-->
+					<inputID>6</inputID>
+					<speed>-1.0</speed>
+				</control>
+				<control controllerID="1" type="holdForActive"> <!--Left button - outtake-->
+					<inputID>5</inputID>
+					<speed>1.0</speed>
+				</control>
+			</controls>
+		</motor>
+	</motors>
 </Dreadbot>

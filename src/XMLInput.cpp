@@ -1,4 +1,5 @@
 #include "XMLInput.h"
+#include <sstream>
 
 namespace Input
 {
@@ -75,28 +76,35 @@ namespace Input
 
 			}
 
+			double output = 0;
+
 			//Apply inputs to actual output
 			if (iter->controlType == axis)
 				motor->Set(input);
 			else
 			{
-				if (iter->controlType == holdForActive)
+				if (iter->controlType == holdForActive && input)
 				{
-					if (input)
-						motor->Set(iter->speed);
-					else
-						motor->Set(0);
+					output = iter->speed;
 				}
 				if (iter->controlType == stateChange)
 				{
 					iter->speed = -iter->speed;
-					motor->Set(iter->speed);
+					output = iter->speed;
 				}
 				if (iter->controlType == toggle)
 				{
 					iter->enable = !-iter->enable;
-					motor->Set(iter->speed);
+					if (iter->enable)
+						output = iter->speed;
+					else
+						output = 0;
 				}
+
+				std::stringstream key;
+				key << "Motor ID" << outputSlot;
+				SmartDashboard::PutNumber(key.str(), output);
+				motor->Set(output);
 			}
 		}
 	}
