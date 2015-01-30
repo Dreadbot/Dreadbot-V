@@ -40,9 +40,10 @@ namespace dreadbot {
 
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
-			drivebase->SD_OutputDiagnostics();
+		//	drivebase->SD_OutputDiagnostics();
 		//	drivebase->Drive_v(gamepad->GetRawAxis(0), gamepad->GetRawAxis(1), gamepad->GetRawAxis(2));
 			Input->updateDrivebase();
+			Input->updateInds();
 		}
 
 		void TestPeriodic() {

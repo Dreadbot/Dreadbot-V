@@ -234,6 +234,9 @@ namespace Input
 	}
 	void XMLInput::updateInds()
 	{
+		SmartDashboard::PutNumber("IndMotors:", mBindings.size());
+		SmartDashboard::PutNumber("Pneumatics:", pBindings.size());
+
 		for (auto iter = mBindings.begin(); iter != mBindings.end(); iter++)
 			iter->update();
 		for (auto iter = pBindings.begin(); iter != pBindings.end(); iter++)
@@ -356,7 +359,7 @@ namespace Input
 
 				newControl.cooldown = atoi(XMLControl.child_value("cooldown"));
 				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
-				newControl.inputID =  atoi(XMLControl.child_value("inputID"));
+				newControl.inputID = atoi(XMLControl.child_value("inputID"));
 				newControl.speed = atoi(XMLControl.child_value("speed"));
 				if (XMLControl.child_value("invert") == "true")
 					newControl.inverse = true;
@@ -375,6 +378,7 @@ namespace Input
 
 				newMotor.inputs.push_back(newControl);
 			}
+			mBindings.push_back(newMotor);
 		}
 
 		//Single pneumatic loading
@@ -427,6 +431,7 @@ namespace Input
 
 				newPneum.inputs.push_back(newControl);
 			}
+			pBindings.push_back(newPneum);
 		}
 	}
 }
