@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--SET CONTROLLER TO XMODE!-->
 <Dreadbot version="5.0">
 	<Drivebase type="Mecanum">
 		<motors>
@@ -9,9 +10,9 @@
 		</motors>
 		<controller controllerID="1">
 			<axis dir="transY">
-				<ID>3</ID>
+				<ID>5</ID>
 				<deadzone>0.01</deadzone>
-				<invert>false</invert>
+				<invert>true</invert>
 			</axis>
 			<axis dir="transX">
 				<ID>0</ID>
@@ -19,7 +20,7 @@
 				<invert>false</invert>
 			</axis>
 			<axis dir="rot">
-				<ID>2</ID>
+				<ID>4</ID>
 				<deadzone>0.01</deadzone>
 				<invert>false</invert>
 			</axis>

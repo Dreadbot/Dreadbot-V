@@ -300,40 +300,45 @@ namespace Input
 		driveController = controlID;
 		SmartDashboard::PutNumber("driveController", driveController);
 		//Drivebase control loading - get axes
+		string invert;
 		for (auto axis = base.child("controller").child("axis"); axis; axis = axis.next_sibling())
 		{
 			string axisDir = axis.attribute("dir").as_string();
-			if (axisDir == "transY")
+			invert = axis.child_value("invert");
+			if (axisDir == "transY")						//Deep magic begins here
 			{
 				transYAxis = atoi(axis.child_value("ID"));
 				transYDeadzone = atof(axis.child_value("deadzone"));
-				if (axis.child_value("invert") == "true")
-					invertY = true;
-				else
+				if (invert.find("true")) //true has four letters. false has five. This is cheating.
 					invertY = false;
+				else
+					invertY = true;
 			}
 			else if (axisDir == "transX")
 			{
 				transXAxis = atoi(axis.child_value("ID"));
 				transXDeadzone = atof(axis.child_value("deadzone"));
-				if (axis.child_value("invert") == "true")
-					invertX = true;
-				else
+				if (invert.find("true"))
 					invertX = false;
+				else
+					invertX = true;
 			}
 			else if (axisDir == "rot")
 			{
 				rotAxis = atoi(axis.child_value("ID"));
 				rotDeadzone = atof(axis.child_value("deadzone"));
-				if (axis.child_value("invert") == "true")
-					invertR = true;
-				else
+				if (invert.find("true"))
 					invertR = false;
+				else
+					invertR = true;
 			}
 		}
 		SmartDashboard::PutNumber("transXAxis:", transXAxis);
 		SmartDashboard::PutNumber("transYAxis:", transYAxis);
 		SmartDashboard::PutNumber("rotAxis:", rotAxis);
+		SmartDashboard::PutBoolean("invertR", invertR);
+		SmartDashboard::PutBoolean("invertY", invertY);
+		SmartDashboard::PutBoolean("invertX", invertX);
 
 		//Single motor loading
 		pugi::xml_node XMLMotors = doc.child("motors");
@@ -361,10 +366,11 @@ namespace Input
 				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
 				newControl.inputID = atoi(XMLControl.child_value("inputID"));
 				newControl.speed = atoi(XMLControl.child_value("speed"));
-				if (XMLControl.child_value("invert") == "true")
-					newControl.inverse = true;
+				string invert = XMLControl.child_value("invert");
+				if (invert.find("true"))
+					newControl.inverse = false; //Magic.
 				else
-					newControl.inverse = false;
+					newControl.inverse = true;
 
 				string controlType = XMLControl.attribute("type").as_string();
 				if (controlType == "axis")
@@ -414,10 +420,11 @@ namespace Input
 				newControl.cooldown = atoi(XMLControl.child_value("cooldown"));
 				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
 				newControl.inputID =  atoi(XMLControl.child_value("inputID"));
-				if (XMLControl.child_value("invert") == "true")
-					newControl.inverse = true;
+				string invert = XMLControl.child_value("invert");
+				if (invert.find("true"))
+					newControl.inverse = false; //Magic
 				else
-					newControl.inverse = false;
+					newControl.inverse = true;
 
 				string controlType = XMLControl.attribute("type").as_string();
 				if (controlType == "axis")
