@@ -305,11 +305,11 @@ namespace Input
 		{
 			string axisDir = axis.attribute("dir").as_string();
 			invert = axis.child_value("invert");
-			if (axisDir == "transY")						//Deep magic begins here
+			if (axisDir == "transY")
 			{
 				transYAxis = atoi(axis.child_value("ID"));
 				transYDeadzone = atof(axis.child_value("deadzone"));
-				if (invert.find("true")) //true has four letters. false has five. This is cheating.
+				if (invert.find("true")) //I really don't understand how this works...
 					invertY = false;
 				else
 					invertY = true;
@@ -346,6 +346,7 @@ namespace Input
 		{
 			motorBinding newMotor;
 			newMotor.outputSlot = motor.attribute("outputID").as_int();
+			SmartDashboard::PutNumber("Last motor's outputID:", newMotor.outputSlot);
 			//Create motor object
 			if (motors[newMotor.outputSlot] == NULL)
 				motors[newMotor.outputSlot] = new CANTalon(newMotor.outputSlot);
