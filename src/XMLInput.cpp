@@ -341,7 +341,7 @@ namespace Input
 		SmartDashboard::PutBoolean("invertX", invertX);
 
 		//Single motor loading
-		pugi::xml_node XMLMotors = doc.child("motors");
+		pugi::xml_node XMLMotors = doc.child("Dreadbot").child("motors");
 		for (auto motor = XMLMotors.child("motor"); motor; motor = motor.next_sibling())
 		{
 			motorBinding newMotor;
@@ -389,7 +389,7 @@ namespace Input
 		}
 
 		//Single pneumatic loading
-		pugi::xml_node XMLPneums = doc.child("pneumatics");
+		pugi::xml_node XMLPneums = doc.child("Dreadbot").child("pneumatics");
 		for (auto pneum = XMLPneums.child("pneumatic"); pneum; pneum = pneum.next_sibling())
 		{
 			pneumBinding newPneum;
