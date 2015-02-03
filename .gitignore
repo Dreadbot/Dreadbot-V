@@ -41,9 +41,6 @@ local.properties
 .loadpath
 Debug/
 
-# Eclipse Core
-.project
-
 # External tool builders
 .externalToolBuilders/
 
