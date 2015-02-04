@@ -51,6 +51,8 @@ namespace Input
 		motorBinding();
 		~motorBinding();
 		void update();
+		bool CAN;
+		Talon* tMotor;
 		CANTalon* motor;
 	};
 	class pneumBinding : public binding
@@ -74,6 +76,7 @@ namespace Input
 		void updateInds();
 		Joystick* getController(int ID);
 		CANTalon* getMotor(int ID);
+		Talon* getTMotor(int ID);
 		DoubleSolenoid* getPneum(int ID);
 	private:
 		XMLInput();
@@ -81,6 +84,7 @@ namespace Input
 		static XMLInput* singlePtr;
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
 		CANTalon* motors[MAX_MOTORS];
+		Talon* tMotors[MAX_MOTORS];
 		DoubleSolenoid* pneums[MAX_PNEUMS];
 
 		vector<motorBinding> mBindings;

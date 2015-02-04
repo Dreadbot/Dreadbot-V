@@ -27,6 +27,8 @@ namespace Input
 	{
 		outputSlot = -1;
 		motor = NULL;
+		tMotor = NULL;
+		CAN = false;
 	}
 	motorBinding::~motorBinding()
 	{
@@ -104,7 +106,10 @@ namespace Input
 				std::stringstream key;
 				key << "Motor ID" << outputSlot;
 				SmartDashboard::PutNumber(key.str(), output);
-				motor->Set(output);
+				if (CAN)
+					motor->Set(output);
+				else
+					tMotor->Set(output);
 			}
 		}
 	}
@@ -254,6 +259,12 @@ namespace Input
 			return motors[ID];
 		return NULL;
 	}
+	Talon* XMLInput::getTMotor(int ID)
+	{
+		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
+				return tMotors[ID];
+			return NULL;
+	}
 	DoubleSolenoid* XMLInput::getPneum(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
@@ -346,11 +357,21 @@ namespace Input
 		{
 			motorBinding newMotor;
 			newMotor.outputSlot = motor.attribute("outputID").as_int();
-			SmartDashboard::PutNumber("Last motor's outputID:", newMotor.outputSlot);
+			string CAN = motor.child_value("CAN");
+			if (CAN.find("true"))
+				newMotor.CAN = false; //Magic.
+			else
+				newMotor.CAN = true;
+
 			//Create motor object
-			if (motors[newMotor.outputSlot] == NULL)
+			if (motors[newMotor.outputSlot] == NULL && newMotor.CAN)
 				motors[newMotor.outputSlot] = new CANTalon(newMotor.outputSlot);
-			newMotor.motor = motors[newMotor.outputSlot];
+			if (tMotors[newMotor.outputSlot] == NULL && !newMotor.CAN)
+				tMotors[newMotor.outputSlot] = new Talon(newMotor.outputSlot);
+			if (newMotor.CAN)
+				newMotor.motor = motors[newMotor.outputSlot];
+			else
+				newMotor.tMotor = tMotors[newMotor.outputSlot];
 
 			//Load control settings
 			for (auto XMLControl = motor.child("controls").child("control"); XMLControl; XMLControl = XMLControl.next_sibling())
