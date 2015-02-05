@@ -28,6 +28,7 @@
 	</Drivebase>
 	<motors>
 		<motor outputID="5"> <!--Intake motor 1-->
+			<CAN>false</CAN> <!--CAN is disabled on intake motors... I think-->
 			<controls>
 				<control controllerID="1" type="holdForActive"> <!--Right button - intake-->
 					<inputID>6</inputID>
@@ -40,6 +41,7 @@
 			</controls>
 		</motor>
 		<motor outputID="5"> <!--Intake motor 2-->
+			<CAN>false</CAN>
 			<controls>
 				<control controllerID="1" type="holdForActive"> <!--Right button - intake-->
 					<inputID>6</inputID>
