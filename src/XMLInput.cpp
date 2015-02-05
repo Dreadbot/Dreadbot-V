@@ -6,11 +6,15 @@ namespace dreadbot
 	SimpleMotor::SimpleMotor()
 	{
 		CAN = false;
+		invert = false;
 		CANMotor = NULL;
 		PWMMotor = NULL;
 	}
 	void SimpleMotor::Set(float value)
 	{
+		if (invert)
+			value *= -1;
+
 		if (CAN && CANMotor != NULL)
 			CANMotor->Set(value);
 		else if (!CAN && PWMMotor != NULL)

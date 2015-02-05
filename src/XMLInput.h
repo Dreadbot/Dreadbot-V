@@ -29,6 +29,7 @@ namespace dreadbot
 		void Set(float value);
 	private:
 		bool CAN;
+		bool invert;
 		CANTalon* CANMotor;
 		Talon* PWMMotor;
 		friend class XMLInput;
