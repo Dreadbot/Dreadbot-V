@@ -15,7 +15,7 @@ using std::vector;
  * documentation
  */
 
-namespace Input
+namespace dreadbot
 {
 	const int MAX_CONTROLLERS = 5;
 	const int MAX_MOTORS = 10;
@@ -39,7 +39,7 @@ namespace Input
 	{
 	public:
 		static XMLInput* getInstance();
-		void setDrivebase(dreadbot::MecanumDrive* newDrivebase);
+		void setDrivebase(MecanumDrive* newDrivebase);
 		void loadXMLConfig(string filename);
 		void updateDrivebase();
 		Joystick* getController(int ID);
@@ -48,7 +48,7 @@ namespace Input
 		DoubleSolenoid* getPneum(int ID);
 	private:
 		XMLInput();
-		dreadbot::MecanumDrive* drivebase;
+		MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
 		CANTalon* motors[MAX_MOTORS];

@@ -1,6 +1,6 @@
 #include "XMLInput.h"
 
-namespace Input
+namespace dreadbot
 {
 
 
