@@ -22,6 +22,17 @@ namespace Input
 	const int MAX_PNEUMS = 10;
 	enum bindType {axis, toggle, stateChange, holdForActive};
 
+	class SimpleMotor
+	{
+	public:
+		SimpleMotor();
+		void Set(float value);
+	private:
+		bool CAN;
+		CANTalon* CANMotor;
+		Talon* PWMMotor;
+		friend class XMLInput;
+	};
 
 
 	class XMLInput

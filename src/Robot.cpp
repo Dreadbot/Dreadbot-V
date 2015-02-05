@@ -54,7 +54,6 @@ namespace dreadbot {
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
-			Input->updateInds();
 
 			//Process control switching
 

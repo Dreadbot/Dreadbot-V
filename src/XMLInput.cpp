@@ -1,8 +1,8 @@
 #include "XMLInput.h"
-#include <sstream>
 
 namespace Input
 {
+
 
 	//XMLInput member stuff
 	XMLInput* XMLInput::singlePtr = NULL;
@@ -155,4 +155,3 @@ namespace Input
 		SmartDashboard::PutBoolean("invertX", invertX);
 	}
 };
-
