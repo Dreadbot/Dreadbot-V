@@ -48,6 +48,14 @@ namespace dreadbot
 		//Ta-da!
 	}
 
+	//PneumaticGrouping stuff
+	void PneumaticGrouping::Set(DoubleSolenoid::Value value)
+	{
+		for (auto iter = pneumatics.begin(); iter != pneumatics.end(); iter++)
+			iter->Set(value);
+		//Ta-da!
+	}
+
 	//XMLInput member stuff
 	XMLInput* XMLInput::singlePtr = NULL;
 	XMLInput::XMLInput()

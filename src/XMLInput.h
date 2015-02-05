@@ -24,7 +24,7 @@ namespace dreadbot
 	{
 	public:
 		SimplePneumatic();
-		void Set(DoubleSolenoid::Value value);
+		void Set(DoubleSolenoid::Value value); //!< Smart set - automatically handles for invert
 	private:
 		DoubleSolenoid* pneumatic;
 		bool invert;
@@ -42,12 +42,19 @@ namespace dreadbot
 		Talon* PWMMotor;
 		friend class XMLInput;
 	};
+	struct PneumaticGrouping
+	{
+		void Set(DoubleSolenoid::Value value); //!< Passes the set value to all pneumatics in the group
+		string name; //!< Used to identify this pneumatic group
+		vector<SimplePneumatic> pneumatics;
+	};
 	struct MotorGrouping
 	{
+		void Set(float value); //!< Passes the set value to all motors in the group
+		string name; //!< Used to identify this motor group
 		vector<SimpleMotor> motors;
-		string name;
-		void Set(float value); //!< Passes a the set value to all motors in the group
 	};
+
 
 	class XMLInput
 	{
