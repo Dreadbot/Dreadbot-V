@@ -232,7 +232,7 @@ namespace Input
 			rInput = -rInput;
 
 		if (drivebase != NULL) //Idiot check
-			drivebase->Drive_p(xInput, yInput, rInput);
+			drivebase->Drive_v(xInput, yInput, rInput);
 		SmartDashboard::PutNumber("xInput:", xInput);
 		SmartDashboard::PutNumber("yInput:", yInput);
 		SmartDashboard::PutNumber("rInput:", rInput);
