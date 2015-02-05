@@ -5,6 +5,9 @@
 #include "Vision.h"
 
 namespace dreadbot {
+
+#define CAMSWITCH_AXIS 6
+
 	class Robot: public IterativeRobot {
 	private:
 		DriverStation *ds;
@@ -14,47 +17,61 @@ namespace dreadbot {
 		PowerDistributionPanel *pdp;
 		MecanumDrive *drivebase;
 
-		AxisCamera* camera;
-		Image* image;
+		AxisCamera* frontCamera;
+		AxisCamera* backCamera;
+		bool viewingBack;
 
 	public:
 		void RobotInit() {
 			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
-			gamepad = new Joystick(0);
 			pdp = new PowerDistributionPanel();
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = Input::XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
 
 			//Vision stuff
-			camera = new AxisCamera("10.36.56.11");
-			image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frontCamera = new AxisCamera("10.36.56.11");
+			backCamera = new AxisCamera("10.0.0.11");
+			viewingBack = false;
+
 		}
 
 		void AutonomousInit() {
 			drivebase->Engage();
-
 		}
 
 		void AutonomousPeriodic() {
-			camera->GetImage(image);
-			imaqDrawShapeOnImage(image, image, { 10, 10, 100, 100 }, DrawMode::IMAQ_DRAW_VALUE, ShapeMode::IMAQ_SHAPE_OVAL, 0.0f);
-			CameraServer::GetInstance()->SetImage(image);
 		}
 
 		void TeleopInit() {
 			Input->loadXMLConfig("/XML Bot Config.xml");
+			gamepad = Input->getController(1);
 			drivebase->Engage();
 		}
 
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
-		//	drivebase->SD_OutputDiagnostics();
-		//	drivebase->Drive_v(gamepad->GetRawAxis(0), gamepad->GetRawAxis(1), gamepad->GetRawAxis(2));
 			Input->updateDrivebase();
 			Input->updateInds();
+
+			//Process control switching
+
+			if (gamepad->GetRawAxis(CAMSWITCH_AXIS) > 0) //Switch to front
+				viewingBack = false;
+			else if (gamepad->GetRawAxis(CAMSWITCH_AXIS) < 0)
+				viewingBack = false;
+
+			//Apply the image to the camera server
+			Image* image = NULL;
+			image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			if (viewingBack) //If the back camera is the currently active view...
+				backCamera->GetImage(image);
+			else
+				frontCamera->GetImage(image);
+			CameraServer::GetInstance()->SetImage(image);
+			delete image;
 		}
 
 		void TestPeriodic() {
