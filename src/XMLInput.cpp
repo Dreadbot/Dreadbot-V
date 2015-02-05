@@ -3,176 +3,6 @@
 
 namespace Input
 {
-	control::control()
-	{
-		speed = 0.25f;
-		controlType = axis;
-		inputID = -1;
-		deadzone = 0.025f;
-		activeCooldown = 0;
-		cooldown = 0;
-		inverse = false;
-		enable = true;
-		controller = NULL;
-	}
-	binding::binding()
-	{
-		outputSlot = -1;
-	}
-	binding::~binding()
-	{
-
-	}
-	motorBinding::motorBinding()
-	{
-		outputSlot = -1;
-		motor = NULL;
-		tMotor = NULL;
-		CAN = false;
-	}
-	motorBinding::~motorBinding()
-	{
-	}
-	pneumBinding::pneumBinding()
-	{
-		outputSlot = -1;
-		reverseSlot = -2;
-		state = DoubleSolenoid::kOff;
-		solenoid = NULL;
-	}
-	pneumBinding::~pneumBinding()
-	{
-	}
-	void motorBinding::update()
-	{
-		for (auto iter = inputs.begin(); iter != inputs.end(); iter++)
-		{
-			float input = 0;
-			//For axes
-			if (iter->controlType == axis)
-			{
-				//Get actual input
-				input = iter->controller->GetRawAxis(iter->inputID);
-				if (iter->inverse) input = -1;
-
-				//Deadzone
-				if (fabs(input) < fabs(iter->deadzone))
-					input = 0;
-			}
-			//For buttons
-			else
-			{
-				//This is probably a button. Probably.
-				if (iter->activeCooldown > 0 && iter->controlType != holdForActive)
-				{
-					iter->activeCooldown--;
-					continue;
-				}
-				iter->activeCooldown = abs(iter->cooldown); //Set a cooldown so the button can't be spammed. abs() is a stupid check - a check for stupid.
-				bool bInput = iter->controller->GetRawButton(iter->inputID);
-
-				//Inverse button output
-				if (iter->inverse)
-					bInput = !bInput;
-				input = (int) bInput;
-
-			}
-
-			double output = 0;
-
-			//Apply inputs to actual output
-			if (iter->controlType == axis)
-				motor->Set(input);
-			else
-			{
-				if (iter->controlType == holdForActive && input)
-				{
-					output = iter->speed;
-				}
-				if (iter->controlType == stateChange)
-				{
-					iter->speed = -iter->speed;
-					output = iter->speed;
-				}
-				if (iter->controlType == toggle)
-				{
-					iter->enable = !-iter->enable;
-					if (iter->enable)
-						output = iter->speed;
-					else
-						output = 0;
-				}
-
-				std::stringstream key;
-				key << "Motor ID" << outputSlot;
-				SmartDashboard::PutNumber(key.str(), output);
-				if (CAN)
-					motor->Set(output);
-				else
-					tMotor->Set(output);
-			}
-		}
-	}
-	void pneumBinding::update()
-	{
-		for (auto iter = inputs.begin(); iter != inputs.end(); iter++)
-		{
-			float input = 0;
-			//For axes
-			if (iter->controlType == axis)
-			{
-				//Get actual input
-				input = iter->controller->GetRawAxis(iter->inputID);
-				if (iter->inverse) input = -1;
-				//Deadzone
-				if (fabs(input) < fabs(iter->deadzone))
-					input = 0;
-			}
-			//For buttons
-			else
-			{
-				//This is probably a button. Probably.
-				if (iter->activeCooldown > 0)
-				{
-					iter->activeCooldown--;
-					continue;
-				}
-				iter->activeCooldown = abs(iter->cooldown); //Set a cooldown so the button can't be spammed. abs() is a stupid check - a check for stupid.
-				bool bInput = iter->controller->GetRawButton(iter->inputID);
-
-				//Inverse button output
-				if (iter->inverse)
-					bInput = !bInput;
-				input = (int) bInput;
-
-			}
-
-			//Apply settings
-			if (iter->controlType == axis)
-			{
-				if (input > 0)
-					solenoid->Set(DoubleSolenoid::kForward);
-				else if (input < 0)
-					solenoid->Set(DoubleSolenoid::kReverse);
-				else
-					solenoid->Set(DoubleSolenoid::kOff);
-			}
-			else
-			{
-				//This is a button. Almost certainly.
-				if (iter->controlType == holdForActive && input)
-					solenoid->Set(state);
-				else if (iter->controlType == toggle)
-				{
-					if (state == DoubleSolenoid::kForward)
-						state = DoubleSolenoid::kReverse;
-					else
-						state = DoubleSolenoid::kForward;
-					solenoid->Set(state);
-				}
-			}
-		}
-	}
 
 	//XMLInput member stuff
 	XMLInput* XMLInput::singlePtr = NULL;
@@ -237,16 +67,6 @@ namespace Input
 		SmartDashboard::PutNumber("yInput:", yInput);
 		SmartDashboard::PutNumber("rInput:", rInput);
 	}
-	void XMLInput::updateInds()
-	{
-		SmartDashboard::PutNumber("IndMotors:", mBindings.size());
-		SmartDashboard::PutNumber("Pneumatics:", pBindings.size());
-
-		for (auto iter = mBindings.begin(); iter != mBindings.end(); iter++)
-			iter->update();
-		for (auto iter = pBindings.begin(); iter != pBindings.end(); iter++)
-			iter->update();
-	}
 	Joystick* XMLInput::getController(int ID)
 	{
 		if (ID < MAX_CONTROLLERS && ID > -1)
@@ -257,18 +77,6 @@ namespace Input
 		}
 		return NULL;
 	}
-	CANTalon* XMLInput::getMotor(int ID)
-	{
-		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
-			return motors[ID];
-		return NULL;
-	}
-	Talon* XMLInput::getTMotor(int ID)
-	{
-		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
-				return tMotors[ID];
-			return NULL;
-	}
 	DoubleSolenoid* XMLInput::getPneum(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
@@ -277,15 +85,6 @@ namespace Input
 	}
 	void XMLInput::loadXMLConfig(string filename)
 	{
-		//Clear anything currently present
-		mBindings.clear();
-		pBindings.clear();
-		for (int i = 0; i < MAX_CONTROLLERS; i++)
-		{
-			delete controllers[i];
-			controllers[i] = NULL;
-		}
-
 		pugi::xml_document doc;
 		pugi::xml_parse_result result = doc.load_file(filename.c_str());
 		SmartDashboard::PutString("XML Load Result: ", result.description());
@@ -354,118 +153,6 @@ namespace Input
 		SmartDashboard::PutBoolean("invertR", invertR);
 		SmartDashboard::PutBoolean("invertY", invertY);
 		SmartDashboard::PutBoolean("invertX", invertX);
-
-		//Single motor loading
-		pugi::xml_node XMLMotors = doc.child("Dreadbot").child("motors");
-		for (auto motor = XMLMotors.child("motor"); motor; motor = motor.next_sibling())
-		{
-			motorBinding newMotor;
-			newMotor.outputSlot = motor.attribute("outputID").as_int();
-			string CAN = motor.child_value("CAN");
-			if (CAN.find("true"))
-				newMotor.CAN = false; //Magic.
-			else
-				newMotor.CAN = true;
-
-			//Create motor object
-			if (motors[newMotor.outputSlot] == NULL && newMotor.CAN)
-				motors[newMotor.outputSlot] = new CANTalon(newMotor.outputSlot);
-			if (tMotors[newMotor.outputSlot] == NULL && !newMotor.CAN)
-				tMotors[newMotor.outputSlot] = new Talon(newMotor.outputSlot);
-			if (newMotor.CAN)
-				newMotor.motor = motors[newMotor.outputSlot];
-			else
-				newMotor.tMotor = tMotors[newMotor.outputSlot];
-
-			//Load control settings
-			for (auto XMLControl = motor.child("controls").child("control"); XMLControl; XMLControl = XMLControl.next_sibling())
-			{
-				control newControl;
-
-				//Assign joystick
-				int controllerID = XMLControl.attribute("controllerID").as_int();
-				if (controllers[controllerID] == NULL)
-					controllers[controllerID] = new Joystick(controllerID);
-				newControl.controller = controllers[controllerID];
-
-				newControl.cooldown = atoi(XMLControl.child_value("cooldown"));
-				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
-				newControl.inputID = atoi(XMLControl.child_value("inputID"));
-				newControl.speed = atoi(XMLControl.child_value("speed"));
-				string invert = XMLControl.child_value("invert");
-				if (invert.find("true"))
-					newControl.inverse = false; //Magic.
-				else
-					newControl.inverse = true;
-
-				string controlType = XMLControl.attribute("type").as_string();
-				if (controlType == "axis")
-					newControl.controlType = axis;
-				else if (controlType == "toggle")
-					newControl.controlType = toggle;
-				else if (controlType == "stateChange")
-					newControl.controlType = stateChange;
-				else if (controlType == "holdForActive")
-					newControl.controlType = holdForActive;
-
-				newMotor.inputs.push_back(newControl);
-			}
-			mBindings.push_back(newMotor);
-		}
-
-		//Single pneumatic loading
-		pugi::xml_node XMLPneums = doc.child("Dreadbot").child("pneumatics");
-		for (auto pneum = XMLPneums.child("pneumatic"); pneum; pneum = pneum.next_sibling())
-		{
-			pneumBinding newPneum;
-			newPneum.outputSlot = pneum.attribute("forwardID").as_int();
-			newPneum.reverseSlot = pneum.attribute("reverseID").as_int();
-			//Create motor object
-			if (pneums[newPneum.outputSlot] == NULL)
-				pneums[newPneum.outputSlot] = new DoubleSolenoid(newPneum.outputSlot, newPneum.reverseSlot);
-			newPneum.solenoid = pneums[newPneum.outputSlot];
-			string state = pneum.child_value("state");
-			if (state == "kOff")
-				newPneum.state = DoubleSolenoid::kOff;
-			if (state == "kForward")
-				newPneum.state = DoubleSolenoid::kForward;
-			if (state == "kReverse")
-				newPneum.state = DoubleSolenoid::kReverse;
-
-			//Load control settings
-			for (auto XMLControl = pneum.child("controls").child("control"); XMLControl; XMLControl = XMLControl.next_sibling())
-			{
-				control newControl;
-
-				//Assign joystick
-				int controllerID = XMLControl.attribute("controllerID").as_int();
-				if (controllers[controllerID] == NULL)
-					controllers[controllerID] = new Joystick(controllerID);
-				newControl.controller = controllers[controllerID];
-
-				newControl.cooldown = atoi(XMLControl.child_value("cooldown"));
-				newControl.deadzone = atof(XMLControl.child_value("deadzone"));
-				newControl.inputID =  atoi(XMLControl.child_value("inputID"));
-				string invert = XMLControl.child_value("invert");
-				if (invert.find("true"))
-					newControl.inverse = false; //Magic
-				else
-					newControl.inverse = true;
-
-				string controlType = XMLControl.attribute("type").as_string();
-				if (controlType == "axis")
-					newControl.controlType = axis;
-				else if (controlType == "toggle")
-					newControl.controlType = toggle;
-				else if (controlType == "stateChange")
-					newControl.controlType = stateChange;
-				else if (controlType == "holdForActive")
-					newControl.controlType = holdForActive;
-
-				newPneum.inputs.push_back(newControl);
-			}
-			pBindings.push_back(newPneum);
-		}
 	}
-}
+};
 

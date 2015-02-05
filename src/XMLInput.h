@@ -22,49 +22,7 @@ namespace Input
 	const int MAX_PNEUMS = 10;
 	enum bindType {axis, toggle, stateChange, holdForActive};
 
-	class control
-	{
-	public:
-		control();
-		float speed;
-		bindType controlType;	//The type of control this motor is bound to
-		int inputID;			//The control that this motor is bound to.
-		float deadzone;			//Deadzone for axis mode
-		float activeCooldown;	//How much cooldown is actually left?
-		float cooldown;			//Cooldown for button mode
-		bool inverse;			//If axis, multiples value by -1. If button, inverts the output of the button or axis.
-		bool enable;			//Used for stateChange and toggle modes
-		Joystick* controller;
-	};
-	class binding
-	{
-	public:
-		binding();
-		~binding();
-		virtual void update()=0;	//Updates the state of the output device
-		int outputSlot;				//Used to get individual outputs, also a simple identifier.
-		vector<control> inputs;		//All inputs bound to this output
-	};
-	class motorBinding : public binding
-	{
-	public:
-		motorBinding();
-		~motorBinding();
-		void update();
-		bool CAN;
-		Talon* tMotor;
-		CANTalon* motor;
-	};
-	class pneumBinding : public binding
-	{
-	public:
-		pneumBinding();
-		~pneumBinding();
-		void update();
-		DoubleSolenoid::Value state;
-		DoubleSolenoid* solenoid;
-		int reverseSlot; //The outputSlot is assumed to be the forward ID.
-	};
+
 
 	class XMLInput
 	{
@@ -73,7 +31,6 @@ namespace Input
 		void setDrivebase(dreadbot::MecanumDrive* newDrivebase);
 		void loadXMLConfig(string filename);
 		void updateDrivebase();
-		void updateInds();
 		Joystick* getController(int ID);
 		CANTalon* getMotor(int ID);
 		Talon* getTMotor(int ID);
@@ -86,9 +43,6 @@ namespace Input
 		CANTalon* motors[MAX_MOTORS];
 		Talon* tMotors[MAX_MOTORS];
 		DoubleSolenoid* pneums[MAX_PNEUMS];
-
-		vector<motorBinding> mBindings;
-		vector<pneumBinding> pBindings;
 
 		//Axis stuff for drivebase-specific controls
 		int transXAxis;
