@@ -2,7 +2,20 @@
 
 namespace dreadbot
 {
-
+	//SimpleMotor member stuff
+	SimpleMotor::SimpleMotor()
+	{
+		CAN = false;
+		CANMotor = NULL;
+		PWMMotor = NULL;
+	}
+	void SimpleMotor::Set(float value)
+	{
+		if (CAN && CANMotor != NULL)
+			CANMotor->Set(value);
+		else if (!CAN && PWMMotor != NULL)
+			PWMMotor->Set(value);
+	}
 
 	//XMLInput member stuff
 	XMLInput* XMLInput::singlePtr = NULL;
