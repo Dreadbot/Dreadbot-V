@@ -102,6 +102,18 @@ namespace dreadbot
 		}
 		return NULL;
 	}
+	CANTalon* XMLInput::getMotor(int ID)
+	{
+		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
+			return motors[ID];
+		return NULL;
+	}
+	Talon* XMLInput::getTMotor(int ID)
+	{
+		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
+				return tMotors[ID];
+			return NULL;
+	}
 	DoubleSolenoid* XMLInput::getPneum(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
