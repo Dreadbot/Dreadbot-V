@@ -2,7 +2,7 @@
 
 namespace dreadbot
 {
-	//SimpleMotor member stuff
+	//SimpleMotor stuff
 	SimpleMotor::SimpleMotor()
 	{
 		CAN = false;
@@ -19,6 +19,14 @@ namespace dreadbot
 			CANMotor->Set(value);
 		else if (!CAN && PWMMotor != NULL)
 			PWMMotor->Set(value);
+	}
+
+	//MotorGrouping stuff
+	void MotorGrouping::Set(float value)
+	{
+		for (auto iter = motors.begin(); iter != motors.end(); iter++)
+			iter->Set(value);
+		//Ta-da!
 	}
 
 	//XMLInput member stuff

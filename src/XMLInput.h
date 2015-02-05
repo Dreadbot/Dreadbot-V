@@ -26,7 +26,7 @@ namespace dreadbot
 	{
 	public:
 		SimpleMotor();
-		void Set(float value);
+		void Set(float value); //!< Smart set - automatically handles for invert, CAN/PWM controls. Give it a value and go.
 	private:
 		bool CAN;
 		bool invert;
@@ -34,7 +34,12 @@ namespace dreadbot
 		Talon* PWMMotor;
 		friend class XMLInput;
 	};
-
+	struct MotorGrouping
+	{
+		vector<SimpleMotor> motors;
+		string name;
+		void Set(float value); //!< Passes a the set value to all motors in the group
+	};
 
 	class XMLInput
 	{
