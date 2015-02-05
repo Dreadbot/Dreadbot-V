@@ -250,7 +250,11 @@ namespace Input
 	Joystick* XMLInput::getController(int ID)
 	{
 		if (ID < MAX_CONTROLLERS && ID > -1)
+		{
+			if (controllers[ID] == NULL)
+				controllers[ID] = new Joystick(ID);
 			return controllers[ID];
+		}
 		return NULL;
 	}
 	CANTalon* XMLInput::getMotor(int ID)
