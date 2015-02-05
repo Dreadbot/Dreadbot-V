@@ -37,7 +37,10 @@ namespace dreadbot
 		for (int i = 0; i < MAX_CONTROLLERS; i++)
 			controllers[i] = NULL;
 		for (int i = 0; i < MAX_MOTORS; i++)
-			motors[i] = NULL;
+		{
+			canMotors[i] = NULL;
+			pwmMotors[i] = NULL;
+		}
 		for (int i = 0; i < MAX_PNEUMS; i++)
 			pneums[i] = NULL;
 
@@ -105,13 +108,13 @@ namespace dreadbot
 	CANTalon* XMLInput::getCANMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
-			return motors[ID];
+			return canMotors[ID];
 		return NULL;
 	}
 	Talon* XMLInput::getPWMMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
-				return tMotors[ID];
+				return pwmMotors[ID];
 			return NULL;
 	}
 	DoubleSolenoid* XMLInput::getPneum(int ID)

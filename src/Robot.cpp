@@ -13,7 +13,7 @@ namespace dreadbot {
 		DriverStation *ds;
 		LiveWindow *lw;
 		Joystick* gamepad;
-		Input::XMLInput* Input;
+		XMLInput* Input;
 		PowerDistributionPanel *pdp;
 		MecanumDrive *drivebase;
 
@@ -28,7 +28,7 @@ namespace dreadbot {
 			lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
 			drivebase = new MecanumDrive(1, 2, 3, 4);
-			Input = Input::XMLInput::getInstance();
+			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
 
 			//Vision stuff

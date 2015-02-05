@@ -57,8 +57,8 @@ namespace dreadbot
 		MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
-		CANTalon* motors[MAX_MOTORS];
-		Talon* tMotors[MAX_MOTORS];
+		CANTalon* canMotors[MAX_MOTORS];
+		Talon* pwmMotors[MAX_MOTORS];
 		DoubleSolenoid* pneums[MAX_PNEUMS];
 
 		//Axis stuff for drivebase-specific controls
