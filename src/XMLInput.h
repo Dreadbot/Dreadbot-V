@@ -49,8 +49,8 @@ namespace dreadbot
 		void loadXMLConfig(string filename);
 		void updateDrivebase();
 		Joystick* getController(int ID);
-		CANTalon* getMotor(int ID);
-		Talon* getTMotor(int ID);
+		CANTalon* getCANMotor(int ID);
+		Talon* getPWMMotor(int ID);
 		DoubleSolenoid* getPneum(int ID);
 	private:
 		XMLInput();
