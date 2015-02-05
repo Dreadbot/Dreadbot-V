@@ -7,7 +7,6 @@
 using std::string;
 using std::vector;
 
-
 /*
  * Uses an XML config file to create custom control settings
  * Documentation coming soon. Functions should be self
@@ -20,8 +19,17 @@ namespace dreadbot
 	const int MAX_CONTROLLERS = 5;
 	const int MAX_MOTORS = 10;
 	const int MAX_PNEUMS = 10;
-	enum bindType {axis, toggle, stateChange, holdForActive};
 
+	class SimplePneumatic
+	{
+	public:
+		SimplePneumatic();
+		void Set(DoubleSolenoid::Value value);
+	private:
+		DoubleSolenoid* pneumatic;
+		bool invert;
+		friend class XMLInput;
+	};
 	class SimpleMotor
 	{
 	public:
@@ -54,6 +62,9 @@ namespace dreadbot
 		DoubleSolenoid* getPneum(int ID);
 	private:
 		XMLInput();
+
+
+
 		MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.

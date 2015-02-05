@@ -2,6 +2,25 @@
 
 namespace dreadbot
 {
+	//SimplePneumatic stuff
+	SimplePneumatic::SimplePneumatic()
+	{
+		invert = false;
+		pneumatic = NULL;
+	}
+	void SimplePneumatic::Set(DoubleSolenoid::Value value)
+	{
+		if (invert)
+		{
+			if (value == DoubleSolenoid::kForward)
+				value = DoubleSolenoid::kReverse;
+			else if (value == DoubleSolenoid::kReverse)
+				value = DoubleSolenoid::kForward;
+
+			pneumatic->Set(value);
+		}
+	}
+
 	//SimpleMotor stuff
 	SimpleMotor::SimpleMotor()
 	{
