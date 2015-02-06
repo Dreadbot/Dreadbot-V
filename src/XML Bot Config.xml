@@ -10,7 +10,7 @@
 		</motors>
 		<controller controllerID="0">
 			<axis dir="transY">
-				<ID>1</ID>
+				<ID>5</ID>
 				<deadzone>0.01</deadzone>
 				<invert>true</invert>
 			</axis>
