@@ -26,32 +26,10 @@
 			</axis>
 		</controller>
 	</Drivebase>
-	<motors>
-		<motor outputID="5"> <!--Intake motor 1-->
-			<CAN>false</CAN> <!--CAN is disabled on intake motors... I think-->
-			<controls>
-				<control controllerID="0" type="holdForActive"> <!--Right button - intake-->
-					<inputID>6</inputID>
-					<speed>1.0</speed>
-				</control>
-				<control controllerID="0" type="holdForActive"> <!--Left button - outtake-->
-					<inputID>5</inputID>
-					<speed>-1.0</speed>
-				</control>
-			</controls>
-		</motor>
-		<motor outputID="5"> <!--Intake motor 2-->
-			<CAN>false</CAN>
-			<controls>
-				<control controllerID="0" type="holdForActive"> <!--Right button - intake-->
-					<inputID>6</inputID>
-					<speed>-1.0</speed>
-				</control>
-				<control controllerID="0" type="holdForActive"> <!--Left button - outtake-->
-					<inputID>5</inputID>
-					<speed>1.0</speed>
-				</control>
-			</controls>
-		</motor>
-	</motors>
+	<motorgroups>
+		<group name="intake" deadzone="0.1">
+			<motor outputID="0" invert="true" CAN="false"></motor>
+			<motor outputID="1" invert="false" CAN="false"></motor>
+		</group>
+	</motorgroups>
 </Dreadbot>

@@ -12,10 +12,12 @@ namespace dreadbot {
 	private:
 		DriverStation *ds;
 		LiveWindow *lw;
-		//Joystick* gamepad;
-		Input::XMLInput* Input;
+		Joystick* gamepad;
+		XMLInput* Input;
 		PowerDistributionPanel *pdp;
 		MecanumDrive *drivebase;
+
+		MotorGrouping* intake;
 
 		//AxisCamera* frontCamera;
 		//AxisCamera* backCamera;
@@ -28,8 +30,10 @@ namespace dreadbot {
 			lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
 			drivebase = new MecanumDrive(1, 2, 3, 4);
-			Input = Input::XMLInput::getInstance();
+			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+
+			intake = NULL;
 
 			//Vision stuff
 			//frontCamera = new AxisCamera("10.36.56.11");
@@ -47,24 +51,24 @@ namespace dreadbot {
 
 		void TeleopInit() {
 			Input->loadXMLConfig("/XML Bot Config.xml");
-			//gamepad = Input->getController(1);
+			intake = Input->getMGroup("intake");
+			gamepad = Input->getController(0);
 			drivebase->Engage();
 		}
 
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
-			drivebase->SD_OutputDiagnostics();
-			//Input->updateInds();
 
-			//Process control switching
-
+			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
+			intake->Set(intakeOutput);
+			
 //			if (gamepad->GetRawAxis(CAMSWITCH_AXIS) > 0) //Switch to front
 //				viewingBack = false;
 //			else if (gamepad->GetRawAxis(CAMSWITCH_AXIS) < 0)
 //				viewingBack = false;
 //
-//			//Apply the image to the camera server
+//			Apply the image to the camera server
 //			Image* image = NULL;
 //			image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 //			if (viewingBack) //If the back camera is the currently active view...
