@@ -41,11 +41,22 @@ namespace dreadbot
 	}
 
 	//MotorGrouping stuff
+	void MotorGrouping::MotorGrouping()
+	{
+		deadzone = 0;
+	}
 	void MotorGrouping::Set(float value)
 	{
+		if (fabs(value) < deadzone)
+			value = 0; //Automatic deadzone processing
+
 		for (auto iter = motors.begin(); iter != motors.end(); iter++)
 			iter->Set(value);
 		//Ta-da!
+	}
+	void MotorGrouping::SetDeadzone(float newDeadzone)
+	{
+		deadzone = fabs(newDeadzone); //No negative deadzones.
 	}
 
 	//PneumaticGrouping stuff

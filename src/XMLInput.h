@@ -42,17 +42,26 @@ namespace dreadbot
 		Talon* PWMMotor;
 		friend class XMLInput;
 	};
-	struct PneumaticGrouping
+	class PneumaticGrouping
 	{
+	public:
 		void Set(DoubleSolenoid::Value value); //!< Passes the set value to all pneumatics in the group
+	protected:
 		string name; //!< Used to identify this pneumatic group
 		vector<SimplePneumatic> pneumatics;
+		friend class XMLInput;
 	};
-	struct MotorGrouping
+	class MotorGrouping
 	{
+	public:
+		void MotorGrouping();
 		void Set(float value); //!< Passes the set value to all motors in the group
+		void SetDeadzone(float newDeadzone); //!< Sets a deadzone that is handled automatically by the Set() function.
+	protected:
 		string name; //!< Used to identify this motor group
 		vector<SimpleMotor> motors;
+		float deadzone;
+		friend class XMLInput;
 	};
 
 	class XMLInput
