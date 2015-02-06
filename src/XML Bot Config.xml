@@ -8,7 +8,7 @@
 			<motor position="backLeft">3</motor>
 			<motor position="backRight">4</motor>
 		</motors>
-		<controller controllerID="1">
+		<controller controllerID="0">
 			<axis dir="transY">
 				<ID>5</ID>
 				<deadzone>0.01</deadzone>
