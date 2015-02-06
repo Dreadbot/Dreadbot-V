@@ -28,18 +28,8 @@
 	</Drivebase>
 	<motorgroups>
 		<group name="intake" deadzone="0">
-			<motor outputID="5" invert="false" CAN="false"></motor>
-			<motor outputID="6" invert="true" CAN="false"></motor>
-		</group>
-		<group name="internal" deadzone="0"> <!--These ones are fake, for testing/demo purposes-->
-			<motor outputID="7" invert="false" CAN="false"></motor>
-			<motor outputID="8" invert="true" CAN="false"></motor>
+			<motor outputID="0" invert="true" CAN="false"></motor>
+			<motor outputID="1" invert="false" CAN="false"></motor>
 		</group>
 	</motorgroups>
-	<pnuematicgroups>
-		<group name="lifter">
-			<dsolenoid forwardID="1" reverseID="2" invert="false"></dsolenoid>
-			<dsolenoid forwardID="3" reverseID="4" invert="false"></dsolenoid>
-		</group>
-	</pnuematicgroups>
 </Dreadbot>

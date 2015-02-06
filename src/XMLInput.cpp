@@ -213,6 +213,7 @@ namespace dreadbot
 			controllers[controlID] = new Joystick(controlID);
 		driveController = controlID;
 		SmartDashboard::PutNumber("driveController", driveController);
+
 		//Drivebase control loading - get axes
 		string invert;
 		for (auto axis = base.child("controller").child("axis"); axis; axis = axis.next_sibling())
@@ -261,6 +262,11 @@ namespace dreadbot
 			//Assign group information
 			MotorGrouping newMGroup;
 			newMGroup.name = motorgroup.attribute("name").as_string();
+			//Check for duplicate motor groups, and output if there are
+			for (auto iter = mGroups.begin(); iter != mGroups.end(); iter++)
+				if (iter->name == newMGroup.name)
+					SmartDashboard::PutBoolean("Duplicate Motor Groups", true);
+
 			newMGroup.deadzone = motorgroup.attribute("deadzone").as_float();
 			for (auto motor = motorgroup.child("motor"); motor; motor = motor.next_sibling())
 			{
@@ -283,6 +289,11 @@ namespace dreadbot
 		{
 			PneumaticGrouping newPGroup;
 			newPGroup.name = pneumgroup.attribute("name").as_string();
+			//Check for duplicate motor groups, and output if there are
+			for (auto iter = pGroups.begin(); iter != pGroups.end(); iter++)
+				if (iter->name == newPGroup.name)
+					SmartDashboard::PutBoolean("Duplicate Pneumatic Groups", true);
+
 			for (auto pneumatic = pneumgroup.child("dsolenoid"); pneumatic; pneumatic = pneumatic.next_sibling())
 			{
 				SimplePneumatic newPneum;
