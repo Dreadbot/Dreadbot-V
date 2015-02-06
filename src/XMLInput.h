@@ -46,9 +46,12 @@ namespace dreadbot
 	{
 	public:
 		void Set(DoubleSolenoid::Value value); //!< Passes the set value to all pneumatics in the group
+		void Set(float value);
+		void SetDeadzone(float newDeadzone);
 	protected:
 		string name; //!< Used to identify this pneumatic group
 		vector<SimplePneumatic> pneumatics;
+		float deadzone;
 		friend class XMLInput;
 	};
 	class MotorGrouping

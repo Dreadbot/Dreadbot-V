@@ -67,6 +67,24 @@ namespace dreadbot
 			iter->Set(value);
 		//Ta-da!
 	}
+	void PneumaticGrouping::Set(float value)
+	{
+		//Deadzone processing
+		if (fabs(value) < deadzone)
+			value = 0;
+
+		DoubleSolenoid::Value pValue;
+		if (value == 0)
+			Set(DoubleSolenoid::kOff);
+		else if (value > 0)
+			Set(DoubleSolenoid::kForward);
+		else if (value < 0)
+			Set(DoubleSolenoid::kReverse);
+	}
+	void PneumaticGrouping::SetDeadzone(float newDeadzone)
+	{
+		deadzone = fabs(newDeadzone);
+	}
 
 	//XMLInput stuff
 	XMLInput* XMLInput::singlePtr = NULL;
@@ -268,7 +286,7 @@ namespace dreadbot
 				if (iter->name == newMGroup.name)
 					SmartDashboard::PutBoolean("Duplicate Motor Groups", true);
 
-			newMGroup.deadzone = motorgroup.attribute("deadzone").as_float();
+			newMGroup.deadzone = fabs(motorgroup.attribute("deadzone").as_float());
 			for (auto motor = motorgroup.child("motor"); motor; motor = motor.next_sibling())
 			{
 				//Get motor-specific information and assign motor pointers
@@ -294,6 +312,8 @@ namespace dreadbot
 			for (auto iter = pGroups.begin(); iter != pGroups.end(); iter++)
 				if (iter->name == newPGroup.name)
 					SmartDashboard::PutBoolean("Duplicate Pneumatic Groups", true);
+
+			newPGroup.deadzone = fabs(pneumgroup.attribute("deadzone").as_float());
 
 			for (auto pneumatic = pneumgroup.child("dsolenoid"); pneumatic; pneumatic = pneumatic.next_sibling())
 			{
