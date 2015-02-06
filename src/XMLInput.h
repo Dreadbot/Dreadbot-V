@@ -55,7 +55,6 @@ namespace dreadbot
 		vector<SimpleMotor> motors;
 	};
 
-
 	class XMLInput
 	{
 	public:
