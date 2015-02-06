@@ -27,7 +27,7 @@
 		</controller>
 	</Drivebase>
 	<motorgroups>
-		<group name="intake" deadzone="0">
+		<group name="intake" deadzone="0.1">
 			<motor outputID="0" invert="true" CAN="false"></motor>
 			<motor outputID="1" invert="false" CAN="false"></motor>
 		</group>

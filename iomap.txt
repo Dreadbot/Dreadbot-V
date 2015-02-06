@@ -4,7 +4,7 @@
 
 Control Joystick
 ------- -------------------
-LX Axis
+LX Axis	
 LY Axis
 RX Axis
 RY Axis
@@ -12,10 +12,10 @@ A
 B
 X
 Y
-LB
+LB	
 RB
-LT
-RT
+LT 		Outtake
+RT 		Intake
 Back
 Start
 Up

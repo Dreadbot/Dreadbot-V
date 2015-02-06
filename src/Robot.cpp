@@ -17,9 +17,11 @@ namespace dreadbot {
 		PowerDistributionPanel *pdp;
 		MecanumDrive *drivebase;
 
-		AxisCamera* frontCamera;
-		AxisCamera* backCamera;
-		bool viewingBack;
+		MotorGrouping* intake;
+
+		//AxisCamera* frontCamera;
+		//AxisCamera* backCamera;
+		//bool viewingBack;
 
 	public:
 		void RobotInit() {
@@ -30,6 +32,8 @@ namespace dreadbot {
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+
+			intake = NULL;
 
 			//Vision stuff
 			//frontCamera = new AxisCamera("10.36.56.11");
@@ -47,6 +51,7 @@ namespace dreadbot {
 
 		void TeleopInit() {
 			Input->loadXMLConfig("/XML Bot Config.xml");
+			intake = Input->getMGroup("intake");
 			gamepad = Input->getController(0);
 			drivebase->Engage();
 		}
@@ -55,22 +60,24 @@ namespace dreadbot {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 
-			//Process control switching
+			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
+			intake->Set(intakeOutput);
 
-			if (gamepad->GetRawAxis(CAMSWITCH_AXIS) > 0) //Switch to front
+			//Process control switching
+			/*if (gamepad->GetRawAxis(CAMSWITCH_AXIS) > 0) //Switch to front
 				viewingBack = false;
 			else if (gamepad->GetRawAxis(CAMSWITCH_AXIS) < 0)
-				viewingBack = false;
+				viewingBack = false;*/
 
-			//Apply the image to the camera server
-			//Image* image = NULL;
-			//image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
-			//if (viewingBack) //If the back camera is the currently active view...
-			//	backCamera->GetImage(image);
-			//else
-			//	frontCamera->GetImage(image);
-			//CameraServer::GetInstance()->SetImage(image);
-			//delete image;
+//			Apply the image to the camera server
+//			Image* image = NULL;
+//			image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+//			if (viewingBack) //If the back camera is the currently active view...
+//				backCamera->GetImage(image);
+//			else
+//				frontCamera->GetImage(image);
+//			CameraServer::GetInstance()->SetImage(image);
+//			delete image;
 		}
 
 		void TestPeriodic() {

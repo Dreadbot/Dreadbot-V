@@ -47,9 +47,10 @@ namespace dreadbot
 	}
 	void MotorGrouping::Set(float value)
 	{
+		SmartDashboard::PutNumber("Motor Group " + name, value);
+
 		if (fabs(value) < deadzone)
 			value = 0; //Automatic deadzone processing
-
 		for (auto iter = motors.begin(); iter != motors.end(); iter++)
 			iter->Set(value);
 		//Ta-da!
