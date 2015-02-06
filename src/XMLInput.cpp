@@ -41,7 +41,7 @@ namespace dreadbot
 	}
 
 	//MotorGrouping stuff
-	void MotorGrouping::MotorGrouping()
+	MotorGrouping::MotorGrouping()
 	{
 		deadzone = 0;
 	}
@@ -67,7 +67,7 @@ namespace dreadbot
 		//Ta-da!
 	}
 
-	//XMLInput member stuff
+	//XMLInput stuff
 	XMLInput* XMLInput::singlePtr = NULL;
 	XMLInput::XMLInput()
 	{
@@ -146,19 +146,27 @@ namespace dreadbot
 	CANTalon* XMLInput::getCANMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
+		{
+			if (canMotors[ID] == NULL)
+				canMotors[ID] = new CANTalon(ID);
 			return canMotors[ID];
+		}
 		return NULL;
 	}
 	Talon* XMLInput::getPWMMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
-				return pwmMotors[ID];
-			return NULL;
+		{
+			if (pwmMotors[ID] == NULL)
+				pwmMotors[ID] = new Talon(ID);
+			return pwmMotors[ID];
+		}
+		return NULL;
 	}
-	DoubleSolenoid* XMLInput::getPneum(int ID)
+	DoubleSolenoid* XMLInput::getPneum(int forwardID)
 	{
-		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
-			return pneums[ID];
+		if (forwardID < MAX_PNEUMS - 1 && forwardID > -1)
+			return pneums[forwardID];
 		return NULL;
 	}
 	MotorGrouping* XMLInput::getMGroup(string name)
@@ -245,5 +253,52 @@ namespace dreadbot
 		SmartDashboard::PutBoolean("invertR", invertR);
 		SmartDashboard::PutBoolean("invertY", invertY);
 		SmartDashboard::PutBoolean("invertX", invertX);
+
+		//Load all motor groups
+		pugi::xml_node motorgroups = doc.child("Dreadbot").child("motorgroups");
+		for (auto motorgroup = motorgroups.child("group"); motorgroup; motorgroup = motorgroup.next_sibling())
+		{
+			//Assign group information
+			MotorGrouping newMGroup;
+			newMGroup.name = motorgroup.attribute("name").as_string();
+			newMGroup.deadzone = motorgroup.attribute("deadzone").as_float();
+			for (auto motor = motorgroup.child("motor"); motor; motor = motor.next_sibling())
+			{
+				//Get motor-specific information and assign motor pointers
+				SimpleMotor newMotor;
+				newMotor.CAN = motor.attribute("CAN").as_bool();
+				if (newMotor.CAN)
+					newMotor.CANMotor = getCANMotor(motor.attribute("outputID").as_int());
+				else
+					newMotor.PWMMotor = getPWMMotor(motor.attribute("outputID").as_int());
+				newMotor.invert = motor.attribute("invert").as_bool();
+				newMGroup.motors.push_back(newMotor);
+			}
+			mGroups.push_back(newMGroup);
+		}
+
+		//Load all pneumatic groups
+		pugi::xml_node pneumgroups = doc.child("Dreadbot").child("pneumaticgroups");
+		for (auto pneumgroup = pneumgroups.child("group"); pneumgroup; pneumgroup = pneumgroup.next_sibling())
+		{
+			PneumaticGrouping newPGroup;
+			newPGroup.name = pneumgroup.attribute("name").as_string();
+			for (auto pneumatic = pneumgroup.child("dsolenoid"); pneumatic; pneumatic = pneumatic.next_sibling())
+			{
+				SimplePneumatic newPneum;
+				newPneum.invert = pneumatic.attribute("invert").as_bool();
+				int forwardID = pneumatic.attribute("forwardID").as_int();
+				int reverseID = pneumatic.attribute("reverseID").as_int();
+				if (getPneum(forwardID) != NULL)
+				{
+					newPneum.pneumatic = getPneum(forwardID);
+					continue;
+				}
+				newPneum.pneumatic = new DoubleSolenoid(forwardID, reverseID);
+				pneums[forwardID] = newPneum.pneumatic;
+				newPGroup.pneumatics.push_back(newPneum);
+			}
+			pGroups.push_back(newPGroup);
+		}
 	}
 };

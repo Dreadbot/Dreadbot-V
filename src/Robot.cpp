@@ -32,9 +32,9 @@ namespace dreadbot {
 			Input->setDrivebase(drivebase);
 
 			//Vision stuff
-			frontCamera = new AxisCamera("10.36.56.11");
-			backCamera = new AxisCamera("10.0.0.11");
-			viewingBack = false;
+			//frontCamera = new AxisCamera("10.36.56.11");
+			//backCamera = new AxisCamera("10.0.0.11");
+			//viewingBack = false;
 
 		}
 
@@ -47,7 +47,7 @@ namespace dreadbot {
 
 		void TeleopInit() {
 			Input->loadXMLConfig("/XML Bot Config.xml");
-			gamepad = Input->getController(1);
+			gamepad = Input->getController(0);
 			drivebase->Engage();
 		}
 
@@ -63,14 +63,14 @@ namespace dreadbot {
 				viewingBack = false;
 
 			//Apply the image to the camera server
-			Image* image = NULL;
-			image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
-			if (viewingBack) //If the back camera is the currently active view...
-				backCamera->GetImage(image);
-			else
-				frontCamera->GetImage(image);
-			CameraServer::GetInstance()->SetImage(image);
-			delete image;
+			//Image* image = NULL;
+			//image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			//if (viewingBack) //If the back camera is the currently active view...
+			//	backCamera->GetImage(image);
+			//else
+			//	frontCamera->GetImage(image);
+			//CameraServer::GetInstance()->SetImage(image);
+			//delete image;
 		}
 
 		void TestPeriodic() {

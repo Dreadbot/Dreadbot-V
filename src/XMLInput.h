@@ -54,7 +54,7 @@ namespace dreadbot
 	class MotorGrouping
 	{
 	public:
-		void MotorGrouping();
+		MotorGrouping();
 		void Set(float value); //!< Passes the set value to all motors in the group
 		void SetDeadzone(float newDeadzone); //!< Sets a deadzone that is handled automatically by the Set() function.
 	protected:
@@ -71,10 +71,10 @@ namespace dreadbot
 		void setDrivebase(MecanumDrive* newDrivebase);
 		void loadXMLConfig(string filename);
 		void updateDrivebase();
-		Joystick* getController(int ID);
-		CANTalon* getCANMotor(int ID);
-		Talon* getPWMMotor(int ID);
-		DoubleSolenoid* getPneum(int ID);
+		Joystick* getController(int ID); //!< Gets a joystick with the given ID. If joystick does not exist, creates joystick with ID and returns it.
+		CANTalon* getCANMotor(int ID); //!< Gets a CANTalon with the given ID. If the CANTalon does not exist, creates CANTalon with ID and returns it.
+		Talon* getPWMMotor(int ID); //!< Gets a Talon with the given ID. If the Talon does not exist, creates CANTalon with ID and returns it.
+		DoubleSolenoid* getPneum(int forwardID); //!< Gets a DoubleSolenoid based on the ID. The ID is for the FORWARD output thingy.
 		PneumaticGrouping* getPGroup(string name);
 		MotorGrouping* getMGroup(string name);
 	private:
