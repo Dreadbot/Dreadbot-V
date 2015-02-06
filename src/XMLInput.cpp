@@ -150,6 +150,20 @@ namespace dreadbot
 			return pneums[ID];
 		return NULL;
 	}
+	MotorGrouping* XMLInput::getMGroup(string name)
+	{
+		for (auto iter = mGroups.begin(); iter != mGroups.end(); iter++)
+			if (iter->name == name)
+				return &(*iter);
+		return NULL;
+	}
+	PneumaticGrouping* XMLInput::getPGroup(string name)
+	{
+		for (auto iter = pGroups.begin(); iter != pGroups.end(); iter++)
+			if (iter->name == name)
+				return &(*iter);
+		return NULL;
+	}
 	void XMLInput::loadXMLConfig(string filename)
 	{
 		pugi::xml_document doc;

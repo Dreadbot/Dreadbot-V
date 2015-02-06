@@ -66,10 +66,13 @@ namespace dreadbot
 		CANTalon* getCANMotor(int ID);
 		Talon* getPWMMotor(int ID);
 		DoubleSolenoid* getPneum(int ID);
+		PneumaticGrouping* getPGroup(string name);
+		MotorGrouping* getMGroup(string name);
 	private:
 		XMLInput();
 
-
+		vector<PneumaticGrouping> pGroups;
+		vector<MotorGrouping> mGroups;
 
 		MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
