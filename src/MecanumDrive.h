@@ -2,7 +2,7 @@
 
 #include "WPILib.h"
 #include "mathutil.h"
-#include "rps.h"
+//#include "rps.h"
 #include "SimplePID.h"
 #include <algorithm>
 #include <cmath>
