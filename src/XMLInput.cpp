@@ -73,7 +73,6 @@ namespace dreadbot
 		if (fabs(value) < deadzone)
 			value = 0;
 
-		DoubleSolenoid::Value pValue;
 		if (value == 0)
 			Set(DoubleSolenoid::kOff);
 		else if (value > 0)
