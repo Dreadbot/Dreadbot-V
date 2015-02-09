@@ -1,5 +1,5 @@
 #include <WPILib.h>
-#include "../lib/USBCamera.h"
+//#include "../lib/USBCamera.h"
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
@@ -20,9 +20,12 @@ namespace dreadbot {
 
 		MotorGrouping* intake;
 
+		int viewerCooldown;
+		bool viewingBack;
+
 		//AxisCamera* frontCamera;
-		//AxisCamera* backCamera;
-		//bool viewingBack;
+		//USBCamera* rearCamera;
+		//Image* frame;
 
 	public:
 		void RobotInit() {
@@ -37,10 +40,10 @@ namespace dreadbot {
 			intake = NULL;
 
 			//Vision stuff
-			//frontCamera = new AxisCamera("10.36.56.11");
-			//backCamera = new AxisCamera("10.0.0.11");
-			//viewingBack = false;
-
+			viewingBack = false;
+			//frontCamera = new AxisCamera("10.36.56.11"); //cam0
+			//rearCamera = new USBCamera("cam1", false); //cam1
+			//frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 		}
 
 		void AutonomousInit() {
@@ -64,20 +67,26 @@ namespace dreadbot {
 			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
 			intake->Set(intakeOutput);
 			
-//			if (gamepad->GetRawAxis(CAMSWITCH_AXIS) > 0) //Switch to front
-//				viewingBack = false;
-//			else if (gamepad->GetRawAxis(CAMSWITCH_AXIS) < 0)
-//				viewingBack = false;
-//
-//			Apply the image to the camera server
-//			Image* image = NULL;
-//			image = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
-//			if (viewingBack) //If the back camera is the currently active view...
-//				backCamera->GetImage(image);
+			if (viewerCooldown > 0)
+				viewerCooldown--;
+			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
+			{
+				viewerCooldown = 30;
+				viewingBack = !viewingBack;
+				//DriverStation::ReportError("Switched viewingBack to: " + viewingBack);
+			}
+
+//			//Apply image
+//			if (viewingBack)
+//				frontCamera->GetImage(frame);
 //			else
-//				frontCamera->GetImage(image);
-//			CameraServer::GetInstance()->SetImage(image);
-//			delete image;
+//				rearCamera->GetImage(frame);
+//			CameraServer::GetInstance()->SetImage(frame);
+
+
+
+			SmartDashboard::PutBoolean("vieiwngBack", viewingBack);
+			SmartDashboard::PutNumber("viewerCooldown", viewerCooldown);
 		}
 
 		void TestPeriodic() {
