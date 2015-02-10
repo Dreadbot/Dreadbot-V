@@ -58,8 +58,8 @@ PWM Motor
 --- -------------------
 0   L Intake (inverted)
 1   R Intake
-2   L Internal Intake (inverted)
-3   R Internal Intake
+2   L Transit (inverted)
+3   R Transit
 4   Compressor Relay
 5
 6
@@ -69,10 +69,10 @@ PWM Motor
 
     Pneumatic
 --- -------------------
-0   Lift
-1   Ski
-2
-3
+0   Lift Forward
+1  	Lift Reverse 
+2	Intake Forward
+3	Intake Reverse
 4
 5
 6
