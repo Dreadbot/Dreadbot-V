@@ -28,6 +28,9 @@
 *.app
 
 #Eclipse
+.project
+build.xml
+build.properties
 *.pydevproject
 .metadata
 .gradle
