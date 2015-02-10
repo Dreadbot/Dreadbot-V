@@ -10,12 +10,12 @@ RX Axis	Rotation
 RY Axis	Y Translation
 A
 B
-X
-Y
+X		Transit Output
+Y		Transit intake
 LB	
 RB
-LT 		Outtake
-RT 		Intake
+LT 		Intake Outtake
+RT 		Intake Intake
 Back
 Start
 Up
@@ -56,10 +56,10 @@ CAN Motor
 
 PWM Motor
 --- -------------------
-0   L Intake
+0   L Intake (inverted)
 1   R Intake
-2   L Aux. Intake
-3   R Aux. Intake
+2   L Internal Intake (inverted)
+3   R Internal Intake
 4   Compressor Relay
 5
 6
