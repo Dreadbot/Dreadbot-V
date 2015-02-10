@@ -8,7 +8,7 @@
 			<motor position="backLeft">3</motor>
 			<motor position="backRight">4</motor>
 		</motors>
-		<controller controllerID="1">
+		<controller controllerID="0">
 			<axis dir="transY">
 				<ID>1</ID>
 				<deadzone>0.01</deadzone>
@@ -26,30 +26,10 @@
 			</axis>
 		</controller>
 	</Drivebase>
-	<motors>
-		<motor outputID="5"> <!--Intake motor 1-->
-			<controls>
-				<control controllerID="1" type="holdForActive"> <!--Right button - intake-->
-					<inputID>6</inputID>
-					<speed>1.0</speed>
-				</control>
-				<control controllerID="1" type="holdForActive"> <!--Left button - outtake-->
-					<inputID>5</inputID>
-					<speed>-1.0</speed>
-				</control>
-			</controls>
-		</motor>
-		<motor outputID="5"> <!--Intake motor 2-->
-			<controls>
-				<control controllerID="1" type="holdForActive"> <!--Right button - intake-->
-					<inputID>6</inputID>
-					<speed>-1.0</speed>
-				</control>
-				<control controllerID="1" type="holdForActive"> <!--Left button - outtake-->
-					<inputID>5</inputID>
-					<speed>1.0</speed>
-				</control>
-			</controls>
-		</motor>
-	</motors>
+	<motorgroups>
+		<group name="intake" deadzone="0.1">
+			<motor outputID="0" invert="true" CAN="false"></motor>
+			<motor outputID="1" invert="false" CAN="false"></motor>
+		</group>
+	</motorgroups>
 </Dreadbot>

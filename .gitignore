@@ -38,12 +38,8 @@ tmp/
 *.swp
 *~.nib
 local.properties
-.settings/
 .loadpath
 Debug/
-
-# Eclipse Core
-.project
 
 # External tool builders
 .externalToolBuilders/

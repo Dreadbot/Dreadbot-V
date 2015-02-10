@@ -4,18 +4,18 @@
 
 Control Joystick
 ------- -------------------
-LX Axis
+LX Axis	X Translation
 LY Axis
-RX Axis
-RY Axis
+RX Axis	Rotation
+RY Axis	Y Translation
 A
 B
 X
 Y
-LB
+LB	
 RB
-LT
-RT
+LT 		Outtake
+RT 		Intake
 Back
 Start
 Up

@@ -7,7 +7,6 @@
 using std::string;
 using std::vector;
 
-
 /*
  * Uses an XML config file to create custom control settings
  * Documentation coming soon. Functions should be self
@@ -15,76 +14,84 @@ using std::vector;
  * documentation
  */
 
-namespace Input
+namespace dreadbot
 {
 	const int MAX_CONTROLLERS = 5;
 	const int MAX_MOTORS = 10;
 	const int MAX_PNEUMS = 10;
-	enum bindType {axis, toggle, stateChange, holdForActive};
 
-	class control
+	class SimplePneumatic
 	{
 	public:
-		control();
-		float speed;
-		bindType controlType;	//The type of control this motor is bound to
-		int inputID;			//The control that this motor is bound to.
-		float deadzone;			//Deadzone for axis mode
-		float activeCooldown;	//How much cooldown is actually left?
-		float cooldown;			//Cooldown for button mode
-		bool inverse;			//If axis, multiples value by -1. If button, inverts the output of the button or axis.
-		bool enable;			//Used for stateChange and toggle modes
-		Joystick* controller;
+		SimplePneumatic();
+		void Set(DoubleSolenoid::Value value); //!< Smart set - automatically handles for invert
+	private:
+		DoubleSolenoid* pneumatic;
+		bool invert;
+		friend class XMLInput;
 	};
-	class binding
+	class SimpleMotor
 	{
 	public:
-		binding();
-		~binding();
-		virtual void update()=0;	//Updates the state of the output device
-		int outputSlot;				//Used to get individual outputs, also a simple identifier.
-		vector<control> inputs;		//All inputs bound to this output
+		SimpleMotor();
+		void Set(float value); //!< Smart set - automatically handles for invert, CAN/PWM controls. Give it a value and go.
+	private:
+		bool CAN;
+		bool invert;
+		CANTalon* CANMotor;
+		Talon* PWMMotor;
+		friend class XMLInput;
 	};
-	class motorBinding : public binding
+	class PneumaticGrouping
 	{
 	public:
-		motorBinding();
-		~motorBinding();
-		void update();
-		CANTalon* motor;
+		void Set(DoubleSolenoid::Value value); //!< Passes the set value to all pneumatics in the group
+		void Set(float value);
+		void SetDeadzone(float newDeadzone);
+	protected:
+		string name; //!< Used to identify this pneumatic group
+		vector<SimplePneumatic> pneumatics;
+		float deadzone;
+		friend class XMLInput;
 	};
-	class pneumBinding : public binding
+	class MotorGrouping
 	{
 	public:
-		pneumBinding();
-		~pneumBinding();
-		void update();
-		DoubleSolenoid::Value state;
-		DoubleSolenoid* solenoid;
-		int reverseSlot; //The outputSlot is assumed to be the forward ID.
+		MotorGrouping();
+		void Set(float value); //!< Passes the set value to all motors in the group
+		void SetDeadzone(float newDeadzone); //!< Sets a deadzone that is handled automatically by the Set() function.
+	protected:
+		string name; //!< Used to identify this motor group
+		vector<SimpleMotor> motors;
+		float deadzone;
+		friend class XMLInput;
 	};
 
 	class XMLInput
 	{
 	public:
 		static XMLInput* getInstance();
-		void setDrivebase(dreadbot::MecanumDrive* newDrivebase);
+		void setDrivebase(MecanumDrive* newDrivebase);
 		void loadXMLConfig(string filename);
 		void updateDrivebase();
-		void updateInds();
-		Joystick* getController(int ID);
-		CANTalon* getMotor(int ID);
-		DoubleSolenoid* getPneum(int ID);
+		Joystick* getController(int ID); //!< Gets a joystick with the given ID. If joystick does not exist, creates joystick with ID and returns it.
+		CANTalon* getCANMotor(int ID); //!< Gets a CANTalon with the given ID. If the CANTalon does not exist, creates CANTalon with ID and returns it.
+		Talon* getPWMMotor(int ID); //!< Gets a Talon with the given ID. If the Talon does not exist, creates CANTalon with ID and returns it.
+		DoubleSolenoid* getPneum(int forwardID); //!< Gets a DoubleSolenoid based on the ID. The ID is for the FORWARD output thingy.
+		PneumaticGrouping* getPGroup(string name);
+		MotorGrouping* getMGroup(string name);
 	private:
 		XMLInput();
-		dreadbot::MecanumDrive* drivebase;
+
+		vector<PneumaticGrouping> pGroups;
+		vector<MotorGrouping> mGroups;
+
+		MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
-		CANTalon* motors[MAX_MOTORS];
+		CANTalon* canMotors[MAX_MOTORS];
+		Talon* pwmMotors[MAX_MOTORS];
 		DoubleSolenoid* pneums[MAX_PNEUMS];
-
-		vector<motorBinding> mBindings;
-		vector<pneumBinding> pBindings;
 
 		//Axis stuff for drivebase-specific controls
 		int transXAxis;
