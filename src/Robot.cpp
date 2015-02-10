@@ -14,8 +14,10 @@ namespace dreadbot {
 		DriverStation *ds;
 		LiveWindow *lw;
 		Joystick* gamepad;
-		XMLInput* Input;
 		PowerDistributionPanel *pdp;
+		Compressor* compressor;
+
+		XMLInput* Input;
 		MecanumDrive *drivebase;
 
 		MotorGrouping* intake;
@@ -33,6 +35,8 @@ namespace dreadbot {
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
+			compressor = new Compressor(); //Uses default of 0? Or something? What?
+
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
@@ -46,23 +50,32 @@ namespace dreadbot {
 			//frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 		}
 
-		void AutonomousInit() {
+		void GlobalInit()
+		{
+			compressor->Start();
 			drivebase->Engage();
-		}
 
-		void AutonomousPeriodic() {
-		}
-
-		void TeleopInit() {
 			Input->loadXMLConfig("/XML Bot Config.xml");
 			intake = Input->getMGroup("intake");
 			gamepad = Input->getController(0);
 			drivebase->Engage();
 		}
 
+		void AutonomousInit() {
+			GlobalInit();
+		}
+
+		void AutonomousPeriodic() {
+		}
+
+		void TeleopInit() {
+			GlobalInit();
+		}
+
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
+			drivebase->SD_OutputDiagnostics();
 
 			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
 			intake->Set(intakeOutput);
@@ -84,13 +97,18 @@ namespace dreadbot {
 //			CameraServer::GetInstance()->SetImage(frame);
 
 
-
 			SmartDashboard::PutBoolean("vieiwngBack", viewingBack);
 			SmartDashboard::PutNumber("viewerCooldown", viewerCooldown);
 		}
 
 		void TestPeriodic() {
 			lw->Run();
+		}
+
+		void DisabledInit()
+		{
+			compressor->Stop();
+			drivebase->Disengage();
 		}
 	};
 }
