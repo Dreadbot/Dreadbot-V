@@ -38,7 +38,7 @@ namespace dreadbot {
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
-			compressor = new Compressor(); //Uses default of 0? Or something? What?
+			compressor = new Compressor(0)
 
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
