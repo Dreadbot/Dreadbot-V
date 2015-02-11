@@ -58,7 +58,7 @@ void MecanumDrive::Drive_p(double x, double y, double rotation) {
 
 // Drive with wheel velocity
 void MecanumDrive::Drive_v(double x, double y, double rotation) {
-	Vector2<double> vec_out(x, -y);
+	Vector2<double> vec_out(y, -x);
 	double rot_out = -rotation;
 
 	if (mode == drivemode::relative) {
@@ -90,7 +90,7 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	}
 	stall = !stall;
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->Set(wspeeds[i]*motorReversals[i]*6000, syncGroup); // *stall
+		motors[i]->Set(wspeeds[i]*motorReversals[i]*1000, syncGroup); // *stall
 	}
 }
 

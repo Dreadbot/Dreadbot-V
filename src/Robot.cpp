@@ -103,15 +103,15 @@ namespace dreadbot {
 			
 			float transitInput = (int)gamepad->GetRawButton(5); //Left bumper, transit intake?
 			transitInput += (int) gamepad->GetRawButton(6) * -1; //Right bumper, transit outtake?
-			transit->Set(transitInput);
+			transit->Set(3000*transitInput);
 
 			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
 			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button
-			lift->Set(liftInput);
+			lift->Set(3000*liftInput);
 
 			float armInput = (int)gamepad->GetRawButton(3); //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			intakeArms->Set(armInput);
+			intakeArms->Set(3000*armInput);
 		}
 
 		void TestPeriodic() {
