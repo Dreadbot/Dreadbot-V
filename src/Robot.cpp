@@ -14,11 +14,16 @@ namespace dreadbot {
 		DriverStation *ds;
 		LiveWindow *lw;
 		Joystick* gamepad;
-		XMLInput* Input;
 		PowerDistributionPanel *pdp;
+		Compressor* compressor;
+
+		XMLInput* Input;
 		MecanumDrive *drivebase;
 
 		MotorGrouping* intake;
+		MotorGrouping* transit;
+		PneumaticGrouping* lift;
+		PneumaticGrouping* intakeArms;
 
 		int viewerCooldown;
 		bool viewingBack;
@@ -33,11 +38,16 @@ namespace dreadbot {
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
+			compressor = new Compressor(0);
+
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
 
 			intake = NULL;
+			transit = NULL;
+			lift = NULL;
+			intakeArms = NULL;
 
 			//Vision stuff
 			viewingBack = false;
@@ -46,51 +56,72 @@ namespace dreadbot {
 			//frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 		}
 
-		void AutonomousInit() {
+		void GlobalInit()
+		{
+			compressor->Start();
 			drivebase->Engage();
+
+			Input->loadXMLConfig("/XML Bot Config.xml");
+			gamepad = Input->getController(0);
+			drivebase->Engage();
+
+			intake = Input->getMGroup("intake");
+			transit = Input->getMGroup("transit");
+			lift = Input->getPGroup("lift");
+			intakeArms = Input->getPGroup("intakeArms");
+		}
+
+		void AutonomousInit() {
+			GlobalInit();
 		}
 
 		void AutonomousPeriodic() {
 		}
 
 		void TeleopInit() {
-			Input->loadXMLConfig("/XML Bot Config.xml");
-			intake = Input->getMGroup("intake");
-			gamepad = Input->getController(0);
-			drivebase->Engage();
+			GlobalInit();
 		}
 
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
+			drivebase->SD_OutputDiagnostics();
 
+//			if (viewerCooldown > 0)
+//				viewerCooldown--;
+//			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
+//			{
+//				viewerCooldown = 30;
+//				viewingBack = !viewingBack;
+//			}
+//
+
+			//Output controls
+			//Intake arm motors
 			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
 			intake->Set(intakeOutput);
 			
-			if (viewerCooldown > 0)
-				viewerCooldown--;
-			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
-			{
-				viewerCooldown = 30;
-				viewingBack = !viewingBack;
-				//DriverStation::ReportError("Switched viewingBack to: " + viewingBack);
-			}
+			float transitInput = (int)gamepad->GetRawButton(6); //Right bumper, transit intake
+			transitInput += (int) gamepad->GetRawButton(5) * -1; //Left bumper, transit outtake
+			transit->Set(3000*transitInput);
 
-//			//Apply image
-//			if (viewingBack)
-//				frontCamera->GetImage(frame);
-//			else
-//				rearCamera->GetImage(frame);
-//			CameraServer::GetInstance()->SetImage(frame);
+			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
+			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button
+			lift->Set(3000*liftInput);
 
-
-
-			SmartDashboard::PutBoolean("vieiwngBack", viewingBack);
-			SmartDashboard::PutNumber("viewerCooldown", viewerCooldown);
+			float armInput = (int)gamepad->GetRawButton(3); //X button
+			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
+			intakeArms->Set(3000*armInput);
 		}
 
 		void TestPeriodic() {
 			lw->Run();
+		}
+
+		void DisabledInit()
+		{
+			compressor->Stop();
+			drivebase->Disengage();
 		}
 	};
 }
