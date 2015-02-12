@@ -101,8 +101,8 @@ namespace dreadbot {
 			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
 			intake->Set(intakeOutput);
 			
-			float transitInput = (int)gamepad->GetRawButton(5); //Left bumper, transit intake?
-			transitInput += (int) gamepad->GetRawButton(6) * -1; //Right bumper, transit outtake?
+			float transitInput = (int)gamepad->GetRawButton(6); //Right bumper, transit intake
+			transitInput += (int) gamepad->GetRawButton(5) * -1; //Left bumper, transit outtake
 			transit->Set(3000*transitInput);
 
 			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
