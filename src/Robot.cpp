@@ -38,7 +38,7 @@ namespace dreadbot {
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
-			compressor = new Compressor(0)
+			compressor = new Compressor(0);
 
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
