@@ -4,6 +4,7 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Vision.h"
+#include "Autonomous.h"
 
 namespace dreadbot {
 
@@ -19,6 +20,7 @@ namespace dreadbot {
 
 		XMLInput* Input;
 		MecanumDrive *drivebase;
+		RobotFSM* AutonBot;
 
 		MotorGrouping* intake;
 		MotorGrouping* transit;
@@ -33,7 +35,8 @@ namespace dreadbot {
 		//Image* frame;
 
 	public:
-		void RobotInit() {
+		void RobotInit()
+		{
 			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
@@ -43,6 +46,7 @@ namespace dreadbot {
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+			AutonBot = new RobotFSM;
 
 			intake = NULL;
 			transit = NULL;
@@ -71,14 +75,19 @@ namespace dreadbot {
 			intakeArms = Input->getPGroup("intakeArms");
 		}
 
-		void AutonomousInit() {
+		void AutonomousInit()
+		{
 			GlobalInit();
+			AutonBot->SetHardware(drivebase, intake, transit);
 		}
 
-		void AutonomousPeriodic() {
+		void AutonomousPeriodic()
+		{
+			AutonBot->update();
 		}
 
-		void TeleopInit() {
+		void TeleopInit()
+		{
 			GlobalInit();
 		}
 
@@ -103,7 +112,7 @@ namespace dreadbot {
 			
 //			float transitInput = (int)gamepad->GetRawButton(6); //Right bumper, transit intake
 //			transitInput += (int) gamepad->GetRawButton(5) * -1; //Left bumper, transit outtake
-			transit->Set(intakeInput);
+			transit->Set(-1 * intakeInput);
 
 			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
 			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button

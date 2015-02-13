@@ -6,8 +6,7 @@
 #include "XMLInput.h"
 
 #define TOTE_PICKUP_TIME 2500
-#define DRIVE_TO_ZONE_TIME 3000
-#define null 0
+#define DRIVE_TO_ZONE_TIME 7500
 
 namespace dreadbot 
 {
@@ -17,11 +16,10 @@ namespace dreadbot
 	{
 	public:
 		RobotFSM();
-		~RobotFSM();
 		void SetHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit);
 		void update();
-		void switchState(robotState newState);
 	protected:
+		void switchState(robotState newState);
 		MecanumDrive* drivebase;
 		Timer globalTimer;
 		robotState state;
