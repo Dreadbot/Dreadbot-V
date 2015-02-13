@@ -82,15 +82,13 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 		}
 	}
 
-	bool stall = false;
+	bool stall = true;
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		// files.andymark.com/CIM-motor-curve.pdf
-		stall = stall || (motors[i]->GetOutputCurrent() > STALL_MOTOR_CURRENT);
-		stall |= stall;
+		stall = stall && (motors[i]->GetOutputCurrent() > STALL_MOTOR_CURRENT);
 	}
-	stall = !stall;
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->Set(wspeeds[i]*motorReversals[i]*1000, syncGroup); // *stall
+		motors[i]->Set(wspeeds[i]*motorReversals[i]*SmartDashboard::GetNumber("Speed", 1000.0), syncGroup); // *stall
 	}
 }
 
