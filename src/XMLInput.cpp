@@ -203,6 +203,9 @@ namespace dreadbot
 	}
 	void XMLInput::loadXMLConfig(string filename)
 	{
+		pGroups.clear();
+		mGroups.clear();
+
 		pugi::xml_document doc;
 		pugi::xml_parse_result result = doc.load_file(filename.c_str());
 		SmartDashboard::PutString("XML Load Result: ", result.description());

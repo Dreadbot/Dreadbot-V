@@ -12,7 +12,7 @@
 			<axis dir="transY">
 				<ID>1</ID>
 				<deadzone>0.01</deadzone>
-				<invert>true</invert>
+				<invert>false</invert>
 			</axis>
 			<axis dir="transX">
 				<ID>0</ID>
@@ -22,7 +22,7 @@
 			<axis dir="rot">
 				<ID>4</ID>
 				<deadzone>0.01</deadzone>
-				<invert>false</invert>
+				<invert>true</invert>
 			</axis>
 		</controller>
 	</Drivebase>

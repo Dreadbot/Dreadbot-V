@@ -98,20 +98,20 @@ namespace dreadbot {
 
 			//Output controls
 			//Intake arm motors
-			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
-			intake->Set(intakeOutput);
+			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
+			intake->Set(intakeInput);
 			
-			float transitInput = (int)gamepad->GetRawButton(6); //Right bumper, transit intake
-			transitInput += (int) gamepad->GetRawButton(5) * -1; //Left bumper, transit outtake
-			transit->Set(3000*transitInput);
+//			float transitInput = (int)gamepad->GetRawButton(6); //Right bumper, transit intake
+//			transitInput += (int) gamepad->GetRawButton(5) * -1; //Left bumper, transit outtake
+			transit->Set(intakeInput);
 
 			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
 			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button
-			lift->Set(3000*liftInput);
+			lift->Set(liftInput);
 
 			float armInput = (int)gamepad->GetRawButton(3); //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			intakeArms->Set(3000*armInput);
+			intakeArms->Set(armInput);
 		}
 
 		void TestPeriodic() {
