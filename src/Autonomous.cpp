@@ -4,14 +4,16 @@ namespace dreadbot
 {
 	RobotFSM::RobotFSM()
 	{
-		drivebase = NULL;
-		transit = NULL;
-		intake = NULL;
+		drivebase = 0;
+		transit = 0;
+		intake = 0;
 
 		state = start;
 	}
 	void RobotFSM::update()
 	{
+		SmartDashboard::PutNumber("Time", globalTimer.Get());
+
 		if (state == start)
 		{
 			//Start the timer, then switch to getting_tote
@@ -53,5 +55,6 @@ namespace dreadbot
 	{
 		//This might be needed for special state-switching behavior.
 		//At the moment, it does nothing.
+		state = newState;
 	}
 };

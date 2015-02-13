@@ -94,7 +94,7 @@ namespace dreadbot {
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
-			drivebase->SD_OutputDiagnostics();
+			//drivebase->SD_OutputDiagnostics();
 
 //			if (viewerCooldown > 0)
 //				viewerCooldown--;

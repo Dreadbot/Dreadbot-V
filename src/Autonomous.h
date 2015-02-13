@@ -5,8 +5,8 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 
-#define TOTE_PICKUP_TIME 2500
-#define DRIVE_TO_ZONE_TIME 7500
+#define TOTE_PICKUP_TIME 2.5
+#define DRIVE_TO_ZONE_TIME 7.5
 
 namespace dreadbot 
 {
