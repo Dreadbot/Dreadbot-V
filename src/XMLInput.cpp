@@ -69,6 +69,8 @@ namespace dreadbot
 	}
 	void PneumaticGrouping::Set(float value)
 	{
+		SmartDashboard::PutNumber("Pneumatic group " + name, value);
+
 		//Deadzone processing
 		if (fabs(value) < deadzone)
 			value = 0;
