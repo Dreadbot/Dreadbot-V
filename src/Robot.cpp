@@ -4,6 +4,7 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Vision.h"
+#include "Autonomous.h"
 
 namespace dreadbot {
 
@@ -19,6 +20,7 @@ namespace dreadbot {
 
 		XMLInput* Input;
 		MecanumDrive *drivebase;
+		RobotFSM* AutonBot;
 
 		MotorGrouping* intake;
 		MotorGrouping* transit;
@@ -34,7 +36,8 @@ namespace dreadbot {
 		USBCamera* rearCam;
 
 	public:
-		void RobotInit() {
+		void RobotInit()
+		{
 			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
 			lw = LiveWindow::GetInstance();
@@ -44,6 +47,7 @@ namespace dreadbot {
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+			AutonBot = new RobotFSM;
 
 			intake = NULL;
 			transit = NULL;
@@ -72,21 +76,27 @@ namespace dreadbot {
 			intakeArms = Input->getPGroup("intakeArms");
 		}
 
-		void AutonomousInit() {
+		void AutonomousInit()
+		{
 			GlobalInit();
+			AutonBot->setHardware(drivebase, intake, transit);
+			AutonBot->start();
 		}
 
-		void AutonomousPeriodic() {
+		void AutonomousPeriodic()
+		{
+			AutonBot->update();
 		}
 
-		void TeleopInit() {
+		void TeleopInit()
+		{
 			GlobalInit();
 		}
 
 		void TeleopPeriodic() {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
-			drivebase->SD_OutputDiagnostics();
+			//drivebase->SD_OutputDiagnostics();
 
 			//Vision Controls
 			if (viewerCooldown > 0)
@@ -106,9 +116,9 @@ namespace dreadbot {
 
 			//Output controls
 			//Intake arm motors
-			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
-			intake->Set(intakeOutput);
-			
+			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
+			intake->Set(intakeInput);
+		
 			float transitInput = (int)gamepad->GetRawButton(5); //Left bumper, transit intake
 			transitInput += (int) gamepad->GetRawButton(6) * -1; //Right bumper, transit outtake
 			transit->Set(transitInput);
