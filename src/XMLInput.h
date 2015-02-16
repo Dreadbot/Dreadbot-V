@@ -26,7 +26,9 @@ namespace dreadbot
 		SimplePneumatic();
 		void Set(DoubleSolenoid::Value value); //!< Smart set - automatically handles for invert
 	private:
-		DoubleSolenoid* pneumatic;
+		DoubleSolenoid* dPneumatic;
+		Solenoid* sPneumatic;
+		int actionCount;
 		bool invert;
 		friend class XMLInput;
 	};
@@ -77,7 +79,8 @@ namespace dreadbot
 		Joystick* getController(int ID); //!< Gets a joystick with the given ID. If joystick does not exist, creates joystick with ID and returns it.
 		CANTalon* getCANMotor(int ID); //!< Gets a CANTalon with the given ID. If the CANTalon does not exist, creates CANTalon with ID and returns it.
 		Talon* getPWMMotor(int ID); //!< Gets a Talon with the given ID. If the Talon does not exist, creates CANTalon with ID and returns it.
-		DoubleSolenoid* getPneum(int forwardID); //!< Gets a DoubleSolenoid based on the ID. The ID is for the FORWARD output thingy.
+		DoubleSolenoid* getDPneum(int forwardID); //!< Gets a DoubleSolenoid based on the ID. The ID is for the FORWARD output thingy.
+		Solenoid* getSPneum(int ID); //!< Gets a single solenoid based on the ID.
 		PneumaticGrouping* getPGroup(string name);
 		MotorGrouping* getMGroup(string name);
 	private:
@@ -91,7 +94,8 @@ namespace dreadbot
 		Joystick* controllers[MAX_CONTROLLERS];	//All pointers are *supposed* to be null unless they are in usage.
 		CANTalon* canMotors[MAX_MOTORS];
 		Talon* pwmMotors[MAX_MOTORS];
-		DoubleSolenoid* pneums[MAX_PNEUMS];
+		DoubleSolenoid* dPneums[MAX_PNEUMS];
+		Solenoid * sPneums[MAX_PNEUMS];
 
 		//Axis stuff for drivebase-specific controls
 		int transXAxis;

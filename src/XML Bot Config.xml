@@ -38,10 +38,10 @@
 	</motorgroups>
 	<pneumaticgroups>
 		<group name="lift" deadzone="0.1">
-			<dsolenoid forwardID="0" reverseID="1" invert="false"></dsolenoid>
+			<dsolenoid forwardID="0" reverseID="1" invert="false" actionCount="2"></dsolenoid>
 		</group>
 		<group name="intakeArms" deadzone="0.1">
-			<dsolenoid forwardID="2" reverseID="3" invert="false"></dsolenoid>
+			<dsolenoid forwardID="2" reverseID="3" invert="false" actionCount="2"></dsolenoid>
 		</group>
 	</pneumaticgroups>
 </Dreadbot>
