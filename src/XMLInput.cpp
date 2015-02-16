@@ -53,8 +53,6 @@ namespace dreadbot
 	}
 	void MotorGrouping::Set(float value)
 	{
-		SmartDashboard::PutNumber("Motor Group " + name, value);
-
 		if (fabs(value) < deadzone)
 			value = 0; //Automatic deadzone processing
 		for (auto iter = motors.begin(); iter != motors.end(); iter++)
@@ -75,8 +73,6 @@ namespace dreadbot
 	}
 	void PneumaticGrouping::Set(float value)
 	{
-		SmartDashboard::PutNumber("Pneumatic group " + name, value);
-
 		//Deadzone processing
 		if (fabs(value) < deadzone)
 			value = 0;
@@ -121,14 +117,12 @@ namespace dreadbot
 		invertX = false;
 		invertY = false;
 		invertR = false;
-		SmartDashboard::PutString("XMLInput Constructor:", "Loaded");
 	}
 	XMLInput* XMLInput::getInstance()
 	{
 		if (singlePtr == NULL)
 			singlePtr = new XMLInput;
 		return singlePtr;
-		SmartDashboard::PutNumber("Pointer to XMLInput:", (int)singlePtr);
 	}
 	void XMLInput::setDrivebase(dreadbot::MecanumDrive* newDrivebase)
 	{
@@ -158,9 +152,6 @@ namespace dreadbot
 
 		if (drivebase != NULL) //Idiot check
 			drivebase->Drive_v(xInput, yInput, rInput);
-		SmartDashboard::PutNumber("xInput:", xInput);
-		SmartDashboard::PutNumber("yInput:", yInput);
-		SmartDashboard::PutNumber("rInput:", rInput);
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -253,7 +244,6 @@ namespace dreadbot
 		if (controllers[controlID] == NULL)
 			controllers[controlID] = new Joystick(controlID);
 		driveController = controlID;
-		SmartDashboard::PutNumber("driveController", driveController);
 
 		//Drivebase control loading - get axes
 		string invert;
@@ -289,12 +279,6 @@ namespace dreadbot
 					invertR = true;
 			}
 		}
-		SmartDashboard::PutNumber("transXAxis:", transXAxis);
-		SmartDashboard::PutNumber("transYAxis:", transYAxis);
-		SmartDashboard::PutNumber("rotAxis:", rotAxis);
-		SmartDashboard::PutBoolean("invertR", invertR);
-		SmartDashboard::PutBoolean("invertY", invertY);
-		SmartDashboard::PutBoolean("invertX", invertX);
 
 		//Load all motor groups
 		pugi::xml_node motorgroups = doc.child("Dreadbot").child("motorgroups");

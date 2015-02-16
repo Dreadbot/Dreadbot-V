@@ -13,7 +13,6 @@ namespace dreadbot {
 	class Robot: public IterativeRobot {
 	private:
 		DriverStation *ds;
-		LiveWindow *lw;
 		Joystick* gamepad;
 		PowerDistributionPanel *pdp;
 		Compressor* compressor;
@@ -26,8 +25,8 @@ namespace dreadbot {
 		RobotFSM* AutonBot;
 
 		MotorGrouping* intake;
-		MotorGrouping* transit;
 		PneumaticGrouping* lift;
+		PneumaticGrouping* liftArms;
 		PneumaticGrouping* intakeArms;
 
 		int viewerCooldown;
@@ -43,7 +42,7 @@ namespace dreadbot {
 		{
 			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
-			lw = LiveWindow::GetInstance();
+		//	lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
 
@@ -56,8 +55,8 @@ namespace dreadbot {
 			AutonBot = new RobotFSM;
 
 			intake = NULL;
-			transit = NULL;
 			lift = NULL;
+			liftArms = NULL;
 			intakeArms = NULL;
 
 			//Vision stuff
@@ -80,15 +79,15 @@ namespace dreadbot {
 			drivebase->Engage();
 
 			intake = Input->getMGroup("intake");
-			transit = Input->getMGroup("transit");
 			lift = Input->getPGroup("lift");
+			liftArms = Input->getPGroup("liftArms");
 			intakeArms = Input->getPGroup("intakeArms");
 		}
 
 		void AutonomousInit()
 		{
 			GlobalInit();
-			AutonBot->setHardware(drivebase, intake, transit);
+			AutonBot->setHardware(drivebase, intake);
 			AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
 			AutonBot->start();
 		}
@@ -124,16 +123,11 @@ namespace dreadbot {
 //				frontCam->GetImage(frame);
 //			CameraServer::GetInstance()->SetImage(frame);
 
-			//Output controls 34
+			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
 			if (intake != NULL)
 				intake->Set(intakeInput);
 		
-			float transitInput = (int)gamepad->GetRawButton(5); //Left bumper, transit intake
-			transitInput += (int) gamepad->GetRawButton(6) * -1; //Right bumper, transit outtake
-			if (transit != NULL)
-				transit->Set(transitInput);
-
 			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
 			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button
 			if (lift != NULL)
@@ -143,10 +137,26 @@ namespace dreadbot {
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
 			if (intakeArms != NULL)
 				intakeArms->Set(armInput);
+
+			float liftArmInput = gamepad->GetRawButton(6);
+			if (liftArms != NULL)
+					liftArms->Set(liftArmInput);
+
+			//Debug stuff?
+			for (int i = 1; i < 5; i++)
+			{
+				SmartDashboard::PutNumber("Axis " + i, gamepad->GetRawAxis(i));
+				SmartDashboard::PutNumber("Button " + i, gamepad->GetRawButton(i));
+			}
 		}
 
-		void TestPeriodic() {
-			lw->Run();
+		void TestInit()
+		{
+			GlobalInit();
+		}
+
+		void TestPeriodic()
+		{
 		}
 
 		void DisabledInit()
@@ -157,6 +167,7 @@ namespace dreadbot {
 			//frontUltra->SetAutomaticMode(false);
 			//rearUltra->SetAutomaticMode(false);
 		}
+
 	};
 }
 

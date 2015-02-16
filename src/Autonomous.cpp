@@ -5,7 +5,6 @@ namespace dreadbot
 	RobotFSM::RobotFSM()
 	{
 		drivebase = 0;
-		transit = 0;
 		intake = 0;
 
 		state = stopped;
@@ -29,7 +28,6 @@ namespace dreadbot
 
 			drivebase->Drive_v(0, 0.75, getParallelTurnDir(frontUltra, rearUltra)); //Drive forward at 3/4 speed with parallel ultrasonics enabled
 			intake->Set(1.0); //These need to be opposite of each other
-			transit->Set(-1.0);
 		}
 
 		else if (state == drive_to_zone)
@@ -41,11 +39,10 @@ namespace dreadbot
 			drivebase->Drive_v(0, 1, 0);
 		}
 	}
-	void RobotFSM::setHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit)
+	void RobotFSM::setHardware(MecanumDrive* base, MotorGrouping* newIntake)
 	{
 		drivebase = base;
 		intake = newIntake;
-		transit = newTransit;
 	}
 	void RobotFSM::setUltras(Ultrasonic* newFrontUltra, Ultrasonic* newRearUltra)
 	{

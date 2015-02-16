@@ -19,7 +19,7 @@ namespace dreadbot
 	{
 	public:
 		RobotFSM();
-		void setHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit);
+		void setHardware(MecanumDrive* base, MotorGrouping* newIntake);
 		void setUltras(Ultrasonic* newFrontUltra, Ultrasonic* newRearUltra);
 		void start();
 		void update();
@@ -30,7 +30,6 @@ namespace dreadbot
 		robotState state;
 
 		MotorGrouping* intake;
-		MotorGrouping* transit;
 		Ultrasonic* frontUltra;
 		Ultrasonic* rearUltra;
 	};
