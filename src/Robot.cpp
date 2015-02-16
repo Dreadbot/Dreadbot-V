@@ -78,7 +78,8 @@ namespace dreadbot {
 		void AutonomousInit()
 		{
 			GlobalInit();
-			AutonBot->SetHardware(drivebase, intake, transit);
+			AutonBot->setHardware(drivebase, intake, transit);
+			AutonBot->start();
 		}
 
 		void AutonomousPeriodic()

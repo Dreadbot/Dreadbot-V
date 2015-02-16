@@ -10,13 +10,14 @@
 
 namespace dreadbot 
 {
-	enum robotState{start, stopped, getting_tote, drive_to_zone};
+	enum robotState{stopped, getting_tote, drive_to_zone};
 
 	class RobotFSM
 	{
 	public:
 		RobotFSM();
-		void SetHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit);
+		void setHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit);
+		void start();
 		void update();
 	protected:
 		void switchState(robotState newState);

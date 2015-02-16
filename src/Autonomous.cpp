@@ -13,13 +13,6 @@ namespace dreadbot
 	void RobotFSM::update()
 	{
 		SmartDashboard::PutNumber("Time", globalTimer.Get());
-
-		if (state == start)
-		{
-			//Start the timer, then switch to getting_tote
-			globalTimer.Start();
-			switchState(getting_tote);
-		}
 		if (state == stopped)
 		{
 			globalTimer.Stop();
@@ -45,7 +38,7 @@ namespace dreadbot
 			drivebase->Drive_v(0, 1, 0);
 		}
 	}
-	void RobotFSM::SetHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit)
+	void RobotFSM::setHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit)
 	{
 		drivebase = base;
 		intake = newIntake;
@@ -56,5 +49,12 @@ namespace dreadbot
 		//This might be needed for special state-switching behavior.
 		//At the moment, it does nothing.
 		state = newState;
+	}
+	void RobotFSM::start()
+	{
+		globalTimer.Stop(); //TODO: Determine if 'stop' is needed
+		globalTimer.Reset();
+		switchState(getting_tote);
+		globalTimer.Start();
 	}
 };
