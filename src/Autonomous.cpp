@@ -9,6 +9,9 @@ namespace dreadbot
 		intake = 0;
 
 		state = stopped;
+
+		frontUltra = 0;
+		rearUltra = 0;
 	}
 	void RobotFSM::update()
 	{
@@ -24,7 +27,7 @@ namespace dreadbot
 			if (globalTimer.HasPeriodPassed(TOTE_PICKUP_TIME))
 				switchState(drive_to_zone);
 
-			drivebase->Drive_v(0, .75, 0); //Drive forward at 3/4 speed
+			drivebase->Drive_v(0, 0.75, getParallelTurnDir(frontUltra, rearUltra)); //Drive forward at 3/4 speed with parallel ultrasonics enabled
 			intake->Set(1.0); //These need to be opposite of each other
 			transit->Set(-1.0);
 		}
@@ -44,6 +47,11 @@ namespace dreadbot
 		intake = newIntake;
 		transit = newTransit;
 	}
+	void RobotFSM::setUltras(Ultrasonic* newFrontUltra, Ultrasonic* newRearUltra)
+	{
+		frontUltra = newFrontUltra;
+		rearUltra = newRearUltra;
+	}
 	void RobotFSM::switchState(robotState newState)
 	{
 		//This might be needed for special state-switching behavior.
@@ -56,5 +64,20 @@ namespace dreadbot
 		globalTimer.Reset();
 		switchState(getting_tote);
 		globalTimer.Start();
+	}
+
+	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra)
+	{
+		if (frontUltra == 0 || rearUltra == 0)
+			return 0;
+
+		//Get the approximate difference in distances - used for angle calculation?
+		float frontDelta = frontUltra->GetRangeMM() - DIST_FROM_WALL;
+		float rearDelta = rearUltra->GetRangeMM() - DIST_FROM_WALL;
+		float totalDelta = frontDelta + (rearDelta * -1);
+
+		//Get the actual angle, then return the cosine of it (for steering?)
+		float angle = atan(totalDelta / ULTRASONIC_SEPARATION); //This might need testing
+		return cos(angle);
 	}
 };

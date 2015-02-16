@@ -18,6 +18,9 @@ namespace dreadbot {
 		PowerDistributionPanel *pdp;
 		Compressor* compressor;
 
+		Ultrasonic *frontUltra;
+		Ultrasonic *rearUltra;
+
 		XMLInput* Input;
 		MecanumDrive *drivebase;
 		RobotFSM* AutonBot;
@@ -44,6 +47,9 @@ namespace dreadbot {
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
 
+			frontUltra = new Ultrasonic(6, 7); //Dummy values for the ultrasonics
+			rearUltra = new Ultrasonic(4, 5);
+
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
@@ -66,6 +72,9 @@ namespace dreadbot {
 			compressor->Start();
 			drivebase->Engage();
 
+			frontUltra->SetAutomaticMode(true);
+			rearUltra->SetAutomaticMode(true);
+
 			Input->loadXMLConfig("/XML Bot Config.xml");
 			gamepad = Input->getController(0);
 			drivebase->Engage();
@@ -80,6 +89,7 @@ namespace dreadbot {
 		{
 			GlobalInit();
 			AutonBot->setHardware(drivebase, intake, transit);
+			AutonBot->setUltras(frontUltra, rearUltra);
 			AutonBot->start();
 		}
 
@@ -143,6 +153,9 @@ namespace dreadbot {
 		{
 			compressor->Stop();
 			drivebase->Disengage();
+
+			frontUltra->SetAutomaticMode(false);
+			rearUltra->SetAutomaticMode(false);
 		}
 	};
 }
