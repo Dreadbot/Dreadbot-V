@@ -1,5 +1,5 @@
 #include <WPILib.h>
-//#include "../lib/USBCamera.h"
+#include "../lib/USBCamera.h"
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
@@ -28,9 +28,10 @@ namespace dreadbot {
 		int viewerCooldown;
 		bool viewingBack;
 
-		//AxisCamera* frontCamera;
-		//USBCamera* rearCamera;
-		//Image* frame;
+		//Vision stuff
+		Image* frame;
+		USBCamera* frontCam;
+		USBCamera* rearCam;
 
 	public:
 		void RobotInit() {
@@ -51,9 +52,9 @@ namespace dreadbot {
 
 			//Vision stuff
 			viewingBack = false;
-			//frontCamera = new AxisCamera("10.36.56.11"); //cam0
-			//rearCamera = new USBCamera("cam1", false); //cam1
-			//frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frontCam = new USBCamera("cam0", false);
+			rearCam = new USBCamera("cam1", false);
 		}
 
 		void GlobalInit()
@@ -87,31 +88,38 @@ namespace dreadbot {
 			Input->updateDrivebase();
 			drivebase->SD_OutputDiagnostics();
 
-//			if (viewerCooldown > 0)
-//				viewerCooldown--;
-//			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
-//			{
-//				viewerCooldown = 30;
-//				viewingBack = !viewingBack;
-//			}
-//
+			//Vision Controls
+			if (viewerCooldown > 0)
+				viewerCooldown--;
+			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
+			{
+				viewerCooldown = 30;
+				viewingBack = !viewingBack;
+			}
+
+			//Do actual vision switching stuff
+			if (viewingBack)
+				rearCam->GetImage(frame);
+			else
+				frontCam->GetImage(frame);
+			CameraServer::GetInstance()->SetImage(frame);
 
 			//Output controls
 			//Intake arm motors
 			float intakeOutput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
 			intake->Set(intakeOutput);
 			
-			float transitInput = (int)gamepad->GetRawButton(6); //Right bumper, transit intake
-			transitInput += (int) gamepad->GetRawButton(5) * -1; //Left bumper, transit outtake
-			transit->Set(3000*transitInput);
+			float transitInput = (int)gamepad->GetRawButton(5); //Left bumper, transit intake
+			transitInput += (int) gamepad->GetRawButton(6) * -1; //Right bumper, transit outtake
+			transit->Set(transitInput);
 
 			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
 			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button
-			lift->Set(3000*liftInput);
+			lift->Set(liftInput);
 
 			float armInput = (int)gamepad->GetRawButton(3); //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			intakeArms->Set(3000*armInput);
+			intakeArms->Set(armInput);
 		}
 
 		void TestPeriodic() {
