@@ -8,6 +8,7 @@ namespace dreadbot
 		invert = false;
 		dPneumatic = NULL;
 		sPneumatic = NULL;
+		actionCount = 2;
 	}
 	void SimplePneumatic::Set(DoubleSolenoid::Value value)
 	{
