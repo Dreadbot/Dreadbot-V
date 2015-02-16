@@ -15,25 +15,5 @@ namespace dreadbot
 {
 	enum robotState{stopped, getting_tote, drive_to_zone};
 
-	class RobotFSM
-	{
-	public:
-		RobotFSM();
-		void setHardware(MecanumDrive* base, MotorGrouping* newIntake, MotorGrouping* newTransit);
-		void setUltras(Ultrasonic* newFrontUltra, Ultrasonic* newRearUltra);
-		void start();
-		void update();
-	protected:
-		void switchState(robotState newState);
-		MecanumDrive* drivebase;
-		Timer globalTimer;
-		robotState state;
-
-		MotorGrouping* intake;
-		MotorGrouping* transit;
-		Ultrasonic* frontUltra;
-		Ultrasonic* rearUltra;
-	};
-
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);
 };
