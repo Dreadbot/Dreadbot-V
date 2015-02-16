@@ -8,7 +8,7 @@ namespace dreadbot
 		transit = 0;
 		intake = 0;
 
-		state = start;
+		state = stopped;
 	}
 	void RobotFSM::update()
 	{
