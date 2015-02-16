@@ -10,12 +10,12 @@
 		</motors>
 		<controller controllerID="0">
 			<axis dir="transY">
-				<ID>1</ID>
+				<ID>0</ID>
 				<deadzone>0.01</deadzone>
-				<invert>true</invert>
+				<invert>false</invert>
 			</axis>
 			<axis dir="transX">
-				<ID>0</ID>
+				<ID>1z</ID>
 				<deadzone>0.01</deadzone>
 				<invert>false</invert>
 			</axis>
@@ -30,6 +30,19 @@
 		<group name="intake" deadzone="0.1">
 			<motor outputID="0" invert="true" CAN="false"></motor>
 			<motor outputID="1" invert="false" CAN="false"></motor>
+			<motor outputID="2" invert="false" CAN="false"></motor>
+			<motor outputID="3" invert="true" CAN="false"></motor>
 		</group>
 	</motorgroups>
+	<pneumaticgroups>
+		<group name="lift" deadzone="0.1">
+			<dsolenoid actionCount="2" forwardID="0" reverseID="1" invert="false"></dsolenoid>
+		</group>
+		<group name="liftArms" deadzone="0.1">
+			<dsolenoid actionCount="1" ID="2" invert="false"></dsolenoid>
+		</group>
+		<group name="intakeArms" deadzone="0.1">
+			<dsolenoid actionCount="2" forwardID="3" reverseID="4" invert="false"></dsolenoid>
+		</group>
+	</pneumaticgroups>
 </Dreadbot>

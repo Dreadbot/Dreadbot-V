@@ -58,7 +58,7 @@ void MecanumDrive::Drive_p(double x, double y, double rotation) {
 
 // Drive with wheel velocity
 void MecanumDrive::Drive_v(double x, double y, double rotation) {
-	Vector2<double> vec_out(x, -y);
+	Vector2<double> vec_out(y, -x);
 	double rot_out = -rotation;
 
 	if (mode == drivemode::relative) {
@@ -82,15 +82,13 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 		}
 	}
 
-	bool stall = false;
+	bool stall = true;
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		// files.andymark.com/CIM-motor-curve.pdf
-		stall = stall || (motors[i]->GetOutputCurrent() > STALL_MOTOR_CURRENT);
-		stall |= stall;
+		stall = stall && (motors[i]->GetOutputCurrent() > STALL_MOTOR_CURRENT);
 	}
-	stall = !stall;
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->Set(wspeeds[i]*motorReversals[i]*6000, syncGroup); // *stall
+		motors[i]->Set(wspeeds[i]*motorReversals[i]*SmartDashboard::GetNumber("Speed", 1000.0), syncGroup); // *stall
 	}
 }
 
@@ -128,11 +126,11 @@ void MecanumDrive::SD_RetrievePID() {
 }
 
 void MecanumDrive::SD_OutputDiagnostics() {
-	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		SmartDashboard::PutNumber(motorNames[i] + ".temp", motors[i]->GetTemperature());
-		SmartDashboard::PutNumber(motorNames[i] + ".setpoint", motors[i]->GetSetpoint());
-		SmartDashboard::PutNumber(motorNames[i] + ".encoder p", motors[i]->GetPosition());
-		SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetEncVel());
-		SmartDashboard::PutNumber(motorNames[i] + ".error", motors[i]->GetClosedLoopError());
-	}
+//	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+//		SmartDashboard::PutNumber(motorNames[i] + ".temp", motors[i]->GetTemperature());
+//		SmartDashboard::PutNumber(motorNames[i] + ".setpoint", motors[i]->GetSetpoint());
+//		SmartDashboard::PutNumber(motorNames[i] + ".encoder p", motors[i]->GetPosition());
+//		SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetEncVel());
+//		SmartDashboard::PutNumber(motorNames[i] + ".error", motors[i]->GetClosedLoopError());
+
 }

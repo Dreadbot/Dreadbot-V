@@ -8,18 +8,18 @@ LX Axis	X Translation
 LY Axis
 RX Axis	Rotation
 RY Axis	Y Translation
-A
-B
-X
-Y
-LB	
-RB
-LT 		Outtake
-RT 		Intake
+A    	Lift down
+B 		Arms in?
+X		Arms out?
+Y		Lift up
+LB		Transit outtake
+RB		Transit intake
+LT 		Intake Outtake
+RT 		Intake Intake
 Back
 Start
-Up
-Down
+Up		
+Down	
 Left
 Right
 
@@ -56,10 +56,10 @@ CAN Motor
 
 PWM Motor
 --- -------------------
-0   L Intake
+0   L Intake (inverted)
 1   R Intake
-2   L Aux. Intake
-3   R Aux. Intake
+2   L Transit (inverted)
+3   R Transit
 4   Compressor Relay
 5
 6
@@ -69,10 +69,10 @@ PWM Motor
 
     Pneumatic
 --- -------------------
-0   Lift
-1   Ski
-2
-3
+0   Lift Forward
+1  	Lift Reverse 
+2	Intake Forward
+3	Intake Reverse
 4
 5
 6

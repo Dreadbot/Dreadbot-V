@@ -6,7 +6,9 @@ namespace dreadbot
 	SimplePneumatic::SimplePneumatic()
 	{
 		invert = false;
-		pneumatic = NULL;
+		dPneumatic = NULL;
+		sPneumatic = NULL;
+		actionCount = 2;
 	}
 	void SimplePneumatic::Set(DoubleSolenoid::Value value)
 	{
@@ -16,9 +18,13 @@ namespace dreadbot
 				value = DoubleSolenoid::kReverse;
 			else if (value == DoubleSolenoid::kReverse)
 				value = DoubleSolenoid::kForward;
-
-			pneumatic->Set(value);
 		}
+		if (actionCount > 1) //Is this a double solenoid?
+			dPneumatic->Set(value);
+		else if (value != DoubleSolenoid::kOff)
+			sPneumatic->Set(true);
+		else
+			sPneumatic->Set(false);
 	}
 
 	//SimpleMotor stuff
@@ -47,8 +53,6 @@ namespace dreadbot
 	}
 	void MotorGrouping::Set(float value)
 	{
-		SmartDashboard::PutNumber("Motor Group " + name, value);
-
 		if (fabs(value) < deadzone)
 			value = 0; //Automatic deadzone processing
 		for (auto iter = motors.begin(); iter != motors.end(); iter++)
@@ -98,7 +102,10 @@ namespace dreadbot
 			pwmMotors[i] = NULL;
 		}
 		for (int i = 0; i < MAX_PNEUMS; i++)
-			pneums[i] = NULL;
+		{
+			dPneums[i] = NULL;
+			sPneums[i] = NULL;
+		}
 
 		transXAxis = 0;
 		transYAxis = 0;
@@ -110,14 +117,12 @@ namespace dreadbot
 		invertX = false;
 		invertY = false;
 		invertR = false;
-		SmartDashboard::PutString("XMLInput Constructor:", "Loaded");
 	}
 	XMLInput* XMLInput::getInstance()
 	{
 		if (singlePtr == NULL)
 			singlePtr = new XMLInput;
 		return singlePtr;
-		SmartDashboard::PutNumber("Pointer to XMLInput:", (int)singlePtr);
 	}
 	void XMLInput::setDrivebase(dreadbot::MecanumDrive* newDrivebase)
 	{
@@ -147,9 +152,6 @@ namespace dreadbot
 
 		if (drivebase != NULL) //Idiot check
 			drivebase->Drive_v(xInput, yInput, rInput);
-		SmartDashboard::PutNumber("xInput:", xInput);
-		SmartDashboard::PutNumber("yInput:", yInput);
-		SmartDashboard::PutNumber("rInput:", rInput);
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -181,11 +183,20 @@ namespace dreadbot
 		}
 		return NULL;
 	}
-	DoubleSolenoid* XMLInput::getPneum(int forwardID)
+	DoubleSolenoid* XMLInput::getDPneum(int forwardID)
 	{
 		if (forwardID < MAX_PNEUMS - 1 && forwardID > -1)
-			return pneums[forwardID];
+			return dPneums[forwardID];
 		return NULL;
+	}
+
+	Solenoid* XMLInput::getSPneum(int ID)
+	{
+		if (ID > MAX_PNEUMS - 1 || ID < 0)
+			return NULL;
+		if (sPneums[ID] == NULL)
+			sPneums[ID] = new Solenoid(ID);
+		return sPneums[ID];
 	}
 	MotorGrouping* XMLInput::getMGroup(string name)
 	{
@@ -203,6 +214,9 @@ namespace dreadbot
 	}
 	void XMLInput::loadXMLConfig(string filename)
 	{
+		pGroups.clear();
+		mGroups.clear();
+
 		pugi::xml_document doc;
 		pugi::xml_parse_result result = doc.load_file(filename.c_str());
 		SmartDashboard::PutString("XML Load Result: ", result.description());
@@ -230,7 +244,6 @@ namespace dreadbot
 		if (controllers[controlID] == NULL)
 			controllers[controlID] = new Joystick(controlID);
 		driveController = controlID;
-		SmartDashboard::PutNumber("driveController", driveController);
 
 		//Drivebase control loading - get axes
 		string invert;
@@ -266,12 +279,6 @@ namespace dreadbot
 					invertR = true;
 			}
 		}
-		SmartDashboard::PutNumber("transXAxis:", transXAxis);
-		SmartDashboard::PutNumber("transYAxis:", transYAxis);
-		SmartDashboard::PutNumber("rotAxis:", rotAxis);
-		SmartDashboard::PutBoolean("invertR", invertR);
-		SmartDashboard::PutBoolean("invertY", invertY);
-		SmartDashboard::PutBoolean("invertX", invertX);
 
 		//Load all motor groups
 		pugi::xml_node motorgroups = doc.child("Dreadbot").child("motorgroups");
@@ -318,15 +325,22 @@ namespace dreadbot
 			{
 				SimplePneumatic newPneum;
 				newPneum.invert = pneumatic.attribute("invert").as_bool();
-				int forwardID = pneumatic.attribute("forwardID").as_int();
-				int reverseID = pneumatic.attribute("reverseID").as_int();
-				if (getPneum(forwardID) != NULL)
+				newPneum.actionCount = pneumatic.attribute("actionCount").as_int();
+
+				if (newPneum.actionCount > 1) //Is this a double solenoid?
 				{
-					newPneum.pneumatic = getPneum(forwardID);
-					continue;
+					int forwardID = pneumatic.attribute("forwardID").as_int();
+					int reverseID = pneumatic.attribute("reverseID").as_int();
+					if (getDPneum(forwardID) != NULL)
+						newPneum.dPneumatic = getDPneum(forwardID);
+					else
+					{
+						newPneum.dPneumatic = new DoubleSolenoid(forwardID, reverseID);
+						dPneums[forwardID] = newPneum.dPneumatic;
+					}
 				}
-				newPneum.pneumatic = new DoubleSolenoid(forwardID, reverseID);
-				pneums[forwardID] = newPneum.pneumatic;
+				else //This is a single solenoid
+					newPneum.sPneumatic = getSPneum(pneumatic.attribute("ID").as_int());
 				newPGroup.pneumatics.push_back(newPneum);
 			}
 			pGroups.push_back(newPGroup);
