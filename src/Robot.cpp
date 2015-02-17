@@ -62,8 +62,8 @@ namespace dreadbot {
 			//Vision stuff
 			viewingBack = false;
 			frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
-			frontCam = new USBCamera("cam0", false);
-			rearCam = new USBCamera("cam1", false);
+			frontCam = new USBCamera("cam1", false);
+			rearCam = new USBCamera("cam2", false);
 
 			frontCam->SetSize(640, 480);
 			rearCam->SetSize(640, 480);
