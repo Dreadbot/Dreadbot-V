@@ -128,17 +128,16 @@ namespace dreadbot {
 			if (intake != NULL)
 				intake->Set(intakeInput);
 		
-			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
-			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button
+			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
 			if (lift != NULL)
-				lift->Set(liftInput);
+				lift->Set(liftInput); //Keeps the lift up unless button is pressed.
 
 			float armInput = (int)gamepad->GetRawButton(3); //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
 			if (intakeArms != NULL)
 				intakeArms->Set(armInput);
 
-			float liftArmInput = gamepad->GetRawButton(6);
+			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
 			if (liftArms != NULL)
 					liftArms->Set(liftArmInput);
 
