@@ -73,9 +73,7 @@ namespace dreadbot {
 	}
 
 	double SimplePID::GetOutput() {
-		double result;
-		result = m_result;
-		return result;
+		return m_result;
 	}
 
 	void SimplePID::SetMV(double mv) {
