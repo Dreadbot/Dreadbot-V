@@ -32,10 +32,12 @@ namespace dreadbot {
 		int viewerCooldown;
 		bool viewingBack;
 
-//		//Vision stuff
-		Image* frame;
-		USBCamera* frontCam;
-		USBCamera* rearCam;
+		//Vision stuff - credit to team 116 for this!
+		IMAQdxSession sessionCam1;
+		IMAQdxSession sessionCam2;
+
+		Image* frameCam1;
+		Image *frameCam2;
 
 	public:
 		void RobotInit()
@@ -60,15 +62,8 @@ namespace dreadbot {
 			intakeArms = NULL;
 
 			//Vision stuff
-			viewingBack = false;
-			frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
-			frontCam = new USBCamera("cam1", false);
-			rearCam = new USBCamera("cam2", false);
-
-			frontCam->SetSize(640, 480);
-			rearCam->SetSize(640, 480);
-			frontCam->SetFPS(30);
-			frontCam->SetFPS(30);
+			frameCam1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frameCam2 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 		}
 
 		void GlobalInit()
@@ -82,9 +77,6 @@ namespace dreadbot {
 			Input->loadXMLConfig("/XML Bot Config.xml");
 			gamepad = Input->getController(0);
 			drivebase->Engage();
-
-			frontCam->OpenCamera();
-			rearCam->OpenCamera();
 
 			intake = Input->getMGroup("intake");
 			lift = Input->getPGroup("lift");
@@ -114,33 +106,8 @@ namespace dreadbot {
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 			//drivebase->SD_OutputDiagnostics();
-
-			//Vision Controls
-			if (viewerCooldown > 0)
-				viewerCooldown--;
-			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
-			{
-				viewerCooldown = 30;
-				viewingBack = !viewingBack;
-
-				//Control for initial camera-switching stuff
-				if (viewingBack)
-				{
-					frontCam->StopCapture();
-					rearCam->StartCapture();
-				}
-				else
-				{
-					rearCam->StopCapture();
-					frontCam->StartCapture();
-				}
-			}
-
-			//Do actual vision switching stuff
-			if (viewingBack)
-				rearCam->GetImage(frame);
-			else
-				frontCam->GetImage(frame);
+			SmartDashboard::PutBoolean("Button 5", gamepad->GetRawButton(5));
+			SmartDashboard::PutBoolean("Button 4", gamepad->GetRawButton(4));
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
@@ -160,13 +127,6 @@ namespace dreadbot {
 			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
 			if (liftArms != NULL)
 					liftArms->Set(liftArmInput);
-
-			//Debug stuff?
-			for (int i = 1; i < 5; i++)
-			{
-				SmartDashboard::PutNumber("Axis " + i, gamepad->GetRawAxis(i));
-				SmartDashboard::PutNumber("Button " + i, gamepad->GetRawButton(i));
-			}
 		}
 
 		void TestInit()
@@ -183,16 +143,41 @@ namespace dreadbot {
 			compressor->Stop();
 			drivebase->Disengage();
 
-			frontCam->CloseCamera();
-			frontCam->StopCapture();
-			rearCam->CloseCamera();
-			rearCam->StopCapture();
-
-
 			//frontUltra->SetAutomaticMode(false);
 			//rearUltra->SetAutomaticMode(false);
 		}
 
+		//Vision functions
+		void StopCamera(int cameraNum)
+		{
+			if (cameraNum == 1)
+			{
+				IMAQdxStopAcquisition(sessionCam1);
+				IMAQdxCloseCamera(sessionCam1);
+			}
+			else
+			{
+				IMAQdxStopAcquisition(sessionCam2);
+				IMAQdxCloseCamera(sessionCam2);
+			}
+
+		}
+
+		void StartCamera(int cameraNum)
+		{
+			if (cameraNum == 1)
+			{
+				IMAQdxOpenCamera("cam1", IMAQdxCameraControlModeController, &sessionCam1);
+				IMAQdxConfigureGrab(sessionCam1);
+				IMAQdxStartAcquisition(sessionCam1);
+			}
+			else
+			{
+				IMAQdxOpenCamera("cam2", IMAQdxCameraControlModeController, &sessionCam2);
+				IMAQdxConfigureGrab(sessionCam2);
+				IMAQdxStartAcquisition(sessionCam2);
+			}
+		}
 	};
 }
 
