@@ -36,8 +36,7 @@ namespace dreadbot {
 		IMAQdxSession sessionCam1;
 		IMAQdxSession sessionCam2;
 
-		Image* frameCam1;
-		Image *frameCam2;
+		Image* frame;
 
 	public:
 		void RobotInit()
@@ -62,8 +61,9 @@ namespace dreadbot {
 			intakeArms = NULL;
 
 			//Vision stuff
-			frameCam1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
-			frameCam2 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			viewingBack = false;
+			StartCamera(2);
 		}
 
 		void GlobalInit()
@@ -108,6 +108,35 @@ namespace dreadbot {
 			//drivebase->SD_OutputDiagnostics();
 			SmartDashboard::PutBoolean("Button 5", gamepad->GetRawButton(5));
 			SmartDashboard::PutBoolean("Button 4", gamepad->GetRawButton(4));
+
+			//Vision switch control
+			if (viewerCooldown > 0)
+				viewerCooldown--;
+			if (gamepad->GetRawButton(5) && viewerCooldown == 0)
+			{
+				//Create cooldown and set the boolean thingy
+				viewerCooldown = 30;
+				viewingBack =! viewingBack;
+
+				if (viewingBack)
+				{
+					//Disable cam1, enable cam2
+					StopCamera(1);
+					StartCamera(2);
+				}
+				else
+				{
+					StopCamera(2);
+					StartCamera(1);
+				}
+			}
+
+			//Perform actual image switch
+			if (viewingBack)
+				IMAQdxGrab(sessionCam1, frame, true, NULL);
+			else
+				IMAQdxGrab(sessionCam2, frame, true, NULL);
+			CameraServer::GetInstance()->SetImage(frame);
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
