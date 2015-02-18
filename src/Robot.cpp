@@ -36,7 +36,8 @@ namespace dreadbot {
 		IMAQdxSession sessionCam1;
 		IMAQdxSession sessionCam2;
 
-		Image* frame;
+		Image* frame1;
+		Image* frame2;
 
 	public:
 		void RobotInit()
@@ -61,7 +62,8 @@ namespace dreadbot {
 			intakeArms = NULL;
 
 			//Vision stuff
-			frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frame1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frame2 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 			viewingBack = false;
 			StartCamera(2);
 		}
@@ -107,13 +109,15 @@ namespace dreadbot {
 			Input->updateDrivebase();
 			//drivebase->SD_OutputDiagnostics();
 			SmartDashboard::PutBoolean("Button 5", gamepad->GetRawButton(5));
-			SmartDashboard::PutBoolean("Button 4", gamepad->GetRawButton(4));
+			SmartDashboard::PutBoolean("Button 3", gamepad->GetRawButton(3));
+			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(5) && viewerCooldown == 0)
+			if (gamepad->GetRawButton(3) && viewerCooldown == 0)
 			{
+				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
 				viewerCooldown = 30;
 				viewingBack =! viewingBack;
@@ -133,10 +137,16 @@ namespace dreadbot {
 
 			//Perform actual image switch
 			if (viewingBack)
-				IMAQdxGrab(sessionCam1, frame, true, NULL);
+			{
+				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame1);
+			}
 			else
-				IMAQdxGrab(sessionCam2, frame, true, NULL);
-			CameraServer::GetInstance()->SetImage(frame);
+			{
+				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame2);
+			}
+
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
@@ -148,7 +158,7 @@ namespace dreadbot {
 			if (lift != NULL)
 				lift->Set(liftInput);
 
-			float armInput = (int)gamepad->GetRawButton(3); //X button
+			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
 			if (intakeArms != NULL)
 				intakeArms->Set(armInput);
