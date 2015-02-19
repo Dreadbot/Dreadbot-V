@@ -36,7 +36,8 @@ namespace dreadbot {
 		IMAQdxSession sessionCam1;
 		IMAQdxSession sessionCam2;
 
-		Image* frame;
+		Image* frame1;
+		Image* frame2;
 
 	public:
 		void RobotInit()
@@ -61,9 +62,9 @@ namespace dreadbot {
 			intakeArms = NULL;
 
 			//Vision stuff
-			frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frame1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+			frame2 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 			viewingBack = false;
-			StartCamera(1);
 			StartCamera(2);
 		}
 
@@ -120,14 +121,32 @@ namespace dreadbot {
 				//Create cooldown and set the boolean thingy
 				viewerCooldown = 30;
 				viewingBack =! viewingBack;
+
+				if (viewingBack)
+				{
+					//Disable cam1, enable cam2
+					StopCamera(1);
+					StartCamera(2);
+				}
+				else
+				{
+					StopCamera(2);
+					StartCamera(1);
+				}
 			}
 
 			//Perform actual image switch
 			if (viewingBack)
-				IMAQdxGrab(sessionCam1, frame, true, NULL);
+			{
+				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame1);
+			}
 			else
-				IMAQdxGrab(sessionCam2, frame, true, NULL);
-			CameraServer::GetInstance()->SetImage(frame);
+			{
+				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame2);
+			}
+
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
@@ -168,7 +187,7 @@ namespace dreadbot {
 		}
 
 		//Vision functions
-		void StopCamera(int cameraNum) //THIS FUNCTION IS TEMPORARILY UNUSED!
+		void StopCamera(int cameraNum)
 		{
 			if (cameraNum == 1)
 			{
