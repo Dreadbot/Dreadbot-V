@@ -1,5 +1,4 @@
 #include <WPILib.h>
-#include "../lib/USBCamera.h"
 #include "SmartDashboard/SmartDashboard.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
