@@ -120,7 +120,7 @@ namespace dreadbot
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
-				viewerCooldown = 50;
+				viewerCooldown = 25;
 				viewingBack =! viewingBack;
 
 				if (viewingBack)
