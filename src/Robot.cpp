@@ -6,9 +6,6 @@
 #include "Autonomous.h"
 
 namespace dreadbot {
-
-#define CAMSWITCH_AXIS 6
-
 	class Robot: public IterativeRobot {
 	private:
 		DriverStation *ds;
@@ -34,7 +31,7 @@ namespace dreadbot {
 		//Vision stuff - credit to team 116 for this!
 		IMAQdxSession sessionCam1;
 		IMAQdxSession sessionCam2;
-
+		IMAQdxError imaqError;
 		Image* frame1;
 		Image* frame2;
 
@@ -64,12 +61,11 @@ namespace dreadbot {
 			frame1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 			frame2 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 			viewingBack = false;
-			StartCamera(2);
 		}
 
 		void GlobalInit()
 		{
-			compressor->Start();
+			//compressor->Start();
 			drivebase->Engage();
 
 			//frontUltra->SetAutomaticMode(true);
@@ -83,6 +79,8 @@ namespace dreadbot {
 			lift = Input->getPGroup("lift");
 			liftArms = Input->getPGroup("liftArms");
 			intakeArms = Input->getPGroup("intakeArms");
+
+			viewingBack = false;
 		}
 
 		void AutonomousInit()
@@ -120,32 +118,7 @@ namespace dreadbot {
 				//Create cooldown and set the boolean thingy
 				viewerCooldown = 30;
 				viewingBack =! viewingBack;
-
-				if (viewingBack)
-				{
-					//Disable cam1, enable cam2
-					StopCamera(1);
-					StartCamera(2);
-				}
-				else
-				{
-					StopCamera(2);
-					StartCamera(1);
-				}
 			}
-
-			//Perform actual image switch
-			if (viewingBack)
-			{
-				IMAQdxGrab(sessionCam1, frame1, true, NULL);
-				CameraServer::GetInstance()->SetImage(frame1);
-			}
-			else
-			{
-				IMAQdxGrab(sessionCam2, frame2, true, NULL);
-				CameraServer::GetInstance()->SetImage(frame2);
-			}
-
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
@@ -185,37 +158,7 @@ namespace dreadbot {
 			//rearUltra->SetAutomaticMode(false);
 		}
 
-		//Vision functions
-		void StopCamera(int cameraNum)
-		{
-			if (cameraNum == 1)
-			{
-				IMAQdxStopAcquisition(sessionCam1);
-				IMAQdxCloseCamera(sessionCam1);
-			}
-			else
-			{
-				IMAQdxStopAcquisition(sessionCam2);
-				IMAQdxCloseCamera(sessionCam2);
-			}
 
-		}
-
-		void StartCamera(int cameraNum)
-		{
-			if (cameraNum == 1)
-			{
-				IMAQdxOpenCamera("cam1", IMAQdxCameraControlModeController, &sessionCam1);
-				IMAQdxConfigureGrab(sessionCam1);
-				IMAQdxStartAcquisition(sessionCam1);
-			}
-			else
-			{
-				IMAQdxOpenCamera("cam2", IMAQdxCameraControlModeController, &sessionCam2);
-				IMAQdxConfigureGrab(sessionCam2);
-				IMAQdxStartAcquisition(sessionCam2);
-			}
-		}
 	};
 }
 
