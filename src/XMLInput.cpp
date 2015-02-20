@@ -117,6 +117,10 @@ namespace dreadbot
 		invertX = false;
 		invertY = false;
 		invertR = false;
+
+		rVel = 0;
+		xVel = 0;
+		yVel = 0;
 	}
 	XMLInput* XMLInput::getInstance()
 	{
@@ -130,28 +134,48 @@ namespace dreadbot
 	}
 	void XMLInput::updateDrivebase()
 	{
-		float xInput = controllers[driveController]->GetRawAxis(transXAxis);
-		float yInput = controllers[driveController]->GetRawAxis(transYAxis);
-		float rInput = controllers[driveController]->GetRawAxis(rotAxis);
+		float xSPoint = controllers[driveController]->GetRawAxis(transXAxis);
+		float ySPoint = controllers[driveController]->GetRawAxis(transYAxis);
+		float rSPoint = controllers[driveController]->GetRawAxis(rotAxis);
 
 		//Deadzones
-		if (fabs(xInput) < transXDeadzone)
-			xInput = 0;
-		if (fabs(yInput) < transYDeadzone)
-			yInput = 0;
-		if (fabs(rInput) < rotDeadzone)
-			rInput = 0;
+		if (fabs(xSPoint) < transXDeadzone)
+			xSPoint = 0;
+		if (fabs(ySPoint) < transYDeadzone)
+			ySPoint = 0;
+		if (fabs(rSPoint) < rotDeadzone)
+			rSPoint = 0;
 
 		//Invert
 		if (invertX)
-			xInput = -xInput;
+			xSPoint = -xSPoint;
 		if (invertY)
-			yInput = -yInput;
+			ySPoint = -ySPoint;
 		if (invertR)
-			rInput = -rInput;
+			rSPoint = -rSPoint;
+
+		//Ramp-up stuff
+		if (xVel < xSPoint)
+			xVel += X_ACCEL_RATE;
+		if (xVel > xSPoint)
+			xVel -= X_ACCEL_RATE;
+		if (yVel < ySPoint)
+			yVel += Y_ACCEL_RATE;
+		if (yVel > ySPoint)
+			yVel -= Y_ACCEL_RATE;
+		if (rVel < rSPoint)
+			rVel += R_ACCEL_RATE;
+		if (rVel > rSPoint)
+			rVel -= R_ACCEL_RATE;
 
 		if (drivebase != NULL) //Idiot check
-			drivebase->Drive_v(xInput, yInput, rInput);
+			drivebase->Drive_v(xVel, yVel, rVel);
+	}
+	void XMLInput::zeroVels()
+	{
+		xVel = 0;
+		yVel = 0;
+		rVel = 0;
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -189,7 +213,6 @@ namespace dreadbot
 			return dPneums[forwardID];
 		return NULL;
 	}
-
 	Solenoid* XMLInput::getSPneum(int ID)
 	{
 		if (ID > MAX_PNEUMS - 1 || ID < 0)

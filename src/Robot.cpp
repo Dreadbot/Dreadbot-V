@@ -178,6 +178,7 @@ namespace dreadbot
 		{
 			compressor->Stop();
 			drivebase->Disengage();
+			Input->zeroVels(); //Safety.
 
 			//frontUltra->SetAutomaticMode(false);
 			//rearUltra->SetAutomaticMode(false);
