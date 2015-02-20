@@ -19,9 +19,6 @@ namespace dreadbot
 	const int MAX_CONTROLLERS = 5;
 	const int MAX_MOTORS = 10;
 	const int MAX_PNEUMS = 10;
-	const double X_ACCEL_RATE = 0.05;
-	const double Y_ACCEL_RATE = 0.05;
-	const double R_ACCEL_RATE = 0.05;
 
 	class SimplePneumatic
 	{
@@ -116,6 +113,9 @@ namespace dreadbot
 		double rVel;
 		double xVel;
 		double yVel;
+		double xAccelRate;
+		double yAccelRate;
+		double rAccelRate;
 
 		DISALLOW_COPY_AND_ASSIGN(XMLInput); //Prevents copying/assigning - critical for a singleton. That's a cool macro.
 	};

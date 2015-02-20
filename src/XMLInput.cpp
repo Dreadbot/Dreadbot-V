@@ -121,6 +121,9 @@ namespace dreadbot
 		rVel = 0;
 		xVel = 0;
 		yVel = 0;
+		rAccelRate = 0.05;
+		xAccelRate = 0.05;
+		yAccelRate = 0.05;
 	}
 	XMLInput* XMLInput::getInstance()
 	{
@@ -278,6 +281,8 @@ namespace dreadbot
 			{
 				transYAxis = atoi(axis.child_value("ID"));
 				transYDeadzone = atof(axis.child_value("deadzone"));
+				yAccelRate = atof(axis.child_value("accel"));
+
 				if (invert.find("true")) //I really don't understand how this works...
 					invertY = false;
 				else
@@ -287,6 +292,8 @@ namespace dreadbot
 			{
 				transXAxis = atoi(axis.child_value("ID"));
 				transXDeadzone = atof(axis.child_value("deadzone"));
+				xAccelRate = atof(axis.child_value("accel"));
+
 				if (invert.find("true"))
 					invertX = false;
 				else
@@ -296,6 +303,8 @@ namespace dreadbot
 			{
 				rotAxis = atoi(axis.child_value("ID"));
 				rotDeadzone = atof(axis.child_value("deadzone"));
+				rAccelRate = atof(axis.child_value("accel"));
+
 				if (invert.find("true"))
 					invertR = false;
 				else
