@@ -79,7 +79,7 @@ namespace dreadbot
 			//frontUltra->SetAutomaticMode(true);
 			//rearUltra->SetAutomaticMode(true);
 
-			Input->loadXMLConfig("/XML Bot Config.xml");
+			Input->loadXMLConfig("/Bot_Config.xml");
 			gamepad = Input->getController(0);
 			drivebase->Engage();
 
