@@ -36,6 +36,8 @@ namespace dreadbot
 		IMAQdxError imaqError;
 		Image* frame1;
 		Image* frame2;
+		bool Cam1Enabled;
+		bool Cam2Enabled;
 
 	public:
 		void RobotInit()
@@ -65,7 +67,8 @@ namespace dreadbot
 
 			//Cam 2 is the rear camera
 			viewingBack = false;
-			StartCamera(1);
+			Cam2Enabled = false;
+			Cam1Enabled = StartCamera(1);
 		}
 
 		void GlobalInit()
@@ -127,20 +130,22 @@ namespace dreadbot
 				{
 					//Rear camera: Camera 2
 					StopCamera(1);
-					StartCamera(2);
+					Cam1Enabled = false;
+					Cam2Enabled = StartCamera(2);
 				}
 				else
 				{
 					StopCamera(2);
-					StartCamera(1);
+					Cam1Enabled = StartCamera(1);
+					Cam2Enabled = false;
 				}
 			}
-			if (viewingBack)
+			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, NULL);
 				CameraServer::GetInstance()->SetImage(frame2);
 			}
-			else
+			if (!viewingBack && Cam1Enabled)
 			{
 				IMAQdxGrab(sessionCam1, frame1, true, NULL);
 				CameraServer::GetInstance()->SetImage(frame1);
