@@ -87,8 +87,6 @@ namespace dreadbot
 			lift = Input->getPGroup("lift");
 			liftArms = Input->getPGroup("liftArms");
 			intakeArms = Input->getPGroup("intakeArms");
-
-			viewingBack = false;
 		}
 
 		void AutonomousInit()
@@ -97,6 +95,17 @@ namespace dreadbot
 			AutonBot->setHardware(drivebase, intake);
 			AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
 			AutonBot->start();
+
+			if (viewingBack && Cam2Enabled)
+			{
+				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame2);
+			}
+			if (!viewingBack && Cam1Enabled)
+			{
+				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame1);
+			}
 		}
 
 		void AutonomousPeriodic()
@@ -187,6 +196,20 @@ namespace dreadbot
 
 			//frontUltra->SetAutomaticMode(false);
 			//rearUltra->SetAutomaticMode(false);
+		}
+
+		void DisabledPeriodic()
+		{
+			if (viewingBack && Cam2Enabled)
+			{
+				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame2);
+			}
+			if (!viewingBack && Cam1Enabled)
+			{
+				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame1);
+			}
 		}
 
 		bool StopCamera(int cameraNum)
