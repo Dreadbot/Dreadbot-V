@@ -5,8 +5,10 @@
 #include "Vision.h"
 #include "Autonomous.h"
 
-namespace dreadbot {
-	class Robot: public IterativeRobot {
+namespace dreadbot
+{
+	class Robot: public IterativeRobot
+	{
 	private:
 		DriverStation *ds;
 		Joystick* gamepad;
@@ -60,12 +62,15 @@ namespace dreadbot {
 			//Vision stuff
 			frame1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 			frame2 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+
+			//Cam 2 is the rear camera
 			viewingBack = false;
+			StartCamera(1);
 		}
 
 		void GlobalInit()
 		{
-			//compressor->Start();
+			compressor->Start();
 			drivebase->Engage();
 
 			//frontUltra->SetAutomaticMode(true);
@@ -101,23 +106,44 @@ namespace dreadbot {
 			GlobalInit();
 		}
 
-		void TeleopPeriodic() {
+		void TeleopPeriodic()
+		{
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 			//drivebase->SD_OutputDiagnostics();
-			SmartDashboard::PutBoolean("Button 5", gamepad->GetRawButton(5));
-			SmartDashboard::PutBoolean("Button 3", gamepad->GetRawButton(3));
 			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(3) && viewerCooldown == 0)
+			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
-				viewerCooldown = 30;
+				viewerCooldown = 50;
 				viewingBack =! viewingBack;
+
+				if (viewingBack)
+				{
+					//Rear camera: Camera 2
+					StopCamera(1);
+					StartCamera(2);
+				}
+				else
+				{
+					StopCamera(2);
+					StartCamera(1);
+				}
+			}
+			if (viewingBack)
+			{
+				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame2);
+			}
+			else
+			{
+				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				CameraServer::GetInstance()->SetImage(frame1);
 			}
 
 			//Output controls
@@ -158,7 +184,86 @@ namespace dreadbot {
 			//rearUltra->SetAutomaticMode(false);
 		}
 
+		bool StopCamera(int cameraNum)
+		{
+			if (cameraNum == 1)
+			{
+				// stop image acquisition
+				IMAQdxStopAcquisition(sessionCam1);
+				//the camera name (ex "cam0") can be found through the roborio web interface
+				imaqError = IMAQdxCloseCamera(sessionCam1);
+				if (imaqError != IMAQdxErrorSuccess)
+				{
+					DriverStation::ReportError(
+						"cam1 IMAQdxCloseCamera error: "
+						+ std::to_string((long) imaqError) + "\n");
+					return (false);
+				}
+			}
+			else if (cameraNum == 2)
+			{
+				IMAQdxStopAcquisition(sessionCam2);
+				imaqError = IMAQdxCloseCamera(sessionCam2);
+				if (imaqError != IMAQdxErrorSuccess)
+				{
+					DriverStation::ReportError(
+						"cam0 IMAQdxCloseCamera error: "
+						+ std::to_string((long) imaqError) + "\n");
+					return (false);
+				}
 
+			}
+			return (false);
+		}
+
+		bool StartCamera(int cameraNum)
+		{
+			if (cameraNum == 1)
+			{
+				imaqError = IMAQdxOpenCamera("cam1",
+					IMAQdxCameraControlModeController, &sessionCam1);
+				if (imaqError != IMAQdxErrorSuccess)
+				{
+					DriverStation::ReportError(
+						"cam1 IMAQdxOpenCamera error: "
+						+ std::to_string((long) imaqError) + "\n");
+					return (false);
+				}
+				imaqError = IMAQdxConfigureGrab(sessionCam1);
+				if (imaqError != IMAQdxErrorSuccess)
+				{
+					DriverStation::ReportError(
+						"cam0 IMAQdxConfigureGrab error: "
+						+ std::to_string((long) imaqError) + "\n");
+					return (false);
+				}
+				// acquire images
+				IMAQdxStartAcquisition(sessionCam1);
+			}
+			else if (cameraNum == 2)
+			{
+				imaqError = IMAQdxOpenCamera("cam2",
+					IMAQdxCameraControlModeController, &sessionCam2);
+				if (imaqError != IMAQdxErrorSuccess)
+				{
+					DriverStation::ReportError(
+						"cam0 IMAQdxOpenCamera error: "
+						+ std::to_string((long) imaqError) + "\n");
+					return (false);
+				}
+				imaqError = IMAQdxConfigureGrab(sessionCam2);
+				if (imaqError != IMAQdxErrorSuccess)
+				{
+					DriverStation::ReportError(
+						"cam0 IMAQdxConfigureGrab error: "
+						+ std::to_string((long) imaqError) + "\n");
+					return (false);
+				}
+				// acquire images
+				IMAQdxStartAcquisition(sessionCam2);
+			}
+			return (true);
+		}
 	};
 }
 
