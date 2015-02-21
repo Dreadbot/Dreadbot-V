@@ -159,17 +159,17 @@ namespace dreadbot
 
 		//Ramp-up stuff
 		if (xVel < xSPoint)
-			xVel += X_ACCEL_RATE;
+			xVel += xAccelRate;
 		if (xVel > xSPoint)
-			xVel -= X_ACCEL_RATE;
+			xVel -= xAccelRate;
 		if (yVel < ySPoint)
-			yVel += Y_ACCEL_RATE;
+			yVel += yAccelRate;
 		if (yVel > ySPoint)
-			yVel -= Y_ACCEL_RATE;
+			yVel -= yAccelRate;
 		if (rVel < rSPoint)
-			rVel += R_ACCEL_RATE;
+			rVel += rAccelRate;
 		if (rVel > rSPoint)
-			rVel -= R_ACCEL_RATE;
+			rVel -= rAccelRate;
 
 		if (drivebase != NULL) //Idiot check
 			drivebase->Drive_v(xVel, yVel, rVel);
