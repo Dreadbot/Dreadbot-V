@@ -378,4 +378,4 @@ namespace dreadbot
 			pGroups.push_back(newPGroup);
 		}
 	}
-};
+}
