@@ -107,23 +107,20 @@ namespace dreadbot
 			sPneums[i] = NULL;
 		}
 
-		transXAxis = 0;
-		transYAxis = 0;
-		rotAxis = 0;
-		transXDeadzone = 0;
-		transYDeadzone = 0;
-		rotDeadzone = 0;
 		driveController = 1;
-		invertX = false;
-		invertY = false;
-		invertR = false;
+		for (int i = 0; i < 3; i++)
+		{
+			axes[i] = 0;
+			deadzones[i] = 0;
+			inverts[i] = 0; //Since inverts is an array of bools, this sets it to false
+		}
 
-		rVel = 0;
-		xVel = 0;
-		yVel = 0;
-		rAccelRate = 0.05;
-		xAccelRate = 0.05;
-		yAccelRate = 0.05;
+		//Velocities and accels
+		for (int i = 0; i < 3; i++)
+		{
+			vels[i] = 0;
+			accels[i] = 0.25f;
+		}
 	}
 	XMLInput* XMLInput::getInstance()
 	{
@@ -137,72 +134,47 @@ namespace dreadbot
 	}
 	void XMLInput::updateDrivebase()
 	{
-		float xSPoint = controllers[driveController]->GetRawAxis(transXAxis);
-		float ySPoint = controllers[driveController]->GetRawAxis(transYAxis);
-		float rSPoint = controllers[driveController]->GetRawAxis(rotAxis);
+		double sPoints[3];
+		sPoints[x] = controllers[driveController]->GetRawAxis(axes[x]);
+		sPoints[y] = controllers[driveController]->GetRawAxis(axes[y]);
+		sPoints[r] = controllers[driveController]->GetRawAxis(axes[r]);
 
-		//Deadzones
-		if (fabs(xSPoint) < transXDeadzone)
-			xSPoint = 0;
-		if (fabs(ySPoint) < transYDeadzone)
-			ySPoint = 0;
-		if (fabs(rSPoint) < rotDeadzone)
-			rSPoint = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			//Deadzones
+			if (fabs(sPoints[i] < deadzones[i]))
+				sPoints[i] = 0;
 
-		//Invert
-		if (invertX)
-			xSPoint = -xSPoint;
-		if (invertY)
-			ySPoint = -ySPoint;
-		if (invertR)
-			rSPoint = -rSPoint;
+			//Inverts
+			if (inverts[i])
+				sPoints[i] *= -1;
 
-		//Decel to at double rate - this way of doing it is cheating.
-		if (xSPoint == 0)
-			xAccelRate *= 2;
-		if (ySPoint == 0)
-			yAccelRate *= 2;
-		if (rSPoint == 0)
-			rAccelRate *= 2;
+			//Decel to zero at double rate - cheat edition
+			if (sPoints[i] == 0)
+				accels[i] *= 2;
 
-		//Ramp-up stuff
-		if (xVel < xSPoint)
-			xVel += xAccelRate;
-		if (xVel > xSPoint)
-			xVel -= xAccelRate;
-		if (yVel < ySPoint)
-			yVel += yAccelRate;
-		if (yVel > ySPoint)
-			yVel -= yAccelRate;
-		if (rVel < rSPoint)
-			rVel += rAccelRate;
-		if (rVel > rSPoint)
-			rVel -= rAccelRate;
+			//Ramp-up stuff
+			if (vels[i] < sPoints[i])
+				vels[i] += accels[i];
+			if (vels[i] > sPoints[i])
+				vels[i] -= accels[i];
 
-		//Undo accel changes caused by the accel to zero thing
-		if (xSPoint == 0)
-			xAccelRate /= 2;
-		if (ySPoint == 0)
-			yAccelRate /= 2;
-		if (rSPoint == 0)
-			rAccelRate /= 2;
+			//Undo accel changes caused by the accel to zero thing
+			if (sPoints[i] == 0)
+				accels[i] /= 2;
 
-		//Velocity deadzone
-		if (fabs(xVel) < VEL_DEADZONE)
-			xVel = 0;
-		if (fabs(yVel) < VEL_DEADZONE)
-			yVel = 0;
-		if (fabs(rVel) < VEL_DEADZONE)
-			rVel = 0;
+			//Velocity deadzones
+			if (fabs(vels[i]) < VEL_DEADZONE)
+				vels[i] = 0;
+		}
 
 		if (drivebase != NULL) //Idiot check
-			drivebase->Drive_v(xVel, yVel, rVel);
+			drivebase->Drive_v(vels[x], vels[y], vels[r]);
 	}
 	void XMLInput::zeroVels()
 	{
-		xVel = 0;
-		yVel = 0;
-		rVel = 0;
+		for (int i = 0; i < 3; i++)
+			vels[i] = 0;
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -303,36 +275,36 @@ namespace dreadbot
 			invert = axis.child_value("invert");
 			if (axisDir == "transY")
 			{
-				transYAxis = atoi(axis.child_value("ID"));
-				transYDeadzone = atof(axis.child_value("deadzone"));
-				yAccelRate = atof(axis.child_value("accel"));
+				axes[y] = atoi(axis.child_value("ID"));
+				deadzones[y] = atof(axis.child_value("deadzone"));
+				accels[y] = atof(axis.child_value("accel"));
 
 				if (invert.find("true")) //I really don't understand how this works...
-					invertY = false;
+					inverts[y] = false;
 				else
-					invertY = true;
+					inverts[y] = true;
 			}
 			else if (axisDir == "transX")
 			{
-				transXAxis = atoi(axis.child_value("ID"));
-				transXDeadzone = atof(axis.child_value("deadzone"));
-				xAccelRate = atof(axis.child_value("accel"));
+				axes[x] = atoi(axis.child_value("ID"));
+				deadzones[x] = atof(axis.child_value("deadzone"));
+				accels[x] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
-					invertX = false;
+					inverts[x] = false;
 				else
-					invertX = true;
+					inverts[x] = true;
 			}
 			else if (axisDir == "rot")
 			{
-				rotAxis = atoi(axis.child_value("ID"));
-				rotDeadzone = atof(axis.child_value("deadzone"));
-				rAccelRate = atof(axis.child_value("accel"));
+				axes[r] = atoi(axis.child_value("ID"));
+				deadzones[r] = atof(axis.child_value("deadzone"));
+				accels[r] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
-					invertR = false;
+					inverts[r] = false;
 				else
-					invertR = true;
+					inverts[r] = true;
 			}
 		}
 

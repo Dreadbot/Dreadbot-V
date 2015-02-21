@@ -101,23 +101,13 @@ namespace dreadbot
 		Solenoid * sPneums[MAX_PNEUMS];
 
 		//Axis stuff for drivebase-specific controls
-		int transXAxis;
-		int transYAxis;
-		int rotAxis;
-		bool invertX;
-		bool invertY;
-		bool invertR;
-		float transXDeadzone;
-		float transYDeadzone;
-		float rotDeadzone; //Rot Deadzone. I call that as a band name.
 		int driveController;
-
-		double rVel;
-		double xVel;
-		double yVel;
-		double xAccelRate;
-		double yAccelRate;
-		double rAccelRate;
+		enum dirCodes {x, y, r};
+		int axes[3];
+		bool inverts[3];
+		float deadzones[3];
+		double vels[3];
+		double accels[3];
 
 		DISALLOW_COPY_AND_ASSIGN(XMLInput); //Prevents copying/assigning - critical for a singleton. That's a cool macro.
 	};
