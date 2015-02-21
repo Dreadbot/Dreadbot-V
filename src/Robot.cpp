@@ -166,7 +166,10 @@ namespace dreadbot
 		
 			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
 			if (lift != NULL)
-				lift->Set(liftInput); //Keeps the lift up unless button is pressed.
+				if (liftInput)
+					lift->Set(1); //Keeps the lift up unless button is pressed.
+				else
+					lift->Set(-1);
 
 			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
