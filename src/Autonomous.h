@@ -6,8 +6,8 @@
 #include "XMLInput.h"
 #include <math.h>
 
-#define TOTE_PICKUP_TIME 2.5
-#define DRIVE_TO_ZONE_TIME 7.5
+#define TOTE_PICKUP_TIME 1
+#define DRIVE_TO_ZONE_TIME 3
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
 

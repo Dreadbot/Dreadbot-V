@@ -14,7 +14,9 @@ namespace dreadbot
 	}
 	void RobotFSM::update()
 	{
-		SmartDashboard::PutNumber("Time", globalTimer.Get());
+
+		SmartDashboard::PutNumber("Auton Mode", state);
+
 		if (state == stopped)
 		{
 			globalTimer.Stop();
