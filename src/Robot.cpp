@@ -19,6 +19,7 @@ namespace dreadbot
 
 		XMLInput* Input;
 		MecanumDrive *drivebase;
+		RobotFSM* AutonBot;
 
 		MotorGrouping* intake;
 		PneumaticGrouping* lift;
@@ -107,6 +108,7 @@ namespace dreadbot
 
 		void AutonomousPeriodic()
 		{
+			AutonBot->update();
 		}
 
 		void TeleopInit()
