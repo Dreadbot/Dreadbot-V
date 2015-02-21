@@ -20,6 +20,8 @@ namespace dreadbot
 	const int MAX_MOTORS = 10;
 	const int MAX_PNEUMS = 10;
 
+	const int VEL_DEADZONE = 0.05;
+
 	class SimplePneumatic
 	{
 	public:

@@ -157,6 +157,14 @@ namespace dreadbot
 		if (invertR)
 			rSPoint = -rSPoint;
 
+		//Decel to at double rate - this way of doing it is cheating.
+		if (xSPoint == 0)
+			xAccelRate *= 2;
+		if (ySPoint == 0)
+			yAccelRate *= 2;
+		if (rSPoint == 0)
+			rAccelRate *= 2;
+
 		//Ramp-up stuff
 		if (xVel < xSPoint)
 			xVel += xAccelRate;
@@ -170,6 +178,22 @@ namespace dreadbot
 			rVel += rAccelRate;
 		if (rVel > rSPoint)
 			rVel -= rAccelRate;
+
+		//Undo accel changes caused by the accel to zero thing
+		if (xSPoint == 0)
+			xAccelRate /= 2;
+		if (ySPoint == 0)
+			yAccelRate /= 2;
+		if (rSPoint == 0)
+			rAccelRate /= 2;
+
+		//Velocity deadzone
+		if (fabs(xVel) < VEL_DEADZONE)
+			xVel = 0;
+		if (fabs(yVel) < VEL_DEADZONE)
+			yVel = 0;
+		if (fabs(rVel) < VEL_DEADZONE)
+			rVel = 0;
 
 		if (drivebase != NULL) //Idiot check
 			drivebase->Drive_v(xVel, yVel, rVel);
