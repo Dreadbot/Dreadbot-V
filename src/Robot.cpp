@@ -4,6 +4,7 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Vision.h"
+#include "rps.h"
 
 namespace dreadbot {
 
@@ -19,6 +20,7 @@ namespace dreadbot {
 
 		XMLInput* Input;
 		MecanumDrive *drivebase;
+		rps *positioner;
 
 		MotorGrouping* intake;
 		MotorGrouping* transit;
@@ -48,6 +50,7 @@ namespace dreadbot {
 			transit = NULL;
 			lift = NULL;
 			intakeArms = NULL;
+			positioner = new rps(0);
 
 			//Vision stuff
 			viewingBack = false;
@@ -78,8 +81,12 @@ namespace dreadbot {
 		void AutonomousPeriodic() {
 		}
 
-		void TeleopInit() {
+		void TeleopInit() 
+		{
 			GlobalInit();
+			Input->loadXMLConfig("/XML Bot Config.xml");
+			drivebase->Engage();
+			positioner->Start();
 		}
 
 		void TeleopPeriodic() {
@@ -112,6 +119,18 @@ namespace dreadbot {
 			float armInput = (int)gamepad->GetRawButton(3); //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
 			intakeArms->Set(armInput);
+
+			drivebase->SD_OutputDiagnostics();
+		//	drivebase->Drive_v(gamepad->GetRawAxis(0), gamepad->GetRawAxis(1), gamepad->GetRawAxis(2));
+			Input->updateDrivebase();
+			Input->updateInds();
+			inertial_frame thisCoord = positioner->GetTrackingData();
+			SmartDashboard::PutNumber("Pos x", thisCoord.position.x);
+			SmartDashboard::PutNumber("Pos y", thisCoord.position.y);
+			SmartDashboard::PutNumber("Vel x", thisCoord.velocity.x);
+			SmartDashboard::PutNumber("Vel y", thisCoord.velocity.y);
+			SmartDashboard::PutNumber("Rot p", thisCoord.rp);
+			SmartDashboard::PutNumber("Rot v", thisCoord.rv);
 		}
 
 		void TestPeriodic() {
