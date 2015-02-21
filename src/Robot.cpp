@@ -45,6 +45,7 @@ namespace dreadbot {
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+			//AutonBot = new RobotFSM;
 
 			intake = NULL;
 			transit = NULL;
@@ -79,6 +80,14 @@ namespace dreadbot {
 		}
 
 		void AutonomousPeriodic() {
+			// AutonBot->setHardware(drivebase, intake);
+			// AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
+			// AutonBot->start();
+		}
+
+		void AutonomousPeriodic()
+		{
+			// AutonBot->update();
 		}
 
 		void TeleopInit() 
