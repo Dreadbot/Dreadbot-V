@@ -83,5 +83,4 @@ namespace dreadbot {
 		BuiltInAccelerometer* accelerometer;
 		Gyro* gyro;
 	};
-
 }
