@@ -127,7 +127,7 @@ namespace dreadbot
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
+			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
