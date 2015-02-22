@@ -55,10 +55,10 @@ namespace dreadbot
 			Input->setDrivebase(drivebase);
 			AutonBot = new RobotFSM;
 
-			intake = NULL;
-			lift = NULL;
-			liftArms = NULL;
-			intakeArms = NULL;
+			intake = nullptr;
+			lift = nullptr;
+			liftArms = nullptr;
+			intakeArms = nullptr;
 
 			//Vision stuff
 			frame1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
@@ -97,12 +97,12 @@ namespace dreadbot
 
 			if (viewingBack && Cam2Enabled)
 			{
-				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame2);
 			}
 			if (!viewingBack && Cam1Enabled)
 			{
-				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
 		}
@@ -150,22 +150,22 @@ namespace dreadbot
 			}
 			if (viewingBack && Cam2Enabled)
 			{
-				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame2);
 			}
 			if (!viewingBack && Cam1Enabled)
 			{
-				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
-			if (intake != NULL)
+			if (intake != nullptr)
 				intake->Set(intakeInput);
 		
 			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
-			if (lift != NULL)
+			if (lift != nullptr)
 			{
 				if (liftInput)
 					lift->Set(1); //Keeps the lift up unless button is pressed.
@@ -175,11 +175,11 @@ namespace dreadbot
 
 			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			if (intakeArms != NULL)
+			if (intakeArms != nullptr)
 				intakeArms->Set(armInput);
 
 			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
-			if (liftArms != NULL)
+			if (liftArms != nullptr)
 					liftArms->Set(liftArmInput);
 		}
 
@@ -206,12 +206,12 @@ namespace dreadbot
 		{
 			if (viewingBack && Cam2Enabled)
 			{
-				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame2);
 			}
 			if (!viewingBack && Cam1Enabled)
 			{
-				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
 		}
