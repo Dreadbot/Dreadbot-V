@@ -1,10 +1,11 @@
 #pragma once
 
+#include <math.h>
 #include "WPILib.h"
 #include "Timer.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
-#include <math.h>
+#include "FSM.h"
 
 #define TOTE_PICKUP_TIME 1
 #define DRIVE_TO_ZONE_TIME 3
