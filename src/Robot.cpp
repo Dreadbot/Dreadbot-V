@@ -19,7 +19,6 @@ namespace dreadbot
 
 		XMLInput* Input;
 		MecanumDrive *drivebase;
-		RobotFSM* AutonBot;
 
 		MotorGrouping* intake;
 		PneumaticGrouping* lift;
@@ -90,10 +89,7 @@ namespace dreadbot
 		void AutonomousInit()
 		{
 			GlobalInit();
-			AutonBot->setHardware(drivebase, intake);
-			AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
-			AutonBot->start();
-
+		
 			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, NULL);
@@ -108,7 +104,6 @@ namespace dreadbot
 
 		void AutonomousPeriodic()
 		{
-			AutonBot->update();
 		}
 
 		void TeleopInit()
