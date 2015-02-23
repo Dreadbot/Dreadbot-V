@@ -44,8 +44,6 @@ namespace dreadbot
 		void start();
 		static void Drive(int x, int y, int r);
 		static void Intake(int speed);
-		static void startDriveTimer();
-		static void startGetTimer();
 	private:
 		FiniteStateMachine* FSM;
 
