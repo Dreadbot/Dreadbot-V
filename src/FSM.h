@@ -23,7 +23,7 @@ namespace dreadbot
 	class FiniteStateMachine
 	{
 	public:
-		FiniteStateMachine(FSMTransition* newStateTable, FSMState* initState);
+		virtual void init(FSMTransition* newStateTable, FSMState* initState);
 		virtual void update();
 	protected:
 		FSMTransition* stateTable;

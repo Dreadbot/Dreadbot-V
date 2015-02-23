@@ -2,7 +2,7 @@
 
 namespace dreadbot
 {
-	FiniteStateMachine::FiniteStateMachine(FSMTransition* newStateTable, FSMState* initState)
+	void FiniteStateMachine::init(FSMTransition* newStateTable, FSMState* initState)
 	{
 		stateTable = newStateTable;
 		currentState = initState;
