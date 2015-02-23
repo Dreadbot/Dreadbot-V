@@ -39,18 +39,16 @@ namespace dreadbot
 	public:
 		enum fsmInputs {timerExpired, sensorHit};
 
-		HALBot(MecanumDrive* newDrivebase, MotorGroup* newIntake)
+		HALBot(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
 		void update();
 		void start();
-		static void Drive(int x, int y, int r);
-		static void Intake(int speed);
 	private:
 		FiniteStateMachine* FSM;
 
 		MecanumDrive* drivebase;
-		MotorGroup* intake;
+		MotorGrouping* intake;
 
-		FSMTransition[] transitionTable;
+		FSMTransition transitionTable[];
 	};
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);
