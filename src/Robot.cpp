@@ -25,8 +25,7 @@ namespace dreadbot
 		PneumaticGrouping* liftArms;
 		PneumaticGrouping* intakeArms;
 
-		int viewerCooldown;
-		bool viewingBack;
+		HALBot* AutonBot;
 
 		//Vision stuff - credit to team 116 for this!
 		IMAQdxSession sessionCam1;
@@ -36,6 +35,8 @@ namespace dreadbot
 		Image* frame2;
 		bool Cam1Enabled;
 		bool Cam2Enabled;
+		bool viewingBack;
+		int viewerCooldown;
 
 	public:
 		void RobotInit()
@@ -52,6 +53,7 @@ namespace dreadbot
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+			AutonBot = new HALBot;
 
 			intake = NULL;
 			lift = NULL;
@@ -84,12 +86,18 @@ namespace dreadbot
 			lift = Input->getPGroup("lift");
 			liftArms = Input->getPGroup("liftArms");
 			intakeArms = Input->getPGroup("intakeArms");
+
+			AutonBot->init(drivebase, intake);
 		}
 
 		void AutonomousInit()
 		{
 			GlobalInit();
-		
+			AutonBot->start(); //Start off in the get tote state. Needs calibration.
+		}
+
+		void AutonomousPeriodic()
+		{
 			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, NULL);
@@ -100,10 +108,6 @@ namespace dreadbot
 				IMAQdxGrab(sessionCam1, frame1, true, NULL);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
-		}
-
-		void AutonomousPeriodic()
-		{
 		}
 
 		void TeleopInit()

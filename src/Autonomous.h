@@ -18,15 +18,25 @@ namespace dreadbot
 	class GettingTote : public FSMState
 	{
 	public:
+		GettingTote();
 		int update();
+		void setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
 		Timer getTimer;
+	private:
+		MecanumDrive* drivebase;
+		MotorGrouping* intake;
+		bool timerActive;
 	};
 	class DriveToZone : public FSMState
 	{
 	public:
+		DriveToZone();
 		int update();
-	private:
+		void setHardware(MecanumDrive* newDrivebase);
 		Timer driveTimer;
+	private:
+		MecanumDrive* drivebase;
+		bool timerActive;
 	};
 	class Stopped : public FSMState
 	{
@@ -34,21 +44,23 @@ namespace dreadbot
 		int update();
 	};
 
-	class HALBot
+	class HALBot : public FiniteStateMachine
 	{
 	public:
-		enum fsmInputs {timerExpired, sensorHit};
+		enum fsmInputs {no_update, timerExpired, sensorHit};
 
-		HALBot(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
-		void update();
+		HALBot();
+		~HALBot();
+		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
 		void start();
 	private:
-		FiniteStateMachine* FSM;
-
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
 
-		FSMTransition transitionTable[];
+		//This *might* not work.
+		GettingTote* gettingTote;
+		DriveToZone* driveToZone;
+		Stopped* stopped;
 	};
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);

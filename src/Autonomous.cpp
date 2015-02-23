@@ -2,6 +2,98 @@
 
 namespace dreadbot
 {
+	//States
+	GettingTote::GettingTote()
+	{
+		drivebase = nullptr;
+		intake = nullptr;
+		timerActive = false;
+	}
+	void GettingTote::setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
+	{
+		drivebase = newDrivebase;
+		intake = newIntake;
+	}
+	int GettingTote::update()
+	{
+		if (!timerActive)
+		{
+			getTimer.Reset();
+			getTimer.Start();
+			timerActive = true;
+		}
+
+		if (getTimer.HasPeriodPassed(TOTE_PICKUP_TIME))
+		{
+			timerActive = false;
+			return HALBot::timerExpired;
+		}
+
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, 0.5, 0); //Forward straight
+		if (intake != nullptr)
+			intake->Set(1); //Intake?
+		return HALBot::no_update;
+	}
+
+	DriveToZone::DriveToZone()
+	{
+		drivebase = nullptr;
+		timerActive = false;
+	}
+	void DriveToZone::setHardware(MecanumDrive* newDrivebase)
+	{
+		drivebase = newDrivebase;
+	}
+	int DriveToZone::update()
+	{
+		if (!timerActive)
+		{
+			driveTimer.Reset();
+			driveTimer.Start();
+			timerActive = true;
+		}
+
+		if (driveTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME))
+		{
+			timerActive = false;
+			return HALBot::timerExpired;
+		}
+
+		if (drivebase != nullptr)
+			drivebase->Drive_v(1, 0, 0); //Hard right!
+		return HALBot::no_update;
+	}
+
+	int Stopped::update()
+	{
+		return HALBot::no_update;
+	}
+
+	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
+	{
+		drivebase = newDrivebase;
+		intake = newIntake;
+
+		stopped = new Stopped;
+		gettingTote = new GettingTote;
+		gettingTote->setHardware(drivebase, intake);
+		driveToZone = new DriveToZone;
+		driveToZone->setHardware(drivebase);
+
+		currentState = stopped;
+
+		stateTable[0] = {gettingTote, HALBot::timerExpired, nullptr, driveToZone};
+		stateTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+		stateTable[2] = END_STATE_TABLE;
+	}
+	void HALBot::start()
+	{
+		//Starts the bot iff it's stopped
+		if (currentState == stopped)
+			currentState = gettingTote;
+	}
+
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra)
 	{
 		if (frontUltra == 0 || rearUltra == 0)
