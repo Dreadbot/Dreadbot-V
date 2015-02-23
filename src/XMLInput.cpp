@@ -142,7 +142,7 @@ namespace dreadbot
 		for (int i = 0; i < 3; i++)
 		{
 			//Deadzones
-			if (fabs(sPoints[i] < deadzones[i]))
+			if (fabs(sPoints[i]) < deadzones[i])
 				sPoints[i] = 0;
 
 			//Inverts
@@ -151,7 +151,7 @@ namespace dreadbot
 
 			//Decel to zero at double rate - cheat edition
 			if (sPoints[i] == 0)
-				accels[i] *= 2;
+				accels[i] *= 2.0f;
 
 			//Ramp-up stuff
 			if (vels[i] < sPoints[i])
