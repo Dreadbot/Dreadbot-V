@@ -70,15 +70,18 @@ namespace dreadbot
 		return HALBot::no_update;
 	}
 
+	HALBot::HALBot()
+	{
+		stopped = new Stopped;
+		gettingTote = new GettingTote;
+		driveToZone = new DriveToZone;
+	}
 	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
 	{
 		drivebase = newDrivebase;
 		intake = newIntake;
 
-		stopped = new Stopped;
-		gettingTote = new GettingTote;
 		gettingTote->setHardware(drivebase, intake);
-		driveToZone = new DriveToZone;
 		driveToZone->setHardware(drivebase);
 
 		currentState = stopped;

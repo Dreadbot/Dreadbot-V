@@ -98,6 +98,9 @@ namespace dreadbot
 
 		void AutonomousPeriodic()
 		{
+			AutonBot->update();
+
+			//Vision during auton
 			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, NULL);
