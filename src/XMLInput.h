@@ -74,7 +74,7 @@ namespace dreadbot
 	public:
 		static XMLInput* getInstance();
 		void setDrivebase(MecanumDrive* newDrivebase);
-		void loadXMLConfig(string filename);
+		void loadXMLConfig();
 		void updateDrivebase();
 		Joystick* getController(int ID); //!< Gets a joystick with the given ID. If joystick does not exist, creates joystick with ID and returns it.
 		CANTalon* getCANMotor(int ID); //!< Gets a CANTalon with the given ID. If the CANTalon does not exist, creates CANTalon with ID and returns it.

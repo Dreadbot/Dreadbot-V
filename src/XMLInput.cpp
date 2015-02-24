@@ -1,4 +1,5 @@
 #include "XMLInput.h"
+#include "Config.h"
 
 namespace dreadbot
 {
@@ -212,14 +213,13 @@ namespace dreadbot
 				return &(*iter);
 		return nullptr;
 	}
-	void XMLInput::loadXMLConfig(string filename)
+	void XMLInput::loadXMLConfig()
 	{
 		pGroups.clear();
 		mGroups.clear();
 
 		pugi::xml_document doc;
-		pugi::xml_parse_result result = doc.load_file(filename.c_str());
-		SmartDashboard::PutString("XML Filename: ", filename);
+		pugi::xml_parse_result result = doc.load_string(config.c_str());
 		SmartDashboard::PutNumber("XML Load Status: ", result.status);
 		SmartDashboard::PutString("XML Load Result: ", result.description());
 
