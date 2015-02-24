@@ -33,6 +33,7 @@ namespace dreadbot
 			drivebase->Drive_v(0, 0.5, 0); //Forward straight
 		if (intake != nullptr)
 			intake->Set(1); //Intake?
+		SmartDashboard::PutString("State", "gettingTote");
 		return HALBot::no_update;
 	}
 
@@ -62,11 +63,13 @@ namespace dreadbot
 
 		if (drivebase != nullptr)
 			drivebase->Drive_v(1, 0, 0); //Hard right!
+		SmartDashboard::PutString("State", "driveToZone");
 		return HALBot::no_update;
 	}
 
 	int Stopped::update()
 	{
+		SmartDashboard::PutString("State", "stopped");
 		return HALBot::no_update;
 	}
 
