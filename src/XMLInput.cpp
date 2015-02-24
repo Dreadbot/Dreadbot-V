@@ -139,6 +139,9 @@ namespace dreadbot
 		sPoints[x] = controllers[driveController]->GetRawAxis(axes[x]);
 		sPoints[y] = controllers[driveController]->GetRawAxis(axes[y]);
 		sPoints[r] = controllers[driveController]->GetRawAxis(axes[r]);
+		SmartDashboard::PutNumber("sPoint R", sPoints[r]);
+		SmartDashboard::PutNumber("sPoint X", sPoints[x]);
+		SmartDashboard::PutNumber("sPoint Y", sPoints[y]);
 
 		for (int i = 0; i < 3; i++)
 		{
@@ -150,25 +153,20 @@ namespace dreadbot
 			if (inverts[i])
 				sPoints[i] *= -1;
 
-			//Decel to zero at double rate - cheat edition
-			if (sPoints[i] == 0)
-				accels[i] *= 2.0f;
-
 			//Ramp-up stuff
 			if (vels[i] < sPoints[i])
 				vels[i] += accels[i];
 			if (vels[i] > sPoints[i])
 				vels[i] -= accels[i];
 
-			//Undo accel changes caused by the accel to zero thing
-			if (sPoints[i] == 0)
-				accels[i] /= 2;
-
 			//Velocity deadzones
 			if (fabs(vels[i]) < VEL_DEADZONE)
 				vels[i] = 0;
 		}
 
+		SmartDashboard::PutNumber("velX", vels[x]);
+		SmartDashboard::PutNumber("velY", vels[y]);
+		SmartDashboard::PutNumber("velR", vels[r]);
 		if (drivebase != nullptr) //Idiot check
 			drivebase->Drive_v(vels[x], vels[y], vels[r]);
 	}
