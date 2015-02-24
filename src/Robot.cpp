@@ -1,5 +1,6 @@
 #include <WPILib.h>
 #include "SmartDashboard/SmartDashboard.h"
+#include "DigitalInput.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Autonomous.h"
@@ -55,10 +56,10 @@ namespace dreadbot
 			Input->setDrivebase(drivebase);
 			AutonBot = new HALBot;
 
-			intake = NULL;
-			lift = NULL;
-			liftArms = NULL;
-			intakeArms = NULL;
+			intake = nullptr;
+			lift = nullptr;
+			liftArms = nullptr;
+			intakeArms = nullptr;
 
 			//Vision stuff
 			frame1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
@@ -78,7 +79,7 @@ namespace dreadbot
 			//frontUltra->SetAutomaticMode(true);
 			//rearUltra->SetAutomaticMode(true);
 
-			Input->loadXMLConfig("/Bot_Config.xml");
+			Input->loadXMLConfig();
 			gamepad = Input->getController(0);
 			drivebase->Engage();
 
@@ -103,12 +104,12 @@ namespace dreadbot
 			//Vision during auton
 			if (viewingBack && Cam2Enabled)
 			{
-				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame2);
 			}
 			if (!viewingBack && Cam1Enabled)
 			{
-				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
 		}
@@ -128,7 +129,7 @@ namespace dreadbot
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(5) && viewerCooldown == 0) //Left bumper
+			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
@@ -151,31 +152,36 @@ namespace dreadbot
 			}
 			if (viewingBack && Cam2Enabled)
 			{
-				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame2);
 			}
 			if (!viewingBack && Cam1Enabled)
 			{
-				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
-			if (intake != NULL)
+			if (intake != nullptr)
 				intake->Set(intakeInput);
-		
-			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
-			if (lift != NULL)
-				lift->Set(liftInput); //Keeps the lift up unless button is pressed.
 
+			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
+			if (lift != nullptr)
+			{
+				if (liftInput)
+					lift->Set(1); //Keeps the lift up unless button is pressed.
+				else
+					lift->Set(-1);
+			}
+			
 			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			if (intakeArms != NULL)
+			if (intakeArms != nullptr)
 				intakeArms->Set(armInput);
 
 			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
-			if (liftArms != NULL)
+			if (liftArms != nullptr)
 					liftArms->Set(liftArmInput);
 		}
 
@@ -186,6 +192,7 @@ namespace dreadbot
 
 		void TestPeriodic()
 		{
+			//lw->Run();
 		}
 
 		void DisabledInit()
@@ -202,12 +209,12 @@ namespace dreadbot
 		{
 			if (viewingBack && Cam2Enabled)
 			{
-				IMAQdxGrab(sessionCam2, frame2, true, NULL);
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame2);
 			}
 			if (!viewingBack && Cam1Enabled)
 			{
-				IMAQdxGrab(sessionCam1, frame1, true, NULL);
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
 		}
