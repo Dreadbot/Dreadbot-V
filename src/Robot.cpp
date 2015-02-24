@@ -1,5 +1,6 @@
 #include <WPILib.h>
 #include "SmartDashboard/SmartDashboard.h"
+#include "DigitalInput.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Autonomous.h"
@@ -78,7 +79,7 @@ namespace dreadbot
 			//frontUltra->SetAutomaticMode(true);
 			//rearUltra->SetAutomaticMode(true);
 
-			Input->loadXMLConfig("/Bot_Config.xml");
+			Input->loadXMLConfig();
 			gamepad = Input->getController(0);
 			drivebase->Engage();
 
@@ -163,7 +164,7 @@ namespace dreadbot
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
 			if (intake != nullptr)
 				intake->Set(intakeInput);
-		
+
 			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
 			if (lift != nullptr)
 			{
@@ -172,7 +173,7 @@ namespace dreadbot
 				else
 					lift->Set(-1);
 			}
-
+			
 			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
 			if (intakeArms != nullptr)
@@ -190,6 +191,7 @@ namespace dreadbot
 
 		void TestPeriodic()
 		{
+			//lw->Run();
 		}
 
 		void DisabledInit()
