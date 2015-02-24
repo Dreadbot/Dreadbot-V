@@ -6,8 +6,8 @@ namespace dreadbot
 	SimplePneumatic::SimplePneumatic()
 	{
 		invert = false;
-		dPneumatic = NULL;
-		sPneumatic = NULL;
+		dPneumatic = nullptr;
+		sPneumatic = nullptr;
 		actionCount = 2;
 	}
 	void SimplePneumatic::Set(DoubleSolenoid::Value value)
@@ -32,17 +32,17 @@ namespace dreadbot
 	{
 		CAN = false;
 		invert = false;
-		CANMotor = NULL;
-		PWMMotor = NULL;
+		CANMotor = nullptr;
+		PWMMotor = nullptr;
 	}
 	void SimpleMotor::Set(float value)
 	{
 		if (invert)
 			value *= -1;
 
-		if (CAN && CANMotor != NULL)
+		if (CAN && CANMotor != nullptr)
 			CANMotor->Set(value);
-		else if (!CAN && PWMMotor != NULL)
+		else if (!CAN && PWMMotor != nullptr)
 			PWMMotor->Set(value);
 	}
 
@@ -90,21 +90,21 @@ namespace dreadbot
 	}
 
 	//XMLInput stuff
-	XMLInput* XMLInput::singlePtr = NULL;
+	XMLInput* XMLInput::singlePtr = nullptr;
 	XMLInput::XMLInput()
 	{
-		drivebase = NULL;
+		drivebase = nullptr;
 		for (int i = 0; i < MAX_CONTROLLERS; i++)
-			controllers[i] = NULL;
+			controllers[i] = nullptr;
 		for (int i = 0; i < MAX_MOTORS; i++)
 		{
-			canMotors[i] = NULL;
-			pwmMotors[i] = NULL;
+			canMotors[i] = nullptr;
+			pwmMotors[i] = nullptr;
 		}
 		for (int i = 0; i < MAX_PNEUMS; i++)
 		{
-			dPneums[i] = NULL;
-			sPneums[i] = NULL;
+			dPneums[i] = nullptr;
+			sPneums[i] = nullptr;
 		}
 
 		transXAxis = 0;
@@ -120,7 +120,7 @@ namespace dreadbot
 	}
 	XMLInput* XMLInput::getInstance()
 	{
-		if (singlePtr == NULL)
+		if (singlePtr == nullptr)
 			singlePtr = new XMLInput;
 		return singlePtr;
 	}
@@ -157,44 +157,44 @@ namespace dreadbot
 	{
 		if (ID < MAX_CONTROLLERS && ID > -1)
 		{
-			if (controllers[ID] == NULL)
+			if (controllers[ID] == nullptr)
 				controllers[ID] = new Joystick(ID);
 			return controllers[ID];
 		}
-		return NULL;
+		return nullptr;
 	}
 	CANTalon* XMLInput::getCANMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
 		{
-			if (canMotors[ID] == NULL)
+			if (canMotors[ID] == nullptr)
 				canMotors[ID] = new CANTalon(ID);
 			return canMotors[ID];
 		}
-		return NULL;
+		return nullptr;
 	}
 	Talon* XMLInput::getPWMMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
 		{
-			if (pwmMotors[ID] == NULL)
+			if (pwmMotors[ID] == nullptr)
 				pwmMotors[ID] = new Talon(ID);
 			return pwmMotors[ID];
 		}
-		return NULL;
+		return nullptr;
 	}
 	DoubleSolenoid* XMLInput::getDPneum(int forwardID)
 	{
 		if (forwardID < MAX_PNEUMS - 1 && forwardID > -1)
 			return dPneums[forwardID];
-		return NULL;
+		return nullptr;
 	}
 
 	Solenoid* XMLInput::getSPneum(int ID)
 	{
 		if (ID > MAX_PNEUMS - 1 || ID < 0)
-			return NULL;
-		if (sPneums[ID] == NULL)
+			return nullptr;
+		if (sPneums[ID] == nullptr)
 			sPneums[ID] = new Solenoid(ID);
 		return sPneums[ID];
 	}
@@ -203,14 +203,14 @@ namespace dreadbot
 		for (auto iter = mGroups.begin(); iter != mGroups.end(); iter++)
 			if (iter->name == name)
 				return &(*iter);
-		return NULL;
+		return nullptr;
 	}
 	PneumaticGrouping* XMLInput::getPGroup(string name)
 	{
 		for (auto iter = pGroups.begin(); iter != pGroups.end(); iter++)
 			if (iter->name == name)
 				return &(*iter);
-		return NULL;
+		return nullptr;
 	}
 	void XMLInput::loadXMLConfig(string filename)
 	{
@@ -219,6 +219,8 @@ namespace dreadbot
 
 		pugi::xml_document doc;
 		pugi::xml_parse_result result = doc.load_file(filename.c_str());
+		SmartDashboard::PutString("XML Filename: ", filename);
+		SmartDashboard::PutNumber("XML Load Status: ", result.status);
 		SmartDashboard::PutString("XML Load Result: ", result.description());
 
 		//Load drivebase motors
@@ -241,7 +243,7 @@ namespace dreadbot
 
 		//Drivebase control loading - rig joystick
 		int controlID = base.child("controller").attribute("controllerID").as_int();
-		if (controllers[controlID] == NULL)
+		if (controllers[controlID] == nullptr)
 			controllers[controlID] = new Joystick(controlID);
 		driveController = controlID;
 
@@ -331,7 +333,7 @@ namespace dreadbot
 				{
 					int forwardID = pneumatic.attribute("forwardID").as_int();
 					int reverseID = pneumatic.attribute("reverseID").as_int();
-					if (getDPneum(forwardID) != NULL)
+					if (getDPneum(forwardID) != nullptr)
 						newPneum.dPneumatic = getDPneum(forwardID);
 					else
 					{
@@ -346,4 +348,4 @@ namespace dreadbot
 			pGroups.push_back(newPGroup);
 		}
 	}
-};
+}

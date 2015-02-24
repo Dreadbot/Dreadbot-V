@@ -77,4 +77,4 @@ namespace dreadbot
 		float angle = atan(totalDelta / ULTRASONIC_SEPARATION); //This might need testing
 		return cos(angle);
 	}
-};
+}

@@ -35,4 +35,4 @@ namespace dreadbot
 	};
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);
-};
+}

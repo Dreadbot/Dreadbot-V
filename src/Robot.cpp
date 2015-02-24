@@ -1,16 +1,18 @@
 #include <WPILib.h>
 #include "../lib/USBCamera.h"
 #include "SmartDashboard/SmartDashboard.h"
+#include "DigitalInput.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Vision.h"
 #include "Autonomous.h"
 
-namespace dreadbot {
-
+namespace dreadbot
+{
 #define CAMSWITCH_AXIS 6
 
-	class Robot: public IterativeRobot {
+	class Robot: public IterativeRobot
+	{
 	private:
 		DriverStation *ds;
 		Joystick* gamepad;
@@ -54,10 +56,10 @@ namespace dreadbot {
 			Input->setDrivebase(drivebase);
 			AutonBot = new RobotFSM;
 
-			intake = NULL;
-			lift = NULL;
-			liftArms = NULL;
-			intakeArms = NULL;
+			intake = nullptr;
+			lift = nullptr;
+			liftArms = nullptr;
+			intakeArms = nullptr;
 
 			//Vision stuff
 //			viewingBack = false;
@@ -74,7 +76,7 @@ namespace dreadbot {
 			//frontUltra->SetAutomaticMode(true);
 			//rearUltra->SetAutomaticMode(true);
 
-			Input->loadXMLConfig("/XML Bot Config.xml");
+			Input->loadXMLConfig("/Bot_Config.xml");
 			gamepad = Input->getController(0);
 			drivebase->Engage();
 
@@ -102,7 +104,8 @@ namespace dreadbot {
 			GlobalInit();
 		}
 
-		void TeleopPeriodic() {
+		void TeleopPeriodic()
+		{
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 			//drivebase->SD_OutputDiagnostics();
@@ -125,29 +128,31 @@ namespace dreadbot {
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
-			if (intake != NULL)
+			if (intake != nullptr)
 				intake->Set(intakeInput);
-		
-			float liftInput = (int)gamepad->GetRawButton(4); //Y Button
-			liftInput += (int)gamepad->GetRawButton(1) * -1; //A button
-			if (lift != NULL)
-				lift->Set(liftInput);
 
-			float armInput = (int)gamepad->GetRawButton(3); //X button
+			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
+			SmartDashboard::PutBoolean("liftInput", liftInput);
+			if (lift != nullptr)
+			{
+				if (liftInput) {
+					SmartDashboard::PutNumber("lift->Set()", 1);
+					lift->Set(1); //Keeps the lift up unless button is pressed.
+				}
+				else {
+					SmartDashboard::PutNumber("lift->Set()", -1);
+					lift->Set(-1);
+				}
+			}
+
+			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			if (intakeArms != NULL)
+			if (intakeArms != nullptr)
 				intakeArms->Set(armInput);
 
-			float liftArmInput = gamepad->GetRawButton(6);
-			if (liftArms != NULL)
+			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
+			if (liftArms != nullptr)
 					liftArms->Set(liftArmInput);
-
-			//Debug stuff?
-			for (int i = 1; i < 5; i++)
-			{
-				SmartDashboard::PutNumber("Axis " + i, gamepad->GetRawAxis(i));
-				SmartDashboard::PutNumber("Button " + i, gamepad->GetRawButton(i));
-			}
 		}
 
 		void TestInit()
@@ -157,6 +162,7 @@ namespace dreadbot {
 
 		void TestPeriodic()
 		{
+			//lw->Run();
 		}
 
 		void DisabledInit()
