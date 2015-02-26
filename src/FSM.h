@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include "WPILib.h"
+#include "SmartDashboard/SmartDashboard.h"
 
 #define END_STATE_TABLE {nullptr, 0, nullptr, nullptr}
 

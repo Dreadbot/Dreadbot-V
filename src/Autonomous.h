@@ -52,7 +52,6 @@ namespace dreadbot
 		HALBot();
 		~HALBot();
 		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
-		void start();
 		void update();
 	private:
 		FiniteStateMachine* fsm;

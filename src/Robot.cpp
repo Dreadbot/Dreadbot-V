@@ -54,7 +54,6 @@ namespace dreadbot
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
-			AutonBot = new HALBot;
 
 			intake = nullptr;
 			lift = nullptr;
@@ -87,14 +86,13 @@ namespace dreadbot
 			lift = Input->getPGroup("lift");
 			liftArms = Input->getPGroup("liftArms");
 			intakeArms = Input->getPGroup("intakeArms");
-
-			AutonBot->init(drivebase, intake);
 		}
 
 		void AutonomousInit()
 		{
 			GlobalInit();
-			//AutonBot->start();
+			AutonBot = new HALBot;
+			AutonBot->init(drivebase, intake);
 		}
 
 		void AutonomousPeriodic()
