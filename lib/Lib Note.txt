@@ -3,12 +3,6 @@ party files used with the parameters of their respective licenses. Any
 data deemed relevant is displayed below.
 ________________________________________________________________________________
 
-There's supposed to be something about needing a BSD license here or something
-for the WPILib stuff. Or whatever license. Screw it, just look in the
-USBCamera.h file. That has the license you need. Or something. Whatever, I gotta
-get back to coding.
-________________________________________________________________________________
-
 PugiXML:
 This software is based on pugixml library (http://pugixml.org).
 pugixml is Copyright (C) 2006-2014 Arseny Kapoulkine. 

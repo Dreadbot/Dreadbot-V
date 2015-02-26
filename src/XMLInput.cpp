@@ -1,4 +1,5 @@
 #include "XMLInput.h"
+#include "Config.h"
 
 namespace dreadbot
 {
@@ -138,13 +139,15 @@ namespace dreadbot
 		sPoints[x] = controllers[driveController]->GetRawAxis(axes[x]);
 		sPoints[y] = controllers[driveController]->GetRawAxis(axes[y]);
 		sPoints[r] = controllers[driveController]->GetRawAxis(axes[r]);
+		SmartDashboard::PutNumber("sPoint R", sPoints[r]);
+		SmartDashboard::PutNumber("sPoint X", sPoints[x]);
+		SmartDashboard::PutNumber("sPoint Y", sPoints[y]);
 
 		for (int i = 0; i < 3; i++)
 		{
 			//Deadzones
 			if (fabs(sPoints[i]) < deadzones[i])
 				sPoints[i] = 0;
-
 			//Inverts
 			if (inverts[i])
 				sPoints[i] *= -1;
@@ -168,6 +171,27 @@ namespace dreadbot
 				vels[i] = 0;
 		}
 
+			//Inverts
+			if (inverts[i])
+				sPoints[i] *= -1;
+
+			//Ramp-up stuff
+			if (vels[i] < sPoints[i])
+				vels[i] += accels[i];
+			if (vels[i] > sPoints[i])
+				vels[i] -= accels[i];
+
+			//Velocity deadzones
+			if (fabs(vels[i]) < VEL_DEADZONE)
+				vels[i] = 0;
+
+			//NUKE
+			vels[i] = sPoints[i];
+		}
+
+		SmartDashboard::PutNumber("velX", vels[x]);
+		SmartDashboard::PutNumber("velY", vels[y]);
+		SmartDashboard::PutNumber("velR", vels[r]);
 		if (drivebase != nullptr) //Idiot check
 			drivebase->Drive_v(vels[x], vels[y], vels[r]);
 	}
@@ -234,13 +258,14 @@ namespace dreadbot
 				return &(*iter);
 		return nullptr;
 	}
-	void XMLInput::loadXMLConfig(string filename)
+	void XMLInput::loadXMLConfig()
 	{
 		pGroups.clear();
 		mGroups.clear();
 
 		pugi::xml_document doc;
-		pugi::xml_parse_result result = doc.load_file(filename.c_str());
+		pugi::xml_parse_result result = doc.load_string(config.c_str());
+		SmartDashboard::PutNumber("XML Load Status: ", result.status);
 		SmartDashboard::PutString("XML Load Result: ", result.description());
 
 		//Load drivebase motors
