@@ -232,7 +232,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam1 IMAQdxCloseCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 			}
 			else if (cameraNum == 2)
@@ -244,10 +244,10 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxCloseCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 			}
-			return (false);
+			return true;
 		}
 
 		bool StartCamera(int cameraNum)
@@ -261,7 +261,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam1 IMAQdxOpenCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
@@ -269,7 +269,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxConfigureGrab error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				// acquire images
 				IMAQdxStartAcquisition(sessionCam1);
@@ -283,7 +283,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxOpenCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
@@ -291,12 +291,12 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxConfigureGrab error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				// acquire images
 				IMAQdxStartAcquisition(sessionCam2);
 			}
-			return (true);
+			return true;
 		}
 	};
 }
