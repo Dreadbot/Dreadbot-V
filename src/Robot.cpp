@@ -94,24 +94,24 @@ namespace dreadbot
 		void AutonomousInit()
 		{
 			GlobalInit();
-			AutonBot->start(); //Start off in the get tote state. Needs calibration.
+			//AutonBot->start();
 		}
 
 		void AutonomousPeriodic()
 		{
 			AutonBot->update();
 
-			//Vision during auton
-			if (viewingBack && Cam2Enabled)
-			{
-				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame2);
-			}
-			if (!viewingBack && Cam1Enabled)
-			{
-				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame1);
-			}
+//			//Vision during auton
+//			if (viewingBack && Cam2Enabled)
+//			{
+//				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
+//				CameraServer::GetInstance()->SetImage(frame2);
+//			}
+//			if (!viewingBack && Cam1Enabled)
+//			{
+//				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
+//				CameraServer::GetInstance()->SetImage(frame1);
+//			}
 		}
 
 		void TeleopInit()
@@ -127,39 +127,39 @@ namespace dreadbot
 			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
 			//Vision switch control
-			if (viewerCooldown > 0)
-				viewerCooldown--;
-			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
-			{
-				SmartDashboard::PutBoolean("Switched camera", true);
-				//Create cooldown and set the boolean thingy
-				viewerCooldown = 10;
-				viewingBack =! viewingBack;
-
-				if (viewingBack)
-				{
-					//Rear camera: Camera 2
-					StopCamera(1);
-					Cam1Enabled = false;
-					Cam2Enabled = StartCamera(2);
-				}
-				else
-				{
-					StopCamera(2);
-					Cam1Enabled = StartCamera(1);
-					Cam2Enabled = false;
-				}
-			}
-			if (viewingBack && Cam2Enabled)
-			{
-				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame2);
-			}
-			if (!viewingBack && Cam1Enabled)
-			{
-				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame1);
-			}
+//			if (viewerCooldown > 0)
+//				viewerCooldown--;
+//			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
+//			{
+//				SmartDashboard::PutBoolean("Switched camera", true);
+//				//Create cooldown and set the boolean thingy
+//				viewerCooldown = 10;
+//				viewingBack =! viewingBack;
+//
+//				if (viewingBack)
+//				{
+//					//Rear camera: Camera 2
+//					StopCamera(1);
+//					Cam1Enabled = false;
+//					Cam2Enabled = StartCamera(2);
+//				}
+//				else
+//				{
+//					StopCamera(2);
+//					Cam1Enabled = StartCamera(1);
+//					Cam2Enabled = false;
+//				}
+//			}
+//			if (viewingBack && Cam2Enabled)
+//			{
+//				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
+//				CameraServer::GetInstance()->SetImage(frame2);
+//			}
+//			if (!viewingBack && Cam1Enabled)
+//			{
+//				IMAQdxGrab(sessionCam1, frame1, true, n4ullptr);
+//				CameraServer::GetInstance()->SetImage(frame1);
+//			}
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
@@ -207,16 +207,16 @@ namespace dreadbot
 
 		void DisabledPeriodic()
 		{
-			if (viewingBack && Cam2Enabled)
-			{
-				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame2);
-			}
-			if (!viewingBack && Cam1Enabled)
-			{
-				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame1);
-			}
+//			if (viewingBack && Cam2Enabled)
+//			{
+//				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
+//				CameraServer::GetInstance()->SetImage(frame2);
+//			}
+//			if (!viewingBack && Cam1Enabled)
+//			{
+//				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
+//				CameraServer::GetInstance()->SetImage(frame1);
+//			}
 		}
 
 		bool StopCamera(int cameraNum)

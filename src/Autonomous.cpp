@@ -78,6 +78,16 @@ namespace dreadbot
 		stopped = new Stopped;
 		gettingTote = new GettingTote;
 		driveToZone = new DriveToZone;
+		drivebase = nullptr;
+		intake = nullptr;
+		fsm = new FiniteStateMachine;
+	}
+	HALBot::~HALBot()
+	{
+		delete stopped;
+		delete gettingTote;
+		delete driveToZone;
+		delete fsm;
 	}
 	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
 	{
@@ -87,18 +97,24 @@ namespace dreadbot
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 
-		currentState = stopped;
+		FSMTransition stateTable[] =
+		{
+				{gettingTote, HALBot::timerExpired, nullptr, driveToZone},
+				{driveToZone, HALBot::timerExpired, nullptr, stopped},
+				END_STATE_TABLE
+		};
 
-		stateTable[0] = {gettingTote, HALBot::timerExpired, nullptr, driveToZone};
-		stateTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
-		stateTable[2] = END_STATE_TABLE;
+		fsm->init(stateTable, stopped);
 	}
 	void HALBot::start()
 	{
-		//Starts the bot iff it's stopped
-		if (currentState == stopped)
-			currentState = gettingTote;
+		//What does this even do>
 	}
+	void HALBot::update()
+	{
+		fsm->update();
+	}
+
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra)
 	{

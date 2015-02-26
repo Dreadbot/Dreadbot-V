@@ -44,7 +44,7 @@ namespace dreadbot
 		int update();
 	};
 
-	class HALBot : public FiniteStateMachine
+	class HALBot
 	{
 	public:
 		enum fsmInputs {no_update, timerExpired, sensorHit};
@@ -53,7 +53,9 @@ namespace dreadbot
 		~HALBot();
 		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
 		void start();
+		void update();
 	private:
+		FiniteStateMachine* fsm;
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
 
