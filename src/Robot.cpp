@@ -3,6 +3,8 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Autonomous.h"
+#include "Robot.h"
+
 
 namespace dreadbot
 {
@@ -79,7 +81,7 @@ namespace dreadbot
 			//rearUltra->SetAutomaticMode(true);
 
 			Input->loadXMLConfig("/Bot_Config.xml");
-			gamepad = Input->getController(0);
+			gamepad = Input->getController(COM_PRIMARY_DRIVER);
 			drivebase->Engage();
 
 			intake = Input->getMGroup("intake");

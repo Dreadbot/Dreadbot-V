@@ -6,8 +6,8 @@ namespace dreadbot
 	SimplePneumatic::SimplePneumatic()
 	{
 		invert = false;
-		dPneumatic = NULL;
-		sPneumatic = NULL;
+		dPneumatic = nullptr;
+		sPneumatic = nullptr;
 		actionCount = 2;
 	}
 	void SimplePneumatic::Set(DoubleSolenoid::Value value)
@@ -32,17 +32,17 @@ namespace dreadbot
 	{
 		CAN = false;
 		invert = false;
-		CANMotor = NULL;
-		PWMMotor = NULL;
+		CANMotor = nullptr;
+		PWMMotor = nullptr;
 	}
 	void SimpleMotor::Set(float value)
 	{
 		if (invert)
 			value *= -1;
 
-		if (CAN && CANMotor != NULL)
+		if (CAN && CANMotor != nullptr)
 			CANMotor->Set(value);
-		else if (!CAN && PWMMotor != NULL)
+		else if (!CAN && PWMMotor != nullptr)
 			PWMMotor->Set(value);
 	}
 
@@ -90,44 +90,41 @@ namespace dreadbot
 	}
 
 	//XMLInput stuff
-	XMLInput* XMLInput::singlePtr = NULL;
+	XMLInput* XMLInput::singlePtr = nullptr;
 	XMLInput::XMLInput()
 	{
-		drivebase = NULL;
+		drivebase = nullptr;
 		for (int i = 0; i < MAX_CONTROLLERS; i++)
-			controllers[i] = NULL;
+			controllers[i] = nullptr;
 		for (int i = 0; i < MAX_MOTORS; i++)
 		{
-			canMotors[i] = NULL;
-			pwmMotors[i] = NULL;
+			canMotors[i] = nullptr;
+			pwmMotors[i] = nullptr;
 		}
 		for (int i = 0; i < MAX_PNEUMS; i++)
 		{
-			dPneums[i] = NULL;
-			sPneums[i] = NULL;
+			dPneums[i] = nullptr;
+			sPneums[i] = nullptr;
 		}
 
-		transXAxis = 0;
-		transYAxis = 0;
-		rotAxis = 0;
-		transXDeadzone = 0;
-		transYDeadzone = 0;
-		rotDeadzone = 0;
 		driveController = 1;
-		invertX = false;
-		invertY = false;
-		invertR = false;
+		for (int i = 0; i < 3; i++)
+		{
+			axes[i] = 0;
+			deadzones[i] = 0;
+			inverts[i] = 0; //Since inverts is an array of bools, this sets it to false
+		}
 
-		rVel = 0;
-		xVel = 0;
-		yVel = 0;
-		rAccelRate = 0.05;
-		xAccelRate = 0.05;
-		yAccelRate = 0.05;
+		//Velocities and accels
+		for (int i = 0; i < 3; i++)
+		{
+			vels[i] = 0;
+			accels[i] = 0.25f;
+		}
 	}
 	XMLInput* XMLInput::getInstance()
 	{
-		if (singlePtr == NULL)
+		if (singlePtr == nullptr)
 			singlePtr = new XMLInput;
 		return singlePtr;
 	}
@@ -137,90 +134,89 @@ namespace dreadbot
 	}
 	void XMLInput::updateDrivebase()
 	{
-		float xSPoint = controllers[driveController]->GetRawAxis(transXAxis);
-		float ySPoint = controllers[driveController]->GetRawAxis(transYAxis);
-		float rSPoint = controllers[driveController]->GetRawAxis(rotAxis);
+		double sPoints[3];
+		sPoints[x] = controllers[driveController]->GetRawAxis(axes[x]);
+		sPoints[y] = controllers[driveController]->GetRawAxis(axes[y]);
+		sPoints[r] = controllers[driveController]->GetRawAxis(axes[r]);
 
-		//Deadzones
-		if (fabs(xSPoint) < transXDeadzone)
-			xSPoint = 0;
-		if (fabs(ySPoint) < transYDeadzone)
-			ySPoint = 0;
-		if (fabs(rSPoint) < rotDeadzone)
-			rSPoint = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			//Deadzones
+			if (fabs(sPoints[i]) < deadzones[i])
+				sPoints[i] = 0;
 
-		//Invert
-		if (invertX)
-			xSPoint = -xSPoint;
-		if (invertY)
-			ySPoint = -ySPoint;
-		if (invertR)
-			rSPoint = -rSPoint;
+			//Inverts
+			if (inverts[i])
+				sPoints[i] *= -1;
 
-		//Ramp-up stuff
-		if (xVel < xSPoint)
-			xVel += X_ACCEL_RATE;
-		if (xVel > xSPoint)
-			xVel -= X_ACCEL_RATE;
-		if (yVel < ySPoint)
-			yVel += Y_ACCEL_RATE;
-		if (yVel > ySPoint)
-			yVel -= Y_ACCEL_RATE;
-		if (rVel < rSPoint)
-			rVel += R_ACCEL_RATE;
-		if (rVel > rSPoint)
-			rVel -= R_ACCEL_RATE;
+			//Decel to zero at double rate - cheat edition
+			if (sPoints[i] == 0)
+				accels[i] *= 2.0f;
 
-		if (drivebase != NULL) //Idiot check
-			drivebase->Drive_v(xVel, yVel, rVel);
+			//Ramp-up stuff
+			if (vels[i] < sPoints[i])
+				vels[i] += accels[i];
+			if (vels[i] > sPoints[i])
+				vels[i] -= accels[i];
+
+			//Undo accel changes caused by the accel to zero thing
+			if (sPoints[i] == 0)
+				accels[i] /= 2;
+
+			//Velocity deadzones
+			if (fabs(vels[i]) < VEL_DEADZONE)
+				vels[i] = 0;
+		}
+
+		if (drivebase != nullptr) //Idiot check
+			drivebase->Drive_v(vels[x], vels[y], vels[r]);
 	}
 	void XMLInput::zeroVels()
 	{
-		xVel = 0;
-		yVel = 0;
-		rVel = 0;
+		for (int i = 0; i < 3; i++)
+			vels[i] = 0;
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
 		if (ID < MAX_CONTROLLERS && ID > -1)
 		{
-			if (controllers[ID] == NULL)
+			if (controllers[ID] == nullptr)
 				controllers[ID] = new Joystick(ID);
 			return controllers[ID];
 		}
-		return NULL;
+		return nullptr;
 	}
 	CANTalon* XMLInput::getCANMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
 		{
-			if (canMotors[ID] == NULL)
+			if (canMotors[ID] == nullptr)
 				canMotors[ID] = new CANTalon(ID);
 			return canMotors[ID];
 		}
-		return NULL;
+		return nullptr;
 	}
 	Talon* XMLInput::getPWMMotor(int ID)
 	{
 		if (ID < MAX_CONTROLLERS - 1 && ID > -1)
 		{
-			if (pwmMotors[ID] == NULL)
+			if (pwmMotors[ID] == nullptr)
 				pwmMotors[ID] = new Talon(ID);
 			return pwmMotors[ID];
 		}
-		return NULL;
+		return nullptr;
 	}
 	DoubleSolenoid* XMLInput::getDPneum(int forwardID)
 	{
 		if (forwardID < MAX_PNEUMS - 1 && forwardID > -1)
 			return dPneums[forwardID];
-		return NULL;
+		return nullptr;
 	}
 	Solenoid* XMLInput::getSPneum(int ID)
 	{
 		if (ID > MAX_PNEUMS - 1 || ID < 0)
-			return NULL;
-		if (sPneums[ID] == NULL)
+			return nullptr;
+		if (sPneums[ID] == nullptr)
 			sPneums[ID] = new Solenoid(ID);
 		return sPneums[ID];
 	}
@@ -229,14 +225,14 @@ namespace dreadbot
 		for (auto iter = mGroups.begin(); iter != mGroups.end(); iter++)
 			if (iter->name == name)
 				return &(*iter);
-		return NULL;
+		return nullptr;
 	}
 	PneumaticGrouping* XMLInput::getPGroup(string name)
 	{
 		for (auto iter = pGroups.begin(); iter != pGroups.end(); iter++)
 			if (iter->name == name)
 				return &(*iter);
-		return NULL;
+		return nullptr;
 	}
 	void XMLInput::loadXMLConfig(string filename)
 	{
@@ -267,7 +263,7 @@ namespace dreadbot
 
 		//Drivebase control loading - rig joystick
 		int controlID = base.child("controller").attribute("controllerID").as_int();
-		if (controllers[controlID] == NULL)
+		if (controllers[controlID] == nullptr)
 			controllers[controlID] = new Joystick(controlID);
 		driveController = controlID;
 
@@ -279,36 +275,36 @@ namespace dreadbot
 			invert = axis.child_value("invert");
 			if (axisDir == "transY")
 			{
-				transYAxis = atoi(axis.child_value("ID"));
-				transYDeadzone = atof(axis.child_value("deadzone"));
-				yAccelRate = atof(axis.child_value("accel"));
+				axes[y] = atoi(axis.child_value("ID"));
+				deadzones[y] = atof(axis.child_value("deadzone"));
+				accels[y] = atof(axis.child_value("accel"));
 
 				if (invert.find("true")) //I really don't understand how this works...
-					invertY = false;
+					inverts[y] = false;
 				else
-					invertY = true;
+					inverts[y] = true;
 			}
 			else if (axisDir == "transX")
 			{
-				transXAxis = atoi(axis.child_value("ID"));
-				transXDeadzone = atof(axis.child_value("deadzone"));
-				xAccelRate = atof(axis.child_value("accel"));
+				axes[x] = atoi(axis.child_value("ID"));
+				deadzones[x] = atof(axis.child_value("deadzone"));
+				accels[x] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
-					invertX = false;
+					inverts[x] = false;
 				else
-					invertX = true;
+					inverts[x] = true;
 			}
 			else if (axisDir == "rot")
 			{
-				rotAxis = atoi(axis.child_value("ID"));
-				rotDeadzone = atof(axis.child_value("deadzone"));
-				rAccelRate = atof(axis.child_value("accel"));
+				axes[r] = atoi(axis.child_value("ID"));
+				deadzones[r] = atof(axis.child_value("deadzone"));
+				accels[r] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
-					invertR = false;
+					inverts[r] = false;
 				else
-					invertR = true;
+					inverts[r] = true;
 			}
 		}
 
@@ -363,7 +359,7 @@ namespace dreadbot
 				{
 					int forwardID = pneumatic.attribute("forwardID").as_int();
 					int reverseID = pneumatic.attribute("reverseID").as_int();
-					if (getDPneum(forwardID) != NULL)
+					if (getDPneum(forwardID) != nullptr)
 						newPneum.dPneumatic = getDPneum(forwardID);
 					else
 					{

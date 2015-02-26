@@ -62,11 +62,13 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	double rot_out = -rotation;
 
 	if (mode == drivemode::relative) {
+		/*
 		#ifdef SQUARE_INPUTS
 			vec_out.x = vec_out.x*std::abs(vec_out.x);
 			vec_out.y = vec_out.y*std::abs(vec_out.y);
 			rot_out = rot_out*std::abs(rot_out);
 		#endif
+		*/
 	}
 
 	double wspeeds[4];
