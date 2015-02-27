@@ -167,6 +167,9 @@ namespace dreadbot
 			//Velocity deadzones
 			if (fabs(vels[i]) < VEL_DEADZONE)
 				vels[i] = 0;
+
+			//NUKE
+			vels[i] = sPoints[i];
 		}
 
 		SmartDashboard::PutNumber("velX", vels[x]);
