@@ -1,4 +1,8 @@
+#include <iostream>
 #include <cmath>
+#include "Velocity.h"
+#include <math.h>
+#include <stdio.h>
 
 namespace dreadbot
 {
@@ -9,16 +13,21 @@ namespace dreadbot
 	******************************************************************************/
 	Velocity::Velocity(void)
 	{
-		Velocity(0, 0, 0);
+		this->set(0, 0, 0);
+		this->set_limit(0,0);
+		this->label = "";
 	}
 	Velocity::Velocity(double x, double y, double r)
 	{
 		this->set(x, y, r);
-		this->limit = nullptr;
+		this->set_limit(0,0);
+		this->label = "";
 	}
 	Velocity::Velocity(Velocity *v)
 	{
-		Velocity(v->x, v->y, v->r);
+		this->set(v->x, v->y, v->r);
+		this->set_limit(0,0);
+		this->label = "";
 	}
 
 	/*
@@ -26,11 +35,11 @@ namespace dreadbot
 	*/
 	double Velocity::magnitude(void)
 	{
-		return std::cmath::sqrt( (this->x * this->x) + (this->y * this->y) );
+		return sqrt( (this->x * this->x) + (this->y * this->y) );
 	}
 	double Velocity::rot_magnitude(void)
 	{
-		return std::cmath::abs(this->r);
+		return fabs(this->r);
 	}
 
 	/*
@@ -50,13 +59,10 @@ namespace dreadbot
 	/*
 	** set_limit
 	*/
-	void Velocity::set_limit(double x, double y, double r)
+	void Velocity::set_limit(double t, double r)
 	{
-		this->limit = new Velocity(x, y, r);
-	}
-	void Velocity::set_limit(Velocity *v)
-	{
-		this->limit = v;
+		this->limit_t = fabs(t);
+		this->limit_r = fabs(r);
 	}
 
 	/*
@@ -64,71 +70,70 @@ namespace dreadbot
 	*/
 	void Velocity::ramp_to(double x, double y, double r)
 	{
-		return this->ramp_to(new Velocity(x,y,r));
+		Velocity v;
+		v = Velocity(x,y,r);
+		return this->ramp_to(&v);
 	}
 	void Velocity::ramp_to(Velocity *target)
 	{
-		Velocity *new_vel = new Velocity(target);
-		Velocity *delta   = new Velocity(0,0,0);
+		Velocity new_vel = Velocity(target);
+		Velocity *delta;
 		double lim, mag, scale;
 
-		if (this->limit != nullptr) {
-			delta = target - this;
+		delta = target->sub(this);
 
+		if (this->limit_t != 0) {
 			// Limit translational acceleration
 			mag = delta->magnitude();
-			lim = this->limit->magnitude();
+			lim = this->limit_t;
 			if (mag > lim) {
 				scale = lim / mag;
-				new_vel->x = this->x + (scale * delta->x);
-				new_vel->y = this->y + (scale * delta->y);
-			}
-
-			// Limit rotational acceleration
-			mag = delta->rot_magnitude();
-			lim = this->limit->rot_magnitude();
-			if (mag > lim) {
-				scale = lim / mag;
-				new_vel->r = this->r + (scale * delta->r);
+				new_vel.x = this->x + (scale * delta->x);
+				new_vel.y = this->y + (scale * delta->y);
 			}
 		}
 
-		this->set(new_vel);
+		if (this->limit_r != 0) {
+			// Limit rotational acceleration
+			mag = delta->rot_magnitude();
+			lim = this->limit_r;
+			if (mag > lim) {
+				scale = lim / mag;
+				new_vel.r = this->r + (scale * delta->r);
+			}
+		}
+
+		this->set(&new_vel);
 	}
 
-	void Velocity->SmartDashboard(char *label)
+	/*
+	**  Put
+	*/
+	void Velocity::Put(void)
+	{
+		this->Put(this->label);
+	}
+	void Velocity::Put(std::string label)
 	{
 		char buf[80];
 		sprintf(buf, "%0.6f, %0.6f, %0.6f", this->x, this->y, this->r);
-		SmartDashboard::PutString(label, buf);
+		printf("%s: %s\n", label.c_str(), buf);
+		//SmartDashboard::PutString(label.c_str(), buf);
 	}
 
 	/*
 	**  operator +
 	*/
-	Velocity& operator+(const Velocity& lhs, const Velocity& rhs)
+	Velocity *Velocity::add(Velocity *rhs)
 	{
-		return new Velocity(lhs->x+rhs->x, lhs->y+rhs->y, lhs->r+rhs->r);
-	}
-	Velocity& operator+=(const Velocity& rhs)
-	{
-		this->x += rhs->x;
-		this->y += rhs->y;
-		this->r += rhs->r;
-		return *this;
+		return new Velocity(this->x+rhs->x, this->y+rhs->y, this->r+rhs->r);
 	}
 
 	/*
 	**  operator -
 	*/
-	Velocity& operator-(const Velocity& lhs, const Velocity& rhs)
+	Velocity *Velocity::sub(Velocity *rhs)
 	{
-		return new Velocity(lhs->x-rhs->x, lhs->y-rhs->y, lhs->r-rhs->r);
+		return new Velocity(this->x-rhs->x, this->y-rhs->y, this->r-rhs->r);
 	}
-	Velocity& operator-=(const Velocity& rhs)
-	{
-		this->x -= rhs->x;
-		this->y -= rhs->y;
-		this->r -= rhs->r;
-		return *this;
-	}
+};

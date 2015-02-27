@@ -121,8 +121,9 @@ namespace dreadbot
 		accels[x] = 0.25;
 		accels[y] = 0.25;
 		accels[r] = 0.25;
-		vels = new Velocity(0,0,0);
-		vels->set_limit(accel[x], accel[y], accel[r]);
+		vels = Velocity(0,0,0);
+		vels.label = "vels";
+		vels.set_limit(accels[x], accels[r]);
 	}
 	XMLInput* XMLInput::getInstance()
 	{
@@ -137,11 +138,11 @@ namespace dreadbot
 	void XMLInput::updateDrivebase()
 	{
 		Velocity *sPoints = new Velocity(
-		    controllers[driveController]->GetRawAxis(axes[x]);
-		    controllers[driveController]->GetRawAxis(axes[y]);
-		    controllers[driveController]->GetRawAxis(axes[r]);
-		);
-		sPoints->SmartDashboard("sPoints");
+		    controllers[driveController]->GetRawAxis(axes[x]),
+		    controllers[driveController]->GetRawAxis(axes[y]),
+		    controllers[driveController]->GetRawAxis(axes[r]));
+		sPoints->label = "sPoints";
+		sPoints->Put();
 
 		//Deadzones
 		if (fabs(sPoints->x) < deadzones[x]) { sPoints->x = 0; }
@@ -154,21 +155,20 @@ namespace dreadbot
 		if (inverts[r]) { sPoints->r *= -1; }
 
 		// Ramp
-		vels->ramp_to(sPoints);
-		if (vels->x < VEL_DEADZONE) { vels->x = 0.0; }
-		if (vels->y < VEL_DEADZONE) { vels->y = 0.0; }
-		if (vels->r < VEL_DEADZONE) { vels->r = 0.0; }
+		vels.ramp_to(sPoints);
+		if (vels.x < VEL_DEADZONE) { vels.x = 0.0; }
+		if (vels.y < VEL_DEADZONE) { vels.y = 0.0; }
+		if (vels.r < VEL_DEADZONE) { vels.r = 0.0; }
 
-		vels->SmartDashboard("vels");
+		vels.Put();
 
 		if (drivebase != nullptr) {
-			drivebase->Drive_v(vels->x, vels->y, vels->r);
+			drivebase->Drive_v(vels.x, vels.y, vels.r);
 		}
 	}
 	void XMLInput::zeroVels()
 	{
-		for (int i = 0; i < 3; i++)
-			vels[i] = 0;
+		vels.set(0,0,0);
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
