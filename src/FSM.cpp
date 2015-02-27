@@ -13,8 +13,6 @@ namespace dreadbot
 		SmartDashboard::PutNumber("update input", input);
 		for (auto state = &this->stateTable[0]; state->currentState != nullptr; state++)
 		{
-			SmartDashboard::PutNumber("state->currentState", state->currentState);
-			SmartDashboard::PutNumber("currentState", currentState);
 			if (state->input == input && state->currentState == this->currentState)
 			{
 				if (state->action != nullptr)

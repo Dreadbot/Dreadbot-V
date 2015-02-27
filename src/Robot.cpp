@@ -199,6 +199,8 @@ namespace dreadbot
 			drivebase->Disengage();
 			Input->zeroVels(); //Safety.
 
+			delete AutonBot;
+
 			//frontUltra->SetAutomaticMode(false);
 			//rearUltra->SetAutomaticMode(false);
 		}
