@@ -97,7 +97,9 @@ namespace dreadbot
 
 		void AutonomousPeriodic()
 		{
+			drivebase->SD_RetrievePID();
 			AutonBot->update();
+			drivebase->SD_OutputDiagnostics();
 
 //			//Vision during auton
 //			if (viewingBack && Cam2Enabled)
