@@ -58,7 +58,7 @@ namespace dreadbot
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
 
-		//This *might* not work.
+		FSMTransition transitionTable[3];
 		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
 		Stopped* stopped;
