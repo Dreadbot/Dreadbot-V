@@ -30,13 +30,15 @@ namespace dreadbot
 		{
 			SmartDashboard::PutBoolean("getTimer has passed", true);
 			timerActive = false;
+			intake->Set(0);
+			drivebase->Drive_v(0, 0, 0);
 			return HALBot::timerExpired;
 		}
 
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0.5, 0); //Forward straight
+			drivebase->Drive_v(0, -1, 0);
 		if (intake != nullptr)
-			intake->Set(1); //Intake?
+			intake->Set(-1); //Intake?
 		SmartDashboard::PutString("State", "gettingTote");
 		return HALBot::no_update;
 	}
@@ -59,12 +61,11 @@ namespace dreadbot
 			timerActive = true;
 		}
 
-		SmartDashboard::PutBoolean("DriveToZone timerActive", timerActive);
 
 		if (driveTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME - 0.1))
 		{
 			timerActive = false;
-			SmartDashboard::PutBoolean("Drive timer expired", true);
+			drivebase->Drive_v(0, 0, 0);
 			return HALBot::timerExpired;
 
 		}
@@ -77,6 +78,7 @@ namespace dreadbot
 
 	int Stopped::update()
 	{
+
 		SmartDashboard::PutString("State", "stopped");
 		return HALBot::no_update;
 	}
