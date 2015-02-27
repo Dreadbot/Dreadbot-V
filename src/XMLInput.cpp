@@ -1,5 +1,6 @@
 #include "XMLInput.h"
 #include "Config.h"
+#include "Velocity.h"
 
 namespace dreadbot
 {
@@ -117,11 +118,11 @@ namespace dreadbot
 		}
 
 		//Velocities and accels
-		for (int i = 0; i < 3; i++)
-		{
-			vels[i] = 0;
-			accels[i] = 0.25f;
-		}
+		accels[x] = 0.25;
+		accels[y] = 0.25;
+		accels[r] = 0.25;
+		vels = new Velocity(0,0,0);
+		vels->set_limit(accel[x], accel[y], accel[r]);
 	}
 	XMLInput* XMLInput::getInstance()
 	{
@@ -135,43 +136,34 @@ namespace dreadbot
 	}
 	void XMLInput::updateDrivebase()
 	{
-		double sPoints[3];
-		sPoints[x] = controllers[driveController]->GetRawAxis(axes[x]);
-		sPoints[y] = controllers[driveController]->GetRawAxis(axes[y]);
-		sPoints[r] = controllers[driveController]->GetRawAxis(axes[r]);
-		SmartDashboard::PutNumber("sPoint R", sPoints[r]);
-		SmartDashboard::PutNumber("sPoint X", sPoints[x]);
-		SmartDashboard::PutNumber("sPoint Y", sPoints[y]);
+		Velocity *sPoints = new Velocity(
+		    controllers[driveController]->GetRawAxis(axes[x]);
+		    controllers[driveController]->GetRawAxis(axes[y]);
+		    controllers[driveController]->GetRawAxis(axes[r]);
+		);
+		sPoints->SmartDashboard("sPoints");
 
-		for (int i = 0; i < 3; i++)
-		{
-			//Deadzones
-			if (fabs(sPoints[i]) < deadzones[i])
-				sPoints[i] = 0;
+		//Deadzones
+		if (fabs(sPoints->x) < deadzones[x]) { sPoints->x = 0; }
+		if (fabs(sPoints->y) < deadzones[y]) { sPoints->y = 0; }
+		if (fabs(sPoints->r) < deadzones[r]) { sPoints->r = 0; }
 
-			//Inverts
-			if (inverts[i])
-				sPoints[i] *= -1;
+		//Inverts
+		if (inverts[x]) { sPoints->x *= -1; }
+		if (inverts[y]) { sPoints->y *= -1; }
+		if (inverts[r]) { sPoints->r *= -1; }
 
-			//Ramp-up stuff
-			if (vels[i] < sPoints[i])
-				vels[i] += accels[i];
-			if (vels[i] > sPoints[i])
-				vels[i] -= accels[i];
+		// Ramp
+		vels->ramp_to(sPoints);
+		if (vels->x < VEL_DEADZONE) { vels->x = 0.0; }
+		if (vels->y < VEL_DEADZONE) { vels->y = 0.0; }
+		if (vels->r < VEL_DEADZONE) { vels->r = 0.0; }
 
-			//Velocity deadzones
-			if (fabs(vels[i]) < VEL_DEADZONE)
-				vels[i] = 0;
+		vels->SmartDashboard("vels");
 
-			//NUKE
-			vels[i] = sPoints[i];
+		if (drivebase != nullptr) {
+			drivebase->Drive_v(vels->x, vels->y, vels->r);
 		}
-
-		SmartDashboard::PutNumber("velX", vels[x]);
-		SmartDashboard::PutNumber("velY", vels[y]);
-		SmartDashboard::PutNumber("velR", vels[r]);
-		if (drivebase != nullptr) //Idiot check
-			drivebase->Drive_v(vels[x], vels[y], vels[r]);
 	}
 	void XMLInput::zeroVels()
 	{

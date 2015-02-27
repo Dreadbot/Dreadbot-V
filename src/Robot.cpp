@@ -54,7 +54,6 @@ namespace dreadbot
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
-			AutonBot = new RobotFSM;
 
 			intake = nullptr;
 			lift = nullptr;
@@ -92,6 +91,25 @@ namespace dreadbot
 		void AutonomousInit()
 		{
 			GlobalInit();
+
+			// Read DIO for auton mode
+			if (DigitalInput(9).Get()) {
+				// Mode 9: Grab tote, move to position
+				SmartDashboard::PutNumber("Auton Mode", 9);
+				AutonBot = new RobotFSM;
+			}
+			else if (DigitalInput(8).Get()) {
+				// Mode 8: Grab container, move to position
+				SmartDashboard::PutNumber("Auton Mode", 8);
+				AutonBot = new RobotFSM;
+			}
+			else {
+				// Default: Just move to position
+				SmartDashboard::PutNumber("Auton Mode", 0);
+				AutonBot = new RobotFSM;
+			}
+
+
 			AutonBot->setHardware(drivebase, intake);
 			AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
 			AutonBot->start();
@@ -106,6 +124,7 @@ namespace dreadbot
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
+
 		}
 
 		void AutonomousPeriodic()
@@ -173,7 +192,7 @@ namespace dreadbot
 				else
 					lift->Set(-1);
 			}
-			
+
 			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
 			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
 			if (intakeArms != nullptr)
