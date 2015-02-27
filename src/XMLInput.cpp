@@ -142,9 +142,8 @@ namespace dreadbot
 			//Inverts
 			if (inverts[i])
 				sPoints[i] *= -1;
-
-			SmartDashboard::PutNumber("sPoint " + i, sPoints[i]);
 		}
+
 		if (drivebase != nullptr) //Idiot check
 			drivebase->Drive_v(sPoints[x], sPoints[y], sPoints[r]);
 	}

@@ -20,19 +20,16 @@ string config = MULTILINE(
 			<axis dir="transY">
 				<ID>1</ID>
 				<deadzone>0.1</deadzone>
-				<accel>0.2</accel>
 				<invert>false</invert>
 			</axis>
 			<axis dir="transX">
 				<ID>0</ID>
 				<deadzone>0.1</deadzone>
-				<accel>0.2</accel>
-				<invert>true</invert>
+				<invert>false</invert>
 			</axis>
 			<axis dir="rot">
 				<ID>4</ID>
 				<deadzone>0.1</deadzone>
-				<accel>0.2</accel>
 				<invert>false</invert>
 			</axis>
 		</controller>
