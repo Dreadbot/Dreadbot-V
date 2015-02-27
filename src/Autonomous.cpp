@@ -105,7 +105,7 @@ namespace dreadbot
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 
-		FSMTransition stateTable[] =
+		static FSMTransition stateTable[] =
 		{
 				{gettingTote, HALBot::timerExpired, nullptr, driveToZone},
 				{driveToZone, HALBot::timerExpired, nullptr, stopped},
