@@ -143,9 +143,9 @@ namespace dreadbot
 			if (inverts[i])
 				sPoints[i] *= -1;
 		}
-		SmartDashboard::PutNumber("velX", vels[x]);
-		SmartDashboard::PutNumber("velY", vels[y]);
-		SmartDashboard::PutNumber("velR", vels[r]);
+		SmartDashboard::PutNumber("sX", sPoints[x]);
+		SmartDashboard::PutNumber("sY", sPoints[y]);
+		SmartDashboard::PutNumber("sR", sPoints[r]);
 		if (drivebase != nullptr) //Idiot check
 			drivebase->Drive_v(sPoints[x], sPoints[y], sPoints[r]);
 	}
