@@ -151,7 +151,7 @@ namespace dreadbot
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if ((gamepad->GetRawAxis(3) > 0.8) && viewerCooldown == 0) //Start button
+			if ((gamepad->GetRawAxis(3) > 0.8) && viewerCooldown == 0) //Right trigger
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
@@ -182,25 +182,21 @@ namespace dreadbot
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
-/* Lift down: lt axis 2 > 0.8
- * Actuate fork: lb button 5
- * Intake arms: rt axis 3 > 0.5
- * Intake arms pneumatics: rb button 6
- */
+
 			//Output controls
-			float intakeInput = gamepad->GetRawAxis(3);
+			float intakeInput = gamepad->GetRawAxis(3); //Right trigger - intake motors
 			if (intake != NULL)
 				intake->Set((float) (intakeInput > 0.15) * -1);
 
-			float liftInput = gamepad->GetRawAxis(2);
+			float liftInput = gamepad->GetRawAxis(2); //Left trigger - lift down
 			if (lift != NULL)
 				lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
 
-			float armInput = (float) gamepad->GetRawButton(5);
+			float armInput = (float) gamepad->GetRawButton(5); //Left bumper - intake arms
 			if (intakeArms != NULL)
 				intakeArms->Set(-armInput);
 
-			float liftArmInput = (float) gamepad->GetRawButton(6);
+			float liftArmInput = (float) gamepad->GetRawButton(6); //Right trigger - lift arms
 			if (liftArms != NULL)
 					liftArms->Set(-liftArmInput);
 
