@@ -27,7 +27,7 @@ void MecanumDrive::Set(int motorId_lf, int motorId_rf, int motorId_lr, int motor
 		motors[i]->SetPosition(0.0);
 		motors[i]->SelectProfileSlot(0);
 		motors[i]->SetPID(0.2, 0, 0, 0);
-		motors[i]->SetVoltageRampRate(0.5); //Ramp up for drive motors
+		motors[i]->SetVoltageRampRate(0.25f); //Ramp up for drive motors
 	}
 
 	x_ctrl = new SimplePID(0.2, 0, 0, false);

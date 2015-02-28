@@ -7,8 +7,9 @@
 #include "XMLInput.h"
 #include "FSM.h"
 
-#define TOTE_PICKUP_TIME 5
+#define TOTE_PICKUP_TIME 0.5
 #define DRIVE_TO_ZONE_TIME 5
+#define ROTATE_TIME 0.75
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
 
@@ -31,12 +32,17 @@ namespace dreadbot
 	{
 	public:
 		DriveToZone();
-		int update();
+		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase);
 		Timer driveTimer;
-	private:
+	protected:
 		MecanumDrive* drivebase;
 		bool timerActive;
+	};
+	class Rotate : public DriveToZone
+	{
+	public:
+		int update();
 	};
 	class Stopped : public FSMState
 	{
@@ -58,9 +64,10 @@ namespace dreadbot
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
 
-		FSMTransition transitionTable[3];
+		FSMTransition transitionTable[4];
 		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
+		Rotate* rotate;
 		Stopped* stopped;
 	};
 
