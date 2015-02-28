@@ -130,9 +130,9 @@ namespace dreadbot
 		rotate->setHardware(drivebase);
 
 
-		transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, driveToZone},
-		transitionTable[1] = {driveToZone, HALBot::timerExpired, nullptr, rotate},
-		transitionTable[2] = {rotate, HALBot::timerExpired, nullptr, stopped},
+		transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate},
+		transitionTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped},
+		transitionTable[2] = {rotate, HALBot::timerExpired, nullptr, driveToZone},
 		transitionTable[3] = END_STATE_TABLE;
 
 		fsm->init(transitionTable, gettingTote);

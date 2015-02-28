@@ -7,7 +7,7 @@
 #include "XMLInput.h"
 #include "FSM.h"
 
-#define TOTE_PICKUP_TIME 0.5
+#define TOTE_PICKUP_TIME 1
 #define DRIVE_TO_ZONE_TIME 5
 #define ROTATE_TIME 0.75
 #define DIST_FROM_WALL 2000 //Millimeters!
