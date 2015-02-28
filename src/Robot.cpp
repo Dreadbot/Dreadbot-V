@@ -93,12 +93,12 @@ namespace dreadbot
 			GlobalInit();
 
 			// Read DIO for auton mode
-			if (DigitalInput(9).Get()) {
+			if (!DigitalInput(9).Get()) {
 				// Mode 9: Grab tote, move to position
 				SmartDashboard::PutNumber("Auton Mode", 9);
 				AutonBot = new RobotFSM;
 			}
-			else if (DigitalInput(8).Get()) {
+			else if (!DigitalInput(8).Get()) {
 				// Mode 8: Grab container, move to position
 				SmartDashboard::PutNumber("Auton Mode", 8);
 				AutonBot = new RobotFSM;
@@ -201,6 +201,23 @@ namespace dreadbot
 			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
 			if (liftArms != nullptr)
 					liftArms->Set(liftArmInput);
+
+			const char * labels[] = {
+				"DIO 0",
+				"DIO 1",
+				"DIO 2",
+				"DIO 3",
+				"DIO 4",
+				"DIO 5",
+				"DIO 6",
+				"DIO 7",
+				"DIO 8",
+				"DIO 9",
+			};
+			for (int i = 0; i <= 9; i++) {
+				bool xyzzy = DigitalInput(i).Get();
+				SmartDashboard::PutBoolean(labels[i], xyzzy );
+			}
 		}
 
 		void TestInit()
