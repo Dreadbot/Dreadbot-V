@@ -54,6 +54,7 @@ namespace dreadbot
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+			AutonBot = nullptr;
 
 			intake = nullptr;
 			lift = nullptr;
@@ -91,7 +92,8 @@ namespace dreadbot
 		void AutonomousInit()
 		{
 			GlobalInit();
-			AutonBot = new HALBot;
+			if (AutonBot == nullptr)
+				AutonBot = new HALBot;
 			AutonBot->init(drivebase, intake);
 		}
 
@@ -126,7 +128,7 @@ namespace dreadbot
 			drivebase->SD_OutputDiagnostics();
 			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
-			//Vision switch control
+//			//Vision switch control
 //			if (viewerCooldown > 0)
 //				viewerCooldown--;
 //			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
@@ -157,7 +159,7 @@ namespace dreadbot
 //			}
 //			if (!viewingBack && Cam1Enabled)
 //			{
-//				IMAQdxGrab(sessionCam1, frame1, true, n4ullptr);
+//				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 //				CameraServer::GetInstance()->SetImage(frame1);
 //			}
 
@@ -200,7 +202,11 @@ namespace dreadbot
 			compressor->Stop();
 			drivebase->Disengage();
 
-			delete AutonBot;
+			if (AutonBot != nullptr)
+			{
+				delete AutonBot;
+				AutonBot = nullptr;
+			}
 
 			//frontUltra->SetAutomaticMode(false);
 			//rearUltra->SetAutomaticMode(false);
