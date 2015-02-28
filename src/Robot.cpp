@@ -4,7 +4,8 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Autonomous.h"
-#include "Robot.h"
+#include "MPU6050.h"
+//#include "Robot.h"
 
 
 namespace dreadbot
@@ -41,6 +42,12 @@ namespace dreadbot
 		bool Cam1Enabled;
 		bool Cam2Enabled;
 
+		MPU6050* IMU;
+
+		DigitalInput* lift_switch; // 0
+		DigitalInput* transit_switch_l; // 1
+		DigitalInput* transit_switch_r; // 2
+
 	public:
 		void RobotInit()
 		{
@@ -49,6 +56,11 @@ namespace dreadbot
 		//	lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
+
+			lift_switch = new DigitalInput(0); // 0
+			transit_switch_l = new DigitalInput(1); // 1
+			transit_switch_r = new DigitalInput(2); // 2
+
 
 			//frontUltra = new Ultrasonic(6, 7); //Dummy values for the ultrasonics
 			//rearUltra = new Ultrasonic(4, 5);
@@ -82,13 +94,15 @@ namespace dreadbot
 			//rearUltra->SetAutomaticMode(true);
 
 			Input->loadXMLConfig();
-			gamepad = Input->getController(COM_PRIMARY_DRIVER);
+			gamepad = Input->getController(0);
 			drivebase->Engage();
 
 			intake = Input->getMGroup("intake");
 			lift = Input->getPGroup("lift");
 			liftArms = Input->getPGroup("liftArms");
 			intakeArms = Input->getPGroup("intakeArms");
+// badd
+			IMU = new MPU6050();
 		}
 
 		void AutonomousInit()
@@ -122,6 +136,13 @@ namespace dreadbot
 
 		void TeleopPeriodic()
 		{
+			/*
+			int16_t ax, ay, az, gx, gy, gz, mx, my, mz;
+			IMU->getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);// ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz
+			SmartDashboard::PutNumber("a-x", ax);
+			//SmartDashboard::PutNumber("a-y", ay);
+			//SmartDashboard::PutNumber("a-z", az);
+			*/
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 			//drivebase->SD_OutputDiagnostics();
@@ -130,7 +151,7 @@ namespace dreadbot
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
+			if ((gamepad->GetRawAxis(3) > 0.8) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
@@ -161,29 +182,31 @@ namespace dreadbot
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
-
+/* Lift down: lt axis 2 > 0.8
+ * Actuate fork: lb button 5
+ * Intake arms: rt axis 3 > 0.5
+ * Intake arms pneumatics: rb button 6
+ */
 			//Output controls
-			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
-			if (intake != nullptr)
-				intake->Set(intakeInput);
+			float intakeInput = gamepad->GetRawAxis(3);
+			if (intake != NULL)
+				intake->Set((float) (intakeInput > 0.15) * -1);
 
-			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
-			if (lift != nullptr)
-			{
-				if (liftInput)
-					lift->Set(1); //Keeps the lift up unless button is pressed.
-				else
-					lift->Set(-1);
-			}
-			
-			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
-			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			if (intakeArms != nullptr)
-				intakeArms->Set(armInput);
+			float liftInput = gamepad->GetRawAxis(2);
+			if (lift != NULL)
+				lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
 
-			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
-			if (liftArms != nullptr)
-					liftArms->Set(liftArmInput);
+			float armInput = (float) gamepad->GetRawButton(5);
+			if (intakeArms != NULL)
+				intakeArms->Set(-armInput);
+
+			float liftArmInput = (float) gamepad->GetRawButton(6);
+			if (liftArms != NULL)
+					liftArms->Set(-liftArmInput);
+
+			SmartDashboard::PutBoolean("R transit switch", transit_switch_r->Get());
+			SmartDashboard::PutBoolean("L transit switch", transit_switch_l->Get());
+			SmartDashboard::PutBoolean("Lift switch", lift_switch->Get());
 		}
 
 		void TestInit()
@@ -245,11 +268,11 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxCloseCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 
 			}
-			return (false);
+			return true;
 		}
 
 		bool StartCamera(int cameraNum)
@@ -304,3 +327,4 @@ namespace dreadbot
 }
 
 START_ROBOT_CLASS(dreadbot::Robot);
+
