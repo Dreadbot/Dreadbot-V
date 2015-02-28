@@ -115,13 +115,6 @@ namespace dreadbot
 			deadzones[i] = 0;
 			inverts[i] = 0; //Since inverts is an array of bools, this sets it to false
 		}
-
-		//Velocities and accels
-		for (int i = 0; i < 3; i++)
-		{
-			vels[i] = 0;
-			accels[i] = 0.25f;
-		}
 	}
 	XMLInput* XMLInput::getInstance()
 	{
@@ -149,39 +142,12 @@ namespace dreadbot
 			//Inverts
 			if (inverts[i])
 				sPoints[i] *= -1;
-
-			//Decel to zero at double rate - cheat edition
-			if (sPoints[i] == 0)
-				accels[i] *= 2.0f;
-
-			//Ramp-up stuff
-			if (vels[i] < sPoints[i])
-				vels[i] += accels[i];
-			if (vels[i] > sPoints[i])
-				vels[i] -= accels[i];
-
-			//Undo accel changes caused by the accel to zero thing
-			if (sPoints[i] == 0)
-				accels[i] /= 2;
-
-			//Velocity deadzones
-			if (fabs(vels[i]) < VEL_DEADZONE)
-				vels[i] = 0;
-
-			//NUKE
-			vels[i] = sPoints[i];
 		}
-
 		SmartDashboard::PutNumber("velX", vels[x]);
 		SmartDashboard::PutNumber("velY", vels[y]);
 		SmartDashboard::PutNumber("velR", vels[r]);
 		if (drivebase != nullptr) //Idiot check
-			drivebase->Drive_v(vels[x], vels[y], vels[r]);
-	}
-	void XMLInput::zeroVels()
-	{
-		for (int i = 0; i < 3; i++)
-			vels[i] = 0;
+			drivebase->Drive_v(sPoints[x], sPoints[y], sPoints[r]);
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -285,7 +251,6 @@ namespace dreadbot
 			{
 				axes[y] = atoi(axis.child_value("ID"));
 				deadzones[y] = atof(axis.child_value("deadzone"));
-				accels[y] = atof(axis.child_value("accel"));
 
 				if (invert.find("true")) //I really don't understand how this works...
 					inverts[y] = false;
@@ -296,7 +261,6 @@ namespace dreadbot
 			{
 				axes[x] = atoi(axis.child_value("ID"));
 				deadzones[x] = atof(axis.child_value("deadzone"));
-				accels[x] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
 					inverts[x] = false;
@@ -307,7 +271,6 @@ namespace dreadbot
 			{
 				axes[r] = atoi(axis.child_value("ID"));
 				deadzones[r] = atof(axis.child_value("deadzone"));
-				accels[r] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
 					inverts[r] = false;

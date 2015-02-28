@@ -21,12 +21,13 @@ void MecanumDrive::Set(int motorId_lf, int motorId_rf, int motorId_lr, int motor
 	motors[m_leftRear]->SetSensorDirection(true);
 	motors[m_rightRear]->SetSensorDirection(false);
 
-	// Configure loop parameters
+	// Configure parameters
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		motors[i]->SetControlMode(CANSpeedController::ControlMode::kSpeed);
 		motors[i]->SetPosition(0.0);
 		motors[i]->SelectProfileSlot(0);
 		motors[i]->SetPID(0.2, 0, 0, 0);
+		motors[i]->SetVoltageRampRate(0.5); //Ramp up for drive motors
 	}
 
 	x_ctrl = new SimplePID(0.2, 0, 0, false);

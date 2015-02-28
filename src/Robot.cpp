@@ -199,7 +199,6 @@ namespace dreadbot
 		{
 			compressor->Stop();
 			drivebase->Disengage();
-			Input->zeroVels(); //Safety.
 
 			delete AutonBot;
 
