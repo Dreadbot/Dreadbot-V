@@ -156,10 +156,7 @@ namespace dreadbot
 			//Decel to zero at double rate - cheat edition
 			if (sPoints[i] == 0)
 				accels[i] *= 2.0f;
-
-			//Inverts
-			if (inverts[i])
-				sPoints[i] *= -1;
+			
 			SmartDashboard::PutBoolean("invert on " + i, inverts[i]);
 
 			//NUKE
