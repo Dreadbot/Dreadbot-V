@@ -69,7 +69,7 @@ namespace dreadbot
 		}
 
 		if (drivebase != nullptr)
-			drivebase->Drive_v(1, 0, 0); //Hard right!
+			drivebase->Drive_v(0, 1, 0); //Straight forward
 		SmartDashboard::PutString("State", "driveToZone");
 		return HALBot::no_update;
 	}
