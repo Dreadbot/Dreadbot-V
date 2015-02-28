@@ -15,6 +15,7 @@ namespace dreadbot
 	private:
 		DriverStation *ds;
 		Joystick* gamepad;
+		Joystick* gamepad_duncan;
 		PowerDistributionPanel *pdp;
 		Compressor* compressor;
 
@@ -95,6 +96,7 @@ namespace dreadbot
 
 			Input->loadXMLConfig();
 			gamepad = Input->getController(0);
+			gamepad_duncan = new Joystick(1);
 			drivebase->Engage();
 
 			intake = Input->getMGroup("intake");
@@ -189,18 +191,27 @@ namespace dreadbot
  */
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(3);
+			//float intakeInput_duncan = gamepad_duncan->GetRawAxis(3);
+			float intakeInput_duncan = 0.0f;
 			if (intake != NULL)
-				intake->Set((float) (intakeInput > 0.15) * -1);
+				intake->Set(((float) (intakeInput > 0.15) * -1) + (float) (intakeInput_duncan > 0.15));
 
 			float liftInput = gamepad->GetRawAxis(2);
-			if (lift != NULL)
-				lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
+			float liftInput_duncan = gamepad_duncan->GetRawAxis(2);
+			if (liftInput_duncan > 0.15) {
+				// Lower the lift arms until they collide with the lift switch
+				if (!lift_switch->Get()) {
 
-			float armInput = (float) gamepad->GetRawButton(5);
+				}
+			} else {
+				if (lift != NULL)
+					lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
+			}
+			float armInput = (float) gamepad->GetRawButton(6);
 			if (intakeArms != NULL)
 				intakeArms->Set(-armInput);
 
-			float liftArmInput = (float) gamepad->GetRawButton(6);
+			float liftArmInput = (float) gamepad->GetRawButton(5);
 			if (liftArms != NULL)
 					liftArms->Set(-liftArmInput);
 
