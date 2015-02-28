@@ -129,11 +129,14 @@ void MecanumDrive::SD_RetrievePID() {
 }
 
 void MecanumDrive::SD_OutputDiagnostics() {
-//	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+	for (uint8_t i = 0; i < MOTOR_COUNT; ++i)
+	{
 //		SmartDashboard::PutNumber(motorNames[i] + ".temp", motors[i]->GetTemperature());
 //		SmartDashboard::PutNumber(motorNames[i] + ".setpoint", motors[i]->GetSetpoint());
 //		SmartDashboard::PutNumber(motorNames[i] + ".encoder p", motors[i]->GetPosition());
 //		SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetEncVel());
 //		SmartDashboard::PutNumber(motorNames[i] + ".error", motors[i]->GetClosedLoopError());
+		SmartDashboard::PutNumber(motorNames[i] + ".voltage", motors[i]->GetOutputVoltage());
+	}
 
 }

@@ -123,7 +123,7 @@ namespace dreadbot
 		{
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
-			//drivebase->SD_OutputDiagnostics();
+			drivebase->SD_OutputDiagnostics();
 			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
 			//Vision switch control
