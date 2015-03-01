@@ -7,4 +7,6 @@ namespace dreadbot
 		AUTON_MODE_CONTAINER,	// Switch = 3
 	};
 	int GetAutonMode(void);
+	bool isToteInTransit(void);
+	bool isAtStepHeight(void);
 };

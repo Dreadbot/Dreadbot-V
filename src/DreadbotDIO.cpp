@@ -1,0 +1,50 @@
+#include "SmartDashboard/SmartDashboard.h"
+#include "DigitalInput.h"
+#include "DreadbotDIO.h"
+
+namespace dreadbot
+{
+	int GetAutonMode(void)
+	{
+		DigitalInput bit0 = DigitalInput(7);
+		DigitalInput bit1 = DigitalInput(8);
+		DigitalInput bit2 = DigitalInput(9);
+		enum AutonMode mode = AUTON_MODE_STOP;
+		int sw = 0;
+
+		if (!bit0.Get()) { sw |= (0x01 << 0); }
+		if (!bit1.Get()) { sw |= (0x01 << 1); }
+		if (!bit2.Get()) { sw |= (0x01 << 2); }
+
+		if      (sw == 0) { mode = AUTON_MODE_STOP;      }
+		else if (sw == 1) { mode = AUTON_MODE_MOVE;      }
+		else if (sw == 2) { mode = AUTON_MODE_TOTE;      }
+		else if (sw == 3) { mode = AUTON_MODE_CONTAINER; }
+
+		SmartDashboard::PutNumber("Auton Mode", mode);
+		return mode;
+	}
+
+	bool isToteInTransit(void)
+	{
+		DigitalInput trans_l = DigitalInput(1);
+		DigitalInput trans_r = DigitalInput(2);
+		bool transit_left  = !trans_l.Get();
+		bool transit_right = !trans_r.Get();
+		bool in_transit = transit_left || transit_right;
+
+		SmartDashboard::PutBoolean("Transit Left",    transit_left);
+		SmartDashboard::PutBoolean("Transit Right",   transit_right);
+		SmartDashboard::PutBoolean("Tote In Transit", in_transit);
+		return in_transit;
+	}
+
+	bool isAtStepHeight(void)
+	{
+		DigitalInput height = DigitalInput(0);
+		bool at_height = !height.Get();
+
+		SmartDashboard::PutBoolean("At Step Height", at_height);
+		return at_height;
+	}
+};

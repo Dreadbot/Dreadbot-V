@@ -18,8 +18,8 @@ LT 		Intake Outtake
 RT 		Intake Intake
 Back
 Start
-Up		
-Down	
+Up
+Down
 Left
 Right
 
@@ -35,11 +35,11 @@ Right
 0   Step switch
 1   Left transit switch
 2   Right transit switch
-3   
+3
 4
 5
-6   Auton Mode LSB
-7   Auton Mode
+6
+7   Auton Mode LSB
 8   Auton Mode
 9   Auton Mode MSB
 
@@ -70,7 +70,7 @@ PWM Motor
     Pneumatic
 --- -------------------
 0   Lift Forward
-1  	Lift Reverse 
+1  	Lift Reverse
 2	Intake Forward
 3	Intake Reverse
 4
