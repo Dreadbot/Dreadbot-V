@@ -27,7 +27,7 @@ void MecanumDrive::Set(int motorId_lf, int motorId_rf, int motorId_lr, int motor
 		motors[i]->SetPosition(0.0);
 		motors[i]->SelectProfileSlot(0);
 		motors[i]->SetPID(0.2, 0, 0, 0);
-		motors[i]->SetVoltageRampRate(0.5); //Ramp up for drive motors
+		motors[i]->SetVoltageRampRate(0.25f); //Ramp up for drive motors
 	}
 
 	x_ctrl = new SimplePID(0.2, 0, 0, false);
@@ -109,12 +109,14 @@ void MecanumDrive::SetDriveMode(drivemode newMode) {
 void MecanumDrive::Engage() {
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		motors[i]->EnableControl();
+		motors[i]->SetSafetyEnabled(false);
 	}
 	m_enabled = true;
 }
 
 void MecanumDrive::Disengage() {
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+		motors[i]->SetSafetyEnabled(true);
 		motors[i]->Disable();
 	}
 	m_enabled = false;
@@ -127,11 +129,14 @@ void MecanumDrive::SD_RetrievePID() {
 }
 
 void MecanumDrive::SD_OutputDiagnostics() {
-//	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+	for (uint8_t i = 0; i < MOTOR_COUNT; ++i)
+	{
 //		SmartDashboard::PutNumber(motorNames[i] + ".temp", motors[i]->GetTemperature());
 //		SmartDashboard::PutNumber(motorNames[i] + ".setpoint", motors[i]->GetSetpoint());
 //		SmartDashboard::PutNumber(motorNames[i] + ".encoder p", motors[i]->GetPosition());
 //		SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetEncVel());
 //		SmartDashboard::PutNumber(motorNames[i] + ".error", motors[i]->GetClosedLoopError());
+		SmartDashboard::PutNumber(motorNames[i] + ".voltage", motors[i]->GetOutputVoltage());
+	}
 
 }

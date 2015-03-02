@@ -20,15 +20,13 @@ namespace dreadbot
 
 		XMLInput* Input;
 		MecanumDrive *drivebase;
-		RobotFSM* AutonBot;
 
 		MotorGrouping* intake;
 		PneumaticGrouping* lift;
 		PneumaticGrouping* liftArms;
 		PneumaticGrouping* intakeArms;
 
-		int viewerCooldown;
-		bool viewingBack;
+		HALBot* AutonBot;
 
 		//Vision stuff - credit to team 116 for this!
 		IMAQdxSession sessionCam1;
@@ -38,6 +36,8 @@ namespace dreadbot
 		Image* frame2;
 		bool Cam1Enabled;
 		bool Cam2Enabled;
+		bool viewingBack;
+		int viewerCooldown;
 
 	public:
 		void RobotInit()
@@ -54,7 +54,7 @@ namespace dreadbot
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
-			AutonBot = new RobotFSM;
+			AutonBot = nullptr;
 
 			intake = nullptr;
 			lift = nullptr;
@@ -92,10 +92,18 @@ namespace dreadbot
 		void AutonomousInit()
 		{
 			GlobalInit();
-			AutonBot->setHardware(drivebase, intake);
-			AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
-			AutonBot->start();
+			if (AutonBot == nullptr)
+				AutonBot = new HALBot;
+			AutonBot->init(drivebase, intake);
+		}
 
+		void AutonomousPeriodic()
+		{
+			drivebase->SD_RetrievePID();
+			AutonBot->update();
+			drivebase->SD_OutputDiagnostics();
+
+			//Vision during auton
 			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
@@ -108,11 +116,6 @@ namespace dreadbot
 			}
 		}
 
-		void AutonomousPeriodic()
-		{
-			AutonBot->update();
-		}
-
 		void TeleopInit()
 		{
 			GlobalInit();
@@ -122,7 +125,7 @@ namespace dreadbot
 		{
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
-			//drivebase->SD_OutputDiagnostics();
+			drivebase->SD_OutputDiagnostics();
 			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
 			//Vision switch control
@@ -199,6 +202,12 @@ namespace dreadbot
 			compressor->Stop();
 			drivebase->Disengage();
 
+			if (AutonBot != nullptr)
+			{
+				delete AutonBot;
+				AutonBot = nullptr;
+			}
+
 			//frontUltra->SetAutomaticMode(false);
 			//rearUltra->SetAutomaticMode(false);
 		}
@@ -230,7 +239,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam1 IMAQdxCloseCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 			}
 			else if (cameraNum == 2)
@@ -242,11 +251,10 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxCloseCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
-
 			}
-			return (false);
+			return true;
 		}
 
 		bool StartCamera(int cameraNum)
@@ -260,7 +268,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam1 IMAQdxOpenCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
@@ -268,7 +276,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxConfigureGrab error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				// acquire images
 				IMAQdxStartAcquisition(sessionCam1);
@@ -282,7 +290,7 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxOpenCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
@@ -290,12 +298,12 @@ namespace dreadbot
 					DriverStation::ReportError(
 						"cam0 IMAQdxConfigureGrab error: "
 						+ std::to_string((long) imaqError) + "\n");
-					return (false);
+					return false;
 				}
 				// acquire images
 				IMAQdxStartAcquisition(sessionCam2);
 			}
-			return (true);
+			return true;
 		}
 	};
 }

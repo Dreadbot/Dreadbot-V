@@ -1,37 +1,74 @@
 #pragma once
 
+#include <math.h>
 #include "WPILib.h"
 #include "Timer.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
-#include <math.h>
+#include "FSM.h"
 
-#define TOTE_PICKUP_TIME 2.5
-#define DRIVE_TO_ZONE_TIME 7.5
+#define TOTE_PICKUP_TIME 1
+#define DRIVE_TO_ZONE_TIME 4.1
+#define ROTATE_TIME 0.66
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
 
 namespace dreadbot 
 {
-	enum robotState{stopped, getting_tote, drive_to_zone};
-
-	class RobotFSM
+	//States
+	class GettingTote : public FSMState
 	{
 	public:
-		RobotFSM();
-		void setHardware(MecanumDrive* base, MotorGrouping* newIntake);
-		void setUltras(Ultrasonic* newFrontUltra, Ultrasonic* newRearUltra);
-		void start();
-		void update();
-	protected:
-		void switchState(robotState newState);
+		GettingTote();
+		int update();
+		void setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
+		Timer getTimer;
+	private:
 		MecanumDrive* drivebase;
-		Timer globalTimer;
-		robotState state;
-
 		MotorGrouping* intake;
-		Ultrasonic* frontUltra;
-		Ultrasonic* rearUltra;
+		bool timerActive;
+	};
+	class DriveToZone : public FSMState
+	{
+	public:
+		DriveToZone();
+		virtual int update();
+		void setHardware(MecanumDrive* newDrivebase);
+		Timer driveTimer;
+	protected:
+		MecanumDrive* drivebase;
+		bool timerActive;
+	};
+	class Rotate : public DriveToZone
+	{
+	public:
+		int update();
+	};
+	class Stopped : public FSMState
+	{
+	public:
+		int update();
+	};
+
+	class HALBot
+	{
+	public:
+		enum fsmInputs {no_update, timerExpired, sensorHit};
+
+		HALBot();
+		~HALBot();
+		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
+		void update();
+	private:
+		FiniteStateMachine* fsm;
+		MecanumDrive* drivebase;
+		MotorGrouping* intake;
+
+		FSMTransition transitionTable[4];
+		GettingTote* gettingTote;
+		DriveToZone* driveToZone;
+		Rotate* rotate;
+		Stopped* stopped;
 	};
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);

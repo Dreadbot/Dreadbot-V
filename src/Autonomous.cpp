@@ -2,66 +2,146 @@
 
 namespace dreadbot
 {
-	RobotFSM::RobotFSM()
+	//States
+	GettingTote::GettingTote()
 	{
-		drivebase = 0;
-		intake = 0;
-
-		state = stopped;
-
-		frontUltra = 0;
-		rearUltra = 0;
+		drivebase = nullptr;
+		intake = nullptr;
+		timerActive = false;
 	}
-	void RobotFSM::update()
+	void GettingTote::setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
 	{
-		SmartDashboard::PutNumber("Time", globalTimer.Get());
-		if (state == stopped)
-		{
-			globalTimer.Stop();
-			SmartDashboard::PutBoolean("Auton Complete: ", true);
-		}
-		if (state == getting_tote)
-		{
-			//Has the tote already been picked up?
-			if (globalTimer.HasPeriodPassed(TOTE_PICKUP_TIME))
-				switchState(drive_to_zone);
-
-			drivebase->Drive_v(0, 0.75, getParallelTurnDir(frontUltra, rearUltra)); //Drive forward at 3/4 speed with parallel ultrasonics enabled
-			intake->Set(1.0); //These need to be opposite of each other
-		}
-
-		else if (state == drive_to_zone)
-		{
-			if (globalTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME))
-				switchState(stopped);
-
-			//Hard right!
-			drivebase->Drive_v(0, 1, 0);
-		}
-	}
-	void RobotFSM::setHardware(MecanumDrive* base, MotorGrouping* newIntake)
-	{
-		drivebase = base;
+		drivebase = newDrivebase;
 		intake = newIntake;
 	}
-	void RobotFSM::setUltras(Ultrasonic* newFrontUltra, Ultrasonic* newRearUltra)
+	int GettingTote::update()
 	{
-		frontUltra = newFrontUltra;
-		rearUltra = newRearUltra;
+		if (!timerActive)
+		{
+			getTimer.Reset();
+			getTimer.Start();
+			timerActive = true;
+		}
+
+		SmartDashboard::PutBoolean("GettingTote timerActive", timerActive);
+		SmartDashboard::PutNumber("getTimer", getTimer.Get());
+
+		if (getTimer.HasPeriodPassed(TOTE_PICKUP_TIME))
+		{
+			SmartDashboard::PutBoolean("getTimer has passed", true);
+			timerActive = false;
+			intake->Set(0);
+			drivebase->Drive_v(0, 0, 0);
+			return HALBot::timerExpired;
+		}
+
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, 0.5, 0);
+		SmartDashboard::PutString("State", "gettingTote");
+		return HALBot::no_update;
 	}
-	void RobotFSM::switchState(robotState newState)
+
+	DriveToZone::DriveToZone()
 	{
-		//This might be needed for special state-switching behavior.
-		//At the moment, it does nothing.
-		state = newState;
+		drivebase = nullptr;
+		timerActive = false;
 	}
-	void RobotFSM::start()
+	void DriveToZone::setHardware(MecanumDrive* newDrivebase)
 	{
-		globalTimer.Stop(); //TODO: Determine if 'stop' is needed
-		globalTimer.Reset();
-		switchState(getting_tote);
-		globalTimer.Start();
+		drivebase = newDrivebase;
 	}
+	int DriveToZone::update()
+	{
+		if (!timerActive)
+		{
+			driveTimer.Reset();
+			driveTimer.Start();
+			timerActive = true;
+		}
+
+
+		if (driveTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME))
+		{
+			timerActive = false;
+			drivebase->Drive_v(0, 0, 0);
+			return HALBot::timerExpired;
+
+		}
+
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, -0.75, 0); //Straight forward
+		SmartDashboard::PutString("State", "driveToZone");
+		return HALBot::no_update;
+	}
+
+	int Stopped::update()
+	{
+
+		SmartDashboard::PutString("State", "stopped");
+		return HALBot::no_update;
+	}
+	int Rotate::update()
+	{
+		if (!timerActive)
+		{
+			driveTimer.Reset();
+			driveTimer.Start();
+			timerActive = true;
+		}
+		if (driveTimer.HasPeriodPassed(ROTATE_TIME))
+		{
+			timerActive = false;
+			drivebase->Drive_v(0, 0, 0);
+			return HALBot::timerExpired;
+		}
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, 0, 1);
+		SmartDashboard::PutString("State", "rotate");
+		return HALBot::no_update;
+
+	}
+
+
+	HALBot::HALBot()
+	{
+		stopped = new Stopped;
+		gettingTote = new GettingTote;
+		driveToZone = new DriveToZone;
+		rotate = new Rotate;
+		drivebase = nullptr;
+		intake = nullptr;
+		fsm = new FiniteStateMachine;
+	}
+	HALBot::~HALBot()
+	{
+		delete stopped;
+		delete gettingTote;
+		delete driveToZone;
+		delete rotate;
+		delete fsm;
+	}
+	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
+	{
+		drivebase = newDrivebase;
+		intake = newIntake;
+
+		gettingTote->setHardware(drivebase, intake);
+		driveToZone->setHardware(drivebase);
+		rotate->setHardware(drivebase);
+
+
+		transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate},
+		transitionTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped},
+		transitionTable[2] = {rotate, HALBot::timerExpired, nullptr, driveToZone},
+		transitionTable[3] = END_STATE_TABLE;
+
+		fsm->init(transitionTable, gettingTote);
+	}
+	void HALBot::update()
+	{
+		fsm->update();
+	}
+
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra)
 	{
