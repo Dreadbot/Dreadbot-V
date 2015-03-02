@@ -36,7 +36,9 @@ namespace dreadbot
 		}
 
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0.5, 0);
+			drivebase->Drive_v(0, -0.5, 0);
+		if (intake != nullptr)
+			intake->Set(-1);
 		SmartDashboard::PutString("State", "gettingTote");
 		return HALBot::no_update;
 	}
@@ -74,9 +76,42 @@ namespace dreadbot
 		return HALBot::no_update;
 	}
 
+	ForkGrab::ForkGrab()
+	{
+		timerActive = false;
+		lift = nullptr;
+	}
+	int ForkGrab::update()
+	{
+		if (!timerActive)
+		{
+			timerActive = true;
+			grabTimer.Start();
+		}
+
+		if (grabTimer.HasPeriodPassed(LOWER_STACK_TIME))
+		{
+			timerActive = false;
+			grabTimer.Stop();
+			//Raise the lift
+			lift->Set(1);
+			if (HALBot::getToteCount() < TOTE_COUNT)
+			{
+				HALBot::incrTote();
+				return HALBot::nextTote;
+			}
+			else
+				return HALBot::finish;
+		}
+		SmartDashboard::PutString("State", "grabTote");
+		if (lift != nullptr)
+			lift->Set(-1); //Lower the lift for grabbing?
+		return HALBot::no_update;
+	}
+
 	int Stopped::update()
 	{
-
+		lift->Set(-1);
 		SmartDashboard::PutString("State", "stopped");
 		return HALBot::no_update;
 	}
@@ -98,16 +133,25 @@ namespace dreadbot
 			drivebase->Drive_v(0, 0, 1);
 		SmartDashboard::PutString("State", "rotate");
 		return HALBot::no_update;
-
 	}
 
 
+	int HALBot::toteCount = 0;
+	int HALBot::getToteCount()
+	{
+		return toteCount;
+	}
+	void HALBot::incrTote()
+	{
+		toteCount++;
+	}
 	HALBot::HALBot()
 	{
 		stopped = new Stopped;
 		gettingTote = new GettingTote;
 		driveToZone = new DriveToZone;
 		rotate = new Rotate;
+		forkGrab = new ForkGrab;
 		drivebase = nullptr;
 		intake = nullptr;
 		fsm = new FiniteStateMachine;
@@ -119,8 +163,9 @@ namespace dreadbot
 		delete driveToZone;
 		delete rotate;
 		delete fsm;
+		delete forkGrab;
 	}
-	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
+	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift)
 	{
 		drivebase = newDrivebase;
 		intake = newIntake;
@@ -128,18 +173,23 @@ namespace dreadbot
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 		rotate->setHardware(drivebase);
+		stopped->lift = lift; //Don't know if I like these...
+		forkGrab->lift = lift;
 
 
-		transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate},
-		transitionTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped},
-		transitionTable[2] = {rotate, HALBot::timerExpired, nullptr, driveToZone},
-		transitionTable[3] = END_STATE_TABLE;
+		transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
+		transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, gettingTote};
+		transitionTable[2] = {forkGrab, HALBot::finish, nullptr, rotate};
+		transitionTable[3] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+		transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+		transitionTable[5] = END_STATE_TABLE;
 
 		fsm->init(transitionTable, gettingTote);
 	}
 	void HALBot::update()
 	{
 		fsm->update();
+		SmartDashboard::PutNumber("toteCount", toteCount);
 	}
 
 

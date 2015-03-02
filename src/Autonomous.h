@@ -7,9 +7,11 @@
 #include "XMLInput.h"
 #include "FSM.h"
 
-#define TOTE_PICKUP_TIME 1
+#define TOTE_PICKUP_TIME 2
 #define DRIVE_TO_ZONE_TIME 4.1
 #define ROTATE_TIME 0.66
+#define LOWER_STACK_TIME 2
+#define TOTE_COUNT 3
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
 
@@ -39,6 +41,16 @@ namespace dreadbot
 		MecanumDrive* drivebase;
 		bool timerActive;
 	};
+	class ForkGrab : public FSMState
+	{
+	public:
+		ForkGrab();
+		virtual int update();
+		Timer grabTimer;
+		PneumaticGrouping* lift;
+	private:;
+		bool timerActive;
+	};
 	class Rotate : public DriveToZone
 	{
 	public:
@@ -48,25 +60,30 @@ namespace dreadbot
 	{
 	public:
 		int update();
+		PneumaticGrouping* lift;
 	};
 
 	class HALBot
 	{
 	public:
-		enum fsmInputs {no_update, timerExpired, sensorHit};
+		enum fsmInputs {no_update, finish, timerExpired, nextTote, sensorHit};
 
 		HALBot();
 		~HALBot();
-		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
+		static int getToteCount();
+		static void incrTote();
+		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift);
 		void update();
 	private:
+		static int toteCount;
 		FiniteStateMachine* fsm;
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
 
-		FSMTransition transitionTable[4];
+		FSMTransition transitionTable[6];
 		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
+		ForkGrab* forkGrab;
 		Rotate* rotate;
 		Stopped* stopped;
 	};

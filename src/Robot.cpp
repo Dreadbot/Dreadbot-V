@@ -107,7 +107,7 @@ namespace dreadbot
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
-			AutonBot->init(drivebase, intake);
+			AutonBot->init(drivebase, intake, lift);
 		}
 
 		void AutonomousPeriodic()
