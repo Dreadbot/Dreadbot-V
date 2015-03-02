@@ -16,10 +16,13 @@ namespace dreadbot
 		if (!bit1.Get()) { sw |= (0x01 << 1); }
 		if (!bit2.Get()) { sw |= (0x01 << 2); }
 
-		if      (sw == 0) { mode = AUTON_MODE_STOP;      }
-		else if (sw == 1) { mode = AUTON_MODE_MOVE;      }
-		else if (sw == 2) { mode = AUTON_MODE_TOTE;      }
-		else if (sw == 3) { mode = AUTON_MODE_CONTAINER; }
+		if      (sw == 0) { mode = AUTON_MODE_STOP      };
+		else if (sw == 1) { mode = AUTON_MODE_DRIVE     };
+		else if (sw == 2) { mode = AUTON_MODE_TOTE      };
+		else if (sw == 3) { mode = AUTON_MODE_CONTAINER };
+		else if (sw == 4) { mode = AUTON_MODE_BOTH      };
+		else if (sw == 5) { mode = AUTON_MODE_STACK2    };
+		else if (sw == 6) { mode = AUTON_MODE_STACK3    };
 
 		SmartDashboard::PutNumber("Auton Mode", mode);
 		return mode;
