@@ -157,14 +157,8 @@ namespace dreadbot
 			if (sPoints[i] == 0)
 				accels[i] *= 2.0f;
 
-			//Inverts
-			if (inverts[i])
-				sPoints[i] *= -1;
-			SmartDashboard::PutBoolean("invert on " + i, inverts[i]);
-
 			//NUKE
 			vels[i] = sPoints[i];
-			SmartDashboard::PutNumber("value on " + i, sPoints[i]);
 		}
 		if (drivebase != nullptr) //Idiot check
 			drivebase->Drive_v(vels[x], vels[y], vels[r]);
@@ -279,9 +273,9 @@ namespace dreadbot
 				accels[y] = atof(axis.child_value("accel"));
 
 				if (invert.find("true")) //I really don't understand how this works...
-					inverts[y] = true;
-				else
 					inverts[y] = false;
+				else
+					inverts[y] = true;
 			}
 			else if (axisDir == "transX")
 			{
@@ -290,9 +284,9 @@ namespace dreadbot
 				accels[x] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
-					inverts[x] = true;
-				else
 					inverts[x] = false;
+				else
+					inverts[x] = true;
 			}
 			else if (axisDir == "rot")
 			{
@@ -301,9 +295,9 @@ namespace dreadbot
 				accels[r] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
-					inverts[r] = true;
-				else
 					inverts[r] = false;
+				else
+					inverts[r] = true;
 			}
 		}
 

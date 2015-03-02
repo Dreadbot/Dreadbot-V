@@ -137,8 +137,7 @@ namespace dreadbot
 		}
 
 		void TeleopPeriodic()
-		{
-			/*
+		{			/*
 			int16_t ax, ay, az, gx, gy, gz, mx, my, mz;
 			IMU->getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);// ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz
 			SmartDashboard::PutNumber("a-x", ax);
@@ -199,9 +198,11 @@ namespace dreadbot
 			float liftInput = gamepad->GetRawAxis(2);
 			float liftInput_duncan = gamepad_duncan->GetRawAxis(2);
 			if (liftInput_duncan > 0.15) {
-				// Lower the lift arms until they collide with the lift switch
-				if (!lift_switch->Get()) {
-
+				// Lower the lift arms until they set the limit switch to false
+				if (lift_switch->Get()) {
+					lift->Set(-1.0f);
+				} else {
+					lift->Set(0.0f);
 				}
 			} else {
 				if (lift != NULL)
