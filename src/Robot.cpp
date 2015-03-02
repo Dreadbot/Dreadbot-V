@@ -4,6 +4,8 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Autonomous.h"
+//#include "Robot.h"
+
 
 namespace dreadbot
 {
@@ -12,6 +14,7 @@ namespace dreadbot
 	private:
 		DriverStation *ds;
 		Joystick* gamepad;
+		Joystick* gamepad2;
 		PowerDistributionPanel *pdp;
 		Compressor* compressor;
 
@@ -39,6 +42,10 @@ namespace dreadbot
 		bool viewingBack;
 		int viewerCooldown;
 
+		DigitalInput* lift_switch; // 0
+		DigitalInput* transit_switch_l; // 1
+		DigitalInput* transit_switch_r; // 2
+
 	public:
 		void RobotInit()
 		{
@@ -47,6 +54,11 @@ namespace dreadbot
 		//	lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
+
+			lift_switch = new DigitalInput(0); // 0
+			transit_switch_l = new DigitalInput(1); // 1
+			transit_switch_r = new DigitalInput(2); // 2
+
 
 			//frontUltra = new Ultrasonic(6, 7); //Dummy values for the ultrasonics
 			//rearUltra = new Ultrasonic(4, 5);
@@ -81,6 +93,7 @@ namespace dreadbot
 
 			Input->loadXMLConfig();
 			gamepad = Input->getController(0);
+			gamepad2 = Input->getController(1);
 			drivebase->Engage();
 
 			intake = Input->getMGroup("intake");
@@ -131,7 +144,7 @@ namespace dreadbot
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
+			if ((gamepad->GetRawAxis(3) > 0.8) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				//Create cooldown and set the boolean thingy
@@ -162,29 +175,42 @@ namespace dreadbot
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
-
+/* Lift down: lt axis 2 > 0.8
+ * Actuate fork: lb button 5
+ * Intake arms: rt axis 3 > 0.5
+ * Intake arms pneumatics: rb button 6
+ */
 			//Output controls
-			float intakeInput = gamepad->GetRawAxis(2) - gamepad->GetRawAxis(3); //Subtract left trigger from right trigger
-			if (intake != nullptr)
-				intake->Set(intakeInput);
+			float intakeInput = gamepad->GetRawAxis(3);
+			//float intakeInput_duncan = gamepad2->GetRawAxis(3);
+			float intakeInput_duncan = 0.0f;
+			if (intake != NULL)
+				intake->Set(((float) (intakeInput > 0.15) * -1) + (float) (intakeInput_duncan > 0.15));
 
-			bool liftInput = !gamepad->GetRawButton(5); //Left bumper
-			if (lift != nullptr)
-			{
-				if (liftInput)
-					lift->Set(1); //Keeps the lift up unless button is pressed.
-				else
-					lift->Set(-1);
+			float liftInput = gamepad->GetRawAxis(2);
+			float liftInput_duncan = gamepad2->GetRawAxis(2);
+			if (liftInput_duncan > 0.15) {
+				// Lower the lift arms until they set the limit switch to false
+				if (lift_switch->Get()) {
+					lift->Set(-1.0f);
+				} else {
+					lift->Set(0.0f);
+				}
+			} else {
+				if (lift != NULL)
+					lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
 			}
-			
-			float armInput = 0; /*(int)gamepad->GetRawButton(3);*/ //X button
-			armInput += (int)gamepad->GetRawButton(2) * -1; //B button
-			if (intakeArms != nullptr)
-				intakeArms->Set(armInput);
+			float armInput = (float) gamepad->GetRawButton(6);
+			if (intakeArms != NULL)
+				intakeArms->Set(-armInput);
 
-			float liftArmInput = gamepad->GetRawButton(6); //Right bumper
-			if (liftArms != nullptr)
-					liftArms->Set(liftArmInput);
+			float liftArmInput = (float) gamepad->GetRawButton(5);
+			if (liftArms != NULL)
+					liftArms->Set(-liftArmInput);
+
+			SmartDashboard::PutBoolean("R transit switch", transit_switch_r->Get());
+			SmartDashboard::PutBoolean("L transit switch", transit_switch_l->Get());
+			SmartDashboard::PutBoolean("Lift switch", lift_switch->Get());
 		}
 
 		void TestInit()
@@ -309,3 +335,4 @@ namespace dreadbot
 }
 
 START_ROBOT_CLASS(dreadbot::Robot);
+
