@@ -107,7 +107,7 @@ namespace dreadbot
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
-			AutonBot->setMode(AUTON_MODE_TOTE);
+			AutonBot->setMode(GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
 		}
 

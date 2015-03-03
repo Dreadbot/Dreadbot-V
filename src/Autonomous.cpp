@@ -204,9 +204,8 @@ namespace dreadbot
 		}
 		if (mode == AUTON_MODE_DRIVE)
 		{
-			transitionTable[0] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[2] = END_STATE_TABLE;
+			transitionTable[0] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[1] = END_STATE_TABLE;
 		}
 		if (mode == AUTON_MODE_TOTE)
 		{
@@ -218,8 +217,8 @@ namespace dreadbot
 
 		FSMState* defState = nullptr;
 		if (mode == AUTON_MODE_STACK3)	 	defState = gettingTote;
-		if (mode == AUTON_MODE_DRIVE)			defState = rotate;
-		if (mode == AUTON_MODE_TOTE)	defState = gettingTote;
+		if (mode == AUTON_MODE_DRIVE)		defState = driveToZone;
+		if (mode == AUTON_MODE_TOTE)		defState = gettingTote;
 		fsm->init(transitionTable, defState);
 	}
 	void HALBot::update()
