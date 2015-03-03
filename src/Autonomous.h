@@ -11,7 +11,7 @@
 #define DRIVE_TO_ZONE_TIME 4.1
 #define ROTATE_TIME 0.66
 #define LOWER_STACK_TIME 2
-#define TOTE_COUNT 3
+#define TOTE_COUNT 2
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
 

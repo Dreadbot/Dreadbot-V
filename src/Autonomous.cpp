@@ -61,7 +61,6 @@ namespace dreadbot
 			timerActive = true;
 		}
 
-
 		if (driveTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME))
 		{
 			timerActive = false;
@@ -164,6 +163,7 @@ namespace dreadbot
 		delete rotate;
 		delete fsm;
 		delete forkGrab;
+		toteCount = 0;
 	}
 	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift)
 	{
