@@ -71,6 +71,7 @@ namespace dreadbot
 
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, -0.75, 0); //Straight forward
+		SmartDashboard::PutNumber("DriveToZone timer", driveTimer.Get());
 		SmartDashboard::PutString("State", "driveToZone");
 		return HALBot::no_update;
 	}
@@ -130,10 +131,19 @@ namespace dreadbot
 		}
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, 0, 1);
+
+		SmartDashboard::PutNumber("rotateTimer", driveTimer.Get());
 		SmartDashboard::PutString("State", "rotate");
 		return HALBot::no_update;
 	}
-
+	int BackAway::update()
+	{
+		return HALBot::no_update; //Temporary
+	}
+	int PushContainer::update()
+	{
+		return HALBot::no_update; //Temporary
+	}
 
 	int HALBot::toteCount = 0;
 	int HALBot::getToteCount()
@@ -151,9 +161,12 @@ namespace dreadbot
 		driveToZone = new DriveToZone;
 		rotate = new Rotate;
 		forkGrab = new ForkGrab;
+		pushContainer = new PushContainer;
+		backAway = new BackAway;
 		drivebase = nullptr;
 		intake = nullptr;
 		fsm = new FiniteStateMachine;
+		mode = drive;
 	}
 	HALBot::~HALBot()
 	{
@@ -161,8 +174,10 @@ namespace dreadbot
 		delete gettingTote;
 		delete driveToZone;
 		delete rotate;
-		delete fsm;
 		delete forkGrab;
+		delete pushContainer;
+		delete backAway;
+		delete fsm;
 		toteCount = 0;
 	}
 	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift)
@@ -173,25 +188,49 @@ namespace dreadbot
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 		rotate->setHardware(drivebase);
+		pushContainer->setHardware(drivebase, intake);
+		backAway->setHardware(drivebase);
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
 
+		if (mode == threeTote)
+		{
+			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
+			transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, gettingTote};
+			transitionTable[2] = {forkGrab, HALBot::finish, nullptr, rotate};
+			transitionTable[3] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[5] = END_STATE_TABLE;
+		}
+		if (mode == drive)
+		{
+			transitionTable[0] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[2] = END_STATE_TABLE;
+		}
+		if (mode == driveWithTote)
+		{
+			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate};
+			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[2] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[3] = END_STATE_TABLE;
+		}
 
-		transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
-		transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, gettingTote};
-		transitionTable[2] = {forkGrab, HALBot::finish, nullptr, rotate};
-		transitionTable[3] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-		transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
-		transitionTable[5] = END_STATE_TABLE;
-
-		fsm->init(transitionTable, gettingTote);
+		FSMState* defState = nullptr;
+		if (mode == threeTote)	 	defState = gettingTote;
+		if (mode == drive)			defState = rotate;
+		if (mode == driveWithTote)	defState = gettingTote;
+		fsm->init(transitionTable, defState);
 	}
 	void HALBot::update()
 	{
 		fsm->update();
 		SmartDashboard::PutNumber("toteCount", toteCount);
 	}
-
+	void HALBot::setMode(autonMode newMode)
+	{
+		mode = newMode;
+	}
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra)
 	{

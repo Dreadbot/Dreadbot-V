@@ -62,16 +62,28 @@ namespace dreadbot
 		int update();
 		PneumaticGrouping* lift;
 	};
+	class PushContainer : public GettingTote
+	{
+	public:
+		int update();
+	};
+	class BackAway : public DriveToZone
+	{
+	public:
+		int update();
+	};
 
 	class HALBot
 	{
 	public:
 		enum fsmInputs {no_update, finish, timerExpired, nextTote, sensorHit};
+		enum autonMode {drive, driveWithTote, threeTote};
 
 		HALBot();
 		~HALBot();
 		static int getToteCount();
 		static void incrTote();
+		void setMode(autonMode newMode);
 		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift);
 		void update();
 	private:
@@ -79,13 +91,16 @@ namespace dreadbot
 		FiniteStateMachine* fsm;
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
+		autonMode mode;
 
-		FSMTransition transitionTable[6];
+		FSMTransition transitionTable[];
 		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
 		ForkGrab* forkGrab;
 		Rotate* rotate;
 		Stopped* stopped;
+		PushContainer* pushContainer;
+		BackAway* backAway;
 	};
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);
