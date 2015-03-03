@@ -6,6 +6,7 @@
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "FSM.h"
+#include "DreadbotDIO.h"
 
 #define TOTE_PICKUP_TIME 2
 #define DRIVE_TO_ZONE_TIME 4.1
@@ -77,13 +78,12 @@ namespace dreadbot
 	{
 	public:
 		enum fsmInputs {no_update, finish, timerExpired, nextTote, sensorHit};
-		enum autonMode {drive, driveWithTote, threeTote};
 
 		HALBot();
 		~HALBot();
 		static int getToteCount();
 		static void incrTote();
-		void setMode(autonMode newMode);
+		void setMode(AutonMode newMode);
 		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift);
 		void update();
 	private:
@@ -91,9 +91,9 @@ namespace dreadbot
 		FiniteStateMachine* fsm;
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
-		autonMode mode;
+		AutonMode mode;
 
-		FSMTransition transitionTable[];
+		FSMTransition transitionTable[15];
 		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
 		ForkGrab* forkGrab;

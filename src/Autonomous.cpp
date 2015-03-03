@@ -166,7 +166,7 @@ namespace dreadbot
 		drivebase = nullptr;
 		intake = nullptr;
 		fsm = new FiniteStateMachine;
-		mode = drive;
+		mode = AUTON_MODE_DRIVE;
 	}
 	HALBot::~HALBot()
 	{
@@ -193,7 +193,7 @@ namespace dreadbot
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
 
-		if (mode == threeTote)
+		if (mode == AUTON_MODE_STACK3)
 		{
 			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, gettingTote};
@@ -202,13 +202,13 @@ namespace dreadbot
 			transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[5] = END_STATE_TABLE;
 		}
-		if (mode == drive)
+		if (mode == AUTON_MODE_DRIVE)
 		{
 			transitionTable[0] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
 			transitionTable[1] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[2] = END_STATE_TABLE;
 		}
-		if (mode == driveWithTote)
+		if (mode == AUTON_MODE_TOTE)
 		{
 			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate};
 			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
@@ -217,9 +217,9 @@ namespace dreadbot
 		}
 
 		FSMState* defState = nullptr;
-		if (mode == threeTote)	 	defState = gettingTote;
-		if (mode == drive)			defState = rotate;
-		if (mode == driveWithTote)	defState = gettingTote;
+		if (mode == AUTON_MODE_STACK3)	 	defState = gettingTote;
+		if (mode == AUTON_MODE_DRIVE)			defState = rotate;
+		if (mode == AUTON_MODE_TOTE)	defState = gettingTote;
 		fsm->init(transitionTable, defState);
 	}
 	void HALBot::update()
@@ -227,7 +227,7 @@ namespace dreadbot
 		fsm->update();
 		SmartDashboard::PutNumber("toteCount", toteCount);
 	}
-	void HALBot::setMode(autonMode newMode)
+	void HALBot::setMode(AutonMode newMode)
 	{
 		mode = newMode;
 	}
