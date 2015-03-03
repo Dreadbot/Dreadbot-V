@@ -36,7 +36,7 @@ namespace dreadbot
 		AUTON_MODE_STACK2,	// 5.  Tote 2-stack
 		AUTON_MODE_STACK3,	// 6.  Tote 3-stack
 	};
-	int GetAutonMode(void);
+	enum AutonMode GetAutonMode(void);
 	bool isToteInTransit(void);
 	bool isAtStepHeight(void);
 };

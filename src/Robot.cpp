@@ -1,27 +1,31 @@
-#include <WPILib.h>
-#include "SmartDashboard/SmartDashboard.h"
-#include "DigitalInput.h"
+#include "WPILib.h"
 #include "DreadbotDIO.h"
-#include "MecanumDrive.h"
-#include "XMLInput.h"
-#include "Autonomous.h"
 
-namespace dreadbot
-{
+namespace dreadbot {
 	class Robot: public IterativeRobot
 	{
-	private:
-		DriverStation *ds;
-		Joystick* gamepad;
-		PowerDistributionPanel *pdp;
+		private:
 
-	public:
+		LiveWindow *lw;
+		int teleop_counter = 0;
+		int auton_counter = 0;
+		int practice_counter = 0;
+		int test_counter = 0;
+		int disabled_counter = 0;
+
 		void RobotInit()
 		{
-			ds = DriverStation::GetInstance();
+			//lw = LiveWindow::GetInstance();
 			SmartDashboard::init();
-		//	lw = LiveWindow::GetInstance();
-			pdp = new PowerDistributionPanel();
+		}
+
+		void PutCounters(void)
+		{
+			SmartDashboard::PutNumber("TeleopPeriodic", teleop_counter);
+			SmartDashboard::PutNumber("AutonPeriodic", auton_counter);
+			SmartDashboard::PutNumber("PracticePeriodic", practice_counter);
+			SmartDashboard::PutNumber("TestPeriodic", test_counter);
+			SmartDashboard::PutNumber("DisabledPeriodic", disabled_counter);
 		}
 
 		void GlobalInit()
@@ -34,6 +38,8 @@ namespace dreadbot
 
 		void AutonomousPeriodic()
 		{
+			auton_counter++;
+			PutCounters();
 		}
 
 		void TeleopInit()
@@ -42,20 +48,33 @@ namespace dreadbot
 
 		void TeleopPeriodic()
 		{
-
+			teleop_counter++;
+			PutCounters();
+			dreadbot::GetAutonMode();
+			dreadbot::isToteInTransit();
+			dreadbot::isAtStepHeight();
 		}
 
 		void TestInit()
 		{
-			GlobalInit();
 		}
 
 		void TestPeriodic()
 		{
+			test_counter++;
+			PutCounters();
+
 			//lw->Run();
-			GetAutonMode();
-			isToteInTransit();
-			isAtStepHeight();
+		}
+
+		void PracticeInit()
+		{
+		}
+
+		void PracticePeriodic()
+		{
+			practice_counter++;
+			PutCounters();
 		}
 
 		void DisabledInit()
@@ -64,9 +83,11 @@ namespace dreadbot
 
 		void DisabledPeriodic()
 		{
+			disabled_counter++;
+			PutCounters();
 		}
-	};
 
+	};
 }
 
 START_ROBOT_CLASS(dreadbot::Robot);
