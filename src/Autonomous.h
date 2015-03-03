@@ -98,6 +98,7 @@ namespace dreadbot
 		DriveToZone* driveToZone;
 		ForkGrab* forkGrab;
 		Rotate* rotate;
+		Rotate* rotate2;
 		Stopped* stopped;
 		PushContainer* pushContainer;
 		BackAway* backAway;

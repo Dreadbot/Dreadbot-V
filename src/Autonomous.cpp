@@ -160,6 +160,7 @@ namespace dreadbot
 		gettingTote = new GettingTote;
 		driveToZone = new DriveToZone;
 		rotate = new Rotate;
+		rotate2 = new Rotate;
 		forkGrab = new ForkGrab;
 		pushContainer = new PushContainer;
 		backAway = new BackAway;
@@ -188,10 +189,31 @@ namespace dreadbot
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 		rotate->setHardware(drivebase);
+		rotate2->setHardware(drivebase);
 		pushContainer->setHardware(drivebase, intake);
 		backAway->setHardware(drivebase);
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
+
+		if (mode == AUTON_MODE_STOP)
+		{
+			transitionTable[0] = END_STATE_TABLE;
+		}
+		if (mode == AUTON_MODE_DRIVE)
+		{
+			transitionTable[0] = {driveToZone, HALBot::timerExpired, nullptr, rotate};
+			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, rotate2};
+			transitionTable[2] = {rotate2, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[3] = END_STATE_TABLE;
+		}
+		if (mode == AUTON_MODE_TOTE)
+		{
+			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate};
+			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[2] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
+			transitionTable[3] = {rotate2, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[4] = END_STATE_TABLE;
+		}
 
 		if (mode == AUTON_MODE_STACK3)
 		{
@@ -199,22 +221,10 @@ namespace dreadbot
 			transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, gettingTote};
 			transitionTable[2] = {forkGrab, HALBot::finish, nullptr, rotate};
 			transitionTable[3] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[5] = END_STATE_TABLE;
+			transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
+			transitionTable[5] = {rotate2, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[6] = END_STATE_TABLE;
 		}
-		if (mode == AUTON_MODE_DRIVE)
-		{
-			transitionTable[0] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[1] = END_STATE_TABLE;
-		}
-		if (mode == AUTON_MODE_TOTE)
-		{
-			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate};
-			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[2] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[3] = END_STATE_TABLE;
-		}
-
 		FSMState* defState = nullptr;
 		if (mode == AUTON_MODE_STACK3)	 	defState = gettingTote;
 		if (mode == AUTON_MODE_DRIVE)		defState = driveToZone;
