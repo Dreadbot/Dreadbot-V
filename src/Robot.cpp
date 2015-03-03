@@ -9,31 +9,44 @@ namespace dreadbot {
 		LiveWindow *lw;
 		int teleop_counter = 0;
 		int auton_counter = 0;
-		int practice_counter = 0;
 		int test_counter = 0;
 		int disabled_counter = 0;
 
+
+		/*****************************************************************************
+		**
+		**  RobotInit() – provide for initialization at robot power-on
+		**
+		*****************************************************************************/
 		void RobotInit()
 		{
-			//lw = LiveWindow::GetInstance();
+			lw = LiveWindow::GetInstance();
 			SmartDashboard::init();
 		}
 
+		/*****************************************************************************
+		**
+		**  PutCounters
+		**
+		*****************************************************************************/
 		void PutCounters(void)
 		{
 			SmartDashboard::PutNumber("TeleopPeriodic", teleop_counter);
 			SmartDashboard::PutNumber("AutonPeriodic", auton_counter);
-			SmartDashboard::PutNumber("PracticePeriodic", practice_counter);
 			SmartDashboard::PutNumber("TestPeriodic", test_counter);
 			SmartDashboard::PutNumber("DisabledPeriodic", disabled_counter);
 		}
 
-		void GlobalInit()
-		{
-		}
-
+		/*****************************************************************************
+		**
+		**  AutonomousInit() – called each and every time autonomous is entered from
+		**      another mode
+		**
+		*****************************************************************************/
 		void AutonomousInit()
 		{
+			auton_counter = 0;
+			PutCounters();
 		}
 
 		void AutonomousPeriodic()
@@ -42,8 +55,16 @@ namespace dreadbot {
 			PutCounters();
 		}
 
+		/*****************************************************************************
+		**
+		**  TeleopInit() – called each and every time teleop is entered from
+		**      another mode
+		**
+		*****************************************************************************/
 		void TeleopInit()
 		{
+			teleop_counter = 0;
+			PutCounters();
 		}
 
 		void TeleopPeriodic()
@@ -55,8 +76,16 @@ namespace dreadbot {
 			dreadbot::isAtStepHeight();
 		}
 
+		/*****************************************************************************
+		**
+		**  TestInit() – called each and every time test is entered from
+		**      another mode
+		**
+		*****************************************************************************/
 		void TestInit()
 		{
+			test_counter = 0;
+			PutCounters();
 		}
 
 		void TestPeriodic()
@@ -64,21 +93,18 @@ namespace dreadbot {
 			test_counter++;
 			PutCounters();
 
-			//lw->Run();
+			lw->Run();
 		}
 
-		void PracticeInit()
-		{
-		}
-
-		void PracticePeriodic()
-		{
-			practice_counter++;
-			PutCounters();
-		}
-
+		/*****************************************************************************
+		**
+		**  DisabledInit() – called only when first disabled
+		**
+		*****************************************************************************/
 		void DisabledInit()
 		{
+			disabled_counter = 0;
+			PutCounters();
 		}
 
 		void DisabledPeriodic()
