@@ -10,6 +10,7 @@
 
 #define TOTE_GRAB_DELAY 1.0
 #define DRIVE_TO_ZONE_TIME 4.1
+#define BACK_AWAY_TIME 1
 #define ROTATE_TIME 0.66
 #define LOWER_STACK_TIME 2
 #define TOTE_COUNT 2
@@ -68,10 +69,11 @@ namespace dreadbot
 	public:
 		int update();
 	};
-	class BackAway : public DriveToZone
+	class BackAway : public ForkGrab
 	{
 	public:
 		int update();
+		MecanumDrive* drivebase;
 	};
 
 	class HALBot
@@ -84,13 +86,11 @@ namespace dreadbot
 		static bool enoughTotes();
 		static void incrTote();
 		void setMode(AutonMode newMode);
-		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift);
+		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift);
 		void update();
 	private:
 		static int toteCount;
 		FiniteStateMachine* fsm;
-		MecanumDrive* drivebase;
-		MotorGrouping* intake;
 		static AutonMode mode;
 
 		FSMTransition transitionTable[15];

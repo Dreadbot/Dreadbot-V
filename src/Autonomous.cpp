@@ -140,12 +140,32 @@ namespace dreadbot
 	}
 	int BackAway::update()
 	{
-		return HALBot::no_update; //Temporary
+		if (!timerActive)
+		{
+			grabTimer.Reset();
+			grabTimer.Start();
+			grabTimer = true;
+		}
+
+		if (grabTimer.HasPeriodPassed(BACK_AWAY_TIME))
+		{
+			timerActive = false;
+			drivebase->Drive_v(0, 0, 0);
+			lift->Set(0);
+			return HALBot::timerExpired;
+		}
+
+		if (grabTimer != nullptr)
+			drivebase->Drive_v(0, 0.75, 0); //Back up
+		if (lift != nullptr)
+			lift->Set(-1); //Lower the lift so the tote goes free
+		return HALBot::no_update;
 	}
 	int PushContainer::update()
 	{
 		return HALBot::no_update; //Temporary
 	}
+
 
 	int HALBot::toteCount = 0;
 	AutonMode HALBot::mode = AUTON_MODE_STOP;
@@ -197,19 +217,17 @@ namespace dreadbot
 		delete fsm;
 		toteCount = 0;
 	}
-	void HALBot::init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift)
+	void HALBot::init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift)
 	{
-		drivebase = newDrivebase;
-		intake = newIntake;
-
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 		rotate->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
 		pushContainer->setHardware(drivebase, intake);
-		backAway->setHardware(drivebase);
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
+		backAway->lift = lift;
+		backAway->drivebase = drivebase;
 
 
 		//Apply state tables and set the starting state
@@ -232,8 +250,9 @@ namespace dreadbot
 			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate};
 			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
 			transitionTable[2] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[3] = {rotate2, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[4] = END_STATE_TABLE;
+			transitionTable[3] = {rotate2, HALBot::timerExpired, nullptr, backAway};
+			transitionTable[4] = {backAway, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[5] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
 		if (mode == AUTON_MODE_CONTAINER)
@@ -258,8 +277,9 @@ namespace dreadbot
 			transitionTable[2] = {forkGrab, HALBot::finish, nullptr, rotate};
 			transitionTable[3] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
 			transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[5] = {rotate2, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[6] = END_STATE_TABLE;
+			transitionTable[5] = {rotate2, HALBot::timerExpired, nullptr, backAway};
+			transitionTable[6] = {backAway, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[7] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
 
