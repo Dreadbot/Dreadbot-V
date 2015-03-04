@@ -19,23 +19,28 @@ namespace dreadbot
 
 		if (isToteInTransit() && !timerActive)
 		{
+			//Stay still while a tote is loaded
 			timerActive = true;
 			getTimer.Start();
 			drivebase->Drive_v(0, 0, 0);
 		}
-		else
+		if (timerActive)
 		{
-			drivebase->Drive_v(0, -0.5, 0);
+			//Keep sucking a tote in
 			intake->Set(-1);
 			return HALBot::no_update;
 		}
 		if (getTimer.HasPeriodPassed(TOTE_GRAB_DELAY) && timerActive)
 		{
+			//Tote successfully collected.
 			intake->Set(0);
-			drivebase->Drive_v(0, 0, 0);
+			timerActive = false;
+			HALBot::incrTote();
 			return HALBot::timerExpired;
 		}
 
+		drivebase->Drive_v(0, -0.5, 0);
+		intake->Set(-1);
 		SmartDashboard::PutString("State", "gettingTote");
 		return HALBot::no_update;
 	}
@@ -92,7 +97,7 @@ namespace dreadbot
 			grabTimer.Stop();
 			//Raise the lift
 			lift->Set(1);
-			if (HALBot::getToteCount() < TOTE_COUNT)
+			if (HALBot::enoughTotes())
 			{
 				HALBot::incrTote();
 				return HALBot::nextTote;
@@ -143,9 +148,23 @@ namespace dreadbot
 	}
 
 	int HALBot::toteCount = 0;
-	int HALBot::getToteCount()
+	AutonMode HALBot::mode = AUTON_MODE_STOP;
+	bool HALBot::enoughTotes()
 	{
-		return toteCount;
+		switch (mode)
+		{
+		case AUTON_MODE_TOTE:
+			if (toteCount == 1)
+				return true;
+			else return false;
+			break;
+		case AUTON_MODE_STACK3:
+			if (toteCount == 2)
+				return true;
+			else return false;
+		default:
+			return true;
+		}
 	}
 	void HALBot::incrTote()
 	{
@@ -192,18 +211,18 @@ namespace dreadbot
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
 
-		if (mode == AUTON_MODE_STOP)
+		if (HALBot::mode == AUTON_MODE_STOP)
 		{
 			transitionTable[0] = END_STATE_TABLE;
 		}
-		if (mode == AUTON_MODE_DRIVE)
+		if (HALBot::mode == AUTON_MODE_DRIVE)
 		{
 			transitionTable[0] = {driveToZone, HALBot::timerExpired, nullptr, rotate};
 			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, rotate2};
 			transitionTable[2] = {rotate2, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[3] = END_STATE_TABLE;
 		}
-		if (mode == AUTON_MODE_TOTE)
+		if (HALBot::mode == AUTON_MODE_TOTE)
 		{
 			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate};
 			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
@@ -211,8 +230,7 @@ namespace dreadbot
 			transitionTable[3] = {rotate2, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[4] = END_STATE_TABLE;
 		}
-
-		if (mode == AUTON_MODE_STACK3)
+		if (HALBot::mode == AUTON_MODE_STACK3)
 		{
 			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, gettingTote};
@@ -222,10 +240,12 @@ namespace dreadbot
 			transitionTable[5] = {rotate2, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[6] = END_STATE_TABLE;
 		}
+
 		FSMState* defState = nullptr;
-		if (mode == AUTON_MODE_STACK3)	 	defState = gettingTote;
+		if (mode == AUTON_MODE_STOP)		defState = stopped;
 		if (mode == AUTON_MODE_DRIVE)		defState = driveToZone;
 		if (mode == AUTON_MODE_TOTE)		defState = gettingTote;
+		if (mode == AUTON_MODE_STACK3)	 	defState = gettingTote;
 		fsm->init(transitionTable, defState);
 	}
 	void HALBot::update()

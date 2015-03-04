@@ -81,7 +81,7 @@ namespace dreadbot
 
 		HALBot();
 		~HALBot();
-		static int getToteCount();
+		static bool enoughTotes();
 		static void incrTote();
 		void setMode(AutonMode newMode);
 		void init(MecanumDrive* newDrivebase, MotorGrouping* newIntake, PneumaticGrouping* lift);
@@ -91,7 +91,7 @@ namespace dreadbot
 		FiniteStateMachine* fsm;
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
-		AutonMode mode;
+		static AutonMode mode;
 
 		FSMTransition transitionTable[15];
 		GettingTote* gettingTote;
