@@ -285,12 +285,7 @@ namespace dreadbot
 			transitionTable[0] = END_STATE_TABLE;
 			defState = stopped;
 		}
-		if (mode == AUTON_MODE_STACK2)
-		{
-			transitionTable[0] = END_STATE_TABLE;
-			defState = stopped;
-		}
-		if (mode == AUTON_MODE_STACK3)
+		if (mode == AUTON_MODE_STACK3 || mode == AUTON_MODE_STACK2)
 		{
 			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
