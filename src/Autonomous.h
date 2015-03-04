@@ -8,7 +8,7 @@
 #include "FSM.h"
 #include "DreadbotDIO.h"
 
-#define TOTE_PICKUP_TIME 2
+#define TOTE_GRAB_DELAY 1.0
 #define DRIVE_TO_ZONE_TIME 4.1
 #define ROTATE_TIME 0.66
 #define LOWER_STACK_TIME 2

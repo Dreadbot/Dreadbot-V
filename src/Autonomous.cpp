@@ -16,29 +16,26 @@ namespace dreadbot
 	}
 	int GettingTote::update()
 	{
-		if (!timerActive)
+
+		if (isToteInTransit() && !timerActive)
 		{
-			getTimer.Reset();
-			getTimer.Start();
 			timerActive = true;
+			getTimer.Start();
+			drivebase->Drive_v(0, 0, 0);
 		}
-
-		SmartDashboard::PutBoolean("GettingTote timerActive", timerActive);
-		SmartDashboard::PutNumber("getTimer", getTimer.Get());
-
-		if (getTimer.HasPeriodPassed(TOTE_PICKUP_TIME))
+		else
 		{
-			SmartDashboard::PutBoolean("getTimer has passed", true);
-			timerActive = false;
+			drivebase->Drive_v(0, -0.5, 0);
+			intake->Set(-1);
+			return HALBot::no_update;
+		}
+		if (getTimer.HasPeriodPassed(TOTE_GRAB_DELAY) && timerActive)
+		{
 			intake->Set(0);
 			drivebase->Drive_v(0, 0, 0);
 			return HALBot::timerExpired;
 		}
 
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, -0.5, 0);
-		if (intake != nullptr)
-			intake->Set(-1);
 		SmartDashboard::PutString("State", "gettingTote");
 		return HALBot::no_update;
 	}
