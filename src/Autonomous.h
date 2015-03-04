@@ -10,10 +10,10 @@
 
 #define TOTE_GRAB_DELAY 1.0
 #define DRIVE_TO_ZONE_TIME 4.1
+#define PUSH_TIME 1.5
 #define BACK_AWAY_TIME 1
 #define ROTATE_TIME 0.66
 #define LOWER_STACK_TIME 2
-#define TOTE_COUNT 2
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
 
@@ -64,10 +64,11 @@ namespace dreadbot
 		int update();
 		PneumaticGrouping* lift;
 	};
-	class PushContainer : public GettingTote
+	class PushContainer : public DriveToZone
 	{
 	public:
 		int update();
+		MotorGrouping* pushers;
 	};
 	class BackAway : public ForkGrab
 	{

@@ -73,7 +73,6 @@ namespace dreadbot
 
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, -0.75, 0); //Straight forward
-		SmartDashboard::PutNumber("DriveToZone timer", driveTimer.Get());
 		SmartDashboard::PutString("State", "driveToZone");
 		return HALBot::no_update;
 	}
@@ -159,11 +158,31 @@ namespace dreadbot
 			drivebase->Drive_v(0, 0.75, 0); //Back up
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift so the tote goes free
+		SmartDashboard::PutString("State", "backAway");
 		return HALBot::no_update;
 	}
 	int PushContainer::update()
 	{
-		return HALBot::no_update; //Temporary
+		if (!timerActive)
+		{
+			driveTimer.Reset();
+			driveTimer.Start();
+			timerActive = true;
+		}
+
+		if (driveTimer.HasPeriodPassed(PUSH_TIME))
+		{
+			timerActive = false;
+			drivebase->Drive_v(0, 0, 0);
+			return HALBot::timerExpired;
+		}
+
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, -0.75, 0); //Straight forward
+		if (pushers != nullptr)
+			pushers->Set(1); //Push the container?
+		SmartDashboard::PutString("State", "pushContainer");
+		return HALBot::no_update;
 	}
 
 
@@ -223,7 +242,8 @@ namespace dreadbot
 		driveToZone->setHardware(drivebase);
 		rotate->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
-		pushContainer->setHardware(drivebase, intake);
+		pushContainer->setHardware(drivebase);
+		pushContainer->pushers = XMLInput::getInstance()->getMGroup("pushers");
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
 		backAway->lift = lift;
@@ -273,13 +293,14 @@ namespace dreadbot
 		if (mode == AUTON_MODE_STACK3)
 		{
 			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
-			transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, gettingTote};
-			transitionTable[2] = {forkGrab, HALBot::finish, nullptr, rotate};
-			transitionTable[3] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[4] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[5] = {rotate2, HALBot::timerExpired, nullptr, backAway};
-			transitionTable[6] = {backAway, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[7] = END_STATE_TABLE;
+			transitionTable[1] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
+			transitionTable[2] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
+			transitionTable[3] = {forkGrab, HALBot::finish, nullptr, rotate};
+			transitionTable[4] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[5] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
+			transitionTable[6] = {rotate2, HALBot::timerExpired, nullptr, backAway};
+			transitionTable[7] = {backAway, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[8] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
 

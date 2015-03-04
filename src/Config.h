@@ -42,6 +42,10 @@ string config = MULTILINE(
 			<motor outputID="2" invert="false" CAN="false"></motor>
 			<motor outputID="3" invert="true" CAN="false"></motor>
 		</group>
+		<group name="pushers" deadzone="0.1">
+			<motor outputID="0" invert="false" CAN="false"</motor>
+			<motor outputID="1" invert="false" CAN="false"</motor>
+		</group>
 	</motorgroups>
 	<pneumaticgroups>
 		<group name="lift" deadzone="0.1">
