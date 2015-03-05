@@ -258,8 +258,7 @@ namespace dreadbot
 		if (mode == AUTON_MODE_DRIVE)
 		{
 			transitionTable[0] = {driveToZone, HALBot::timerExpired, nullptr, rotate};
-			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[2] = {rotate2, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[2] = {rotate, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[3] = END_STATE_TABLE;
 			defState = driveToZone;
 		}
