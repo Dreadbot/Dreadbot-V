@@ -50,7 +50,7 @@ namespace dreadbot
 		virtual int update();
 		Timer grabTimer;
 		PneumaticGrouping* lift;
-	private:;
+	protected:
 		bool timerActive;
 	};
 	class Rotate : public DriveToZone

@@ -143,7 +143,7 @@ namespace dreadbot
 		{
 			grabTimer.Reset();
 			grabTimer.Start();
-			grabTimer = true;
+			timerActive = true;
 		}
 
 		if (grabTimer.HasPeriodPassed(BACK_AWAY_TIME))
@@ -154,7 +154,7 @@ namespace dreadbot
 			return HALBot::timerExpired;
 		}
 
-		if (grabTimer != nullptr)
+		if (drivebase != nullptr)
 			drivebase->Drive_v(0, 0.75, 0); //Back up
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift so the tote goes free
@@ -219,8 +219,6 @@ namespace dreadbot
 		forkGrab = new ForkGrab;
 		pushContainer = new PushContainer;
 		backAway = new BackAway;
-		drivebase = nullptr;
-		intake = nullptr;
 		fsm = new FiniteStateMachine;
 		mode = AUTON_MODE_DRIVE;
 	}

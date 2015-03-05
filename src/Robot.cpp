@@ -150,12 +150,12 @@ namespace dreadbot
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(3);
-			float intakeInput_duncan = gamepad_duncan->GetRawAxis(3);
+			float intakeInput_duncan = gamepad2->GetRawAxis(3);
 			//float intakeInput_duncan = 0.0f;
 			intake->Set(((float) (intakeInput > 0.15) * -0.8) + (float) (intakeInput_duncan > 0.15));
 
 			float liftInput = gamepad->GetRawAxis(2);
-			float liftInput_duncan = gamepad_duncan->GetRawAxis(2);
+			float liftInput_duncan = gamepad2->GetRawAxis(2);
 			//float liftInput_duncan = 0.0f;
 			if (liftInput_duncan > 0.15) 
 			{
@@ -175,7 +175,7 @@ namespace dreadbot
 			}
 
 			float armInput = (float) gamepad->GetRawButton(6);
-			intakeArms->Set(-armInput + (float) gamepad_duncan->GetRawButton(2));
+			intakeArms->Set(-armInput + (float) gamepad2->GetRawButton(2));
 
 			float liftArmInput = (float) gamepad->GetRawButton(5);
 			liftArms->Set(-liftArmInput);
