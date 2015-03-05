@@ -7,6 +7,7 @@
 #include "MPU6050.h"
 //#include "Robot.h"
 
+#define DUNCAN
 
 namespace dreadbot
 {
@@ -44,6 +45,9 @@ namespace dreadbot
 		bool Cam2Enabled;
 
 		MPU6050* IMU;
+		Gyro* gyro;
+		static constexpr float kp_rot = 0.03; // proportional gain in rotational mode
+		static constexpr float op_angle_scale = 0.1;
 
 		DigitalInput* lift_switch; // 0
 		DigitalInput* transit_switch_l; // 1
@@ -65,6 +69,8 @@ namespace dreadbot
 
 			//frontUltra = new Ultrasonic(6, 7); //Dummy values for the ultrasonics
 			//rearUltra = new Ultrasonic(4, 5);
+
+			gyro = new Gyro(0);
 
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
@@ -110,10 +116,10 @@ namespace dreadbot
 		void AutonomousInit()
 		{
 			GlobalInit();
-			AutonBot->setHardware(drivebase, intake);
-			AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
-			AutonBot->start();
-
+			//AutonBot->setHardware(drivebase, intake);
+			//AutonBot->setUltras(0, 0); //Basically disables the ultrasonics
+			//AutonBot->start();
+			gyro->Reset();
 			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
@@ -128,37 +134,84 @@ namespace dreadbot
 
 		void AutonomousPeriodic()
 		{
-			AutonBot->update();
+			float angle_pos = gyro->GetAngle();
+			SmartDashboard::PutNumber("Gyro", angle_pos);
+			float kp = SmartDashboard::GetNumber("kP-rot", 10.0);
+			SmartDashboard::PutNumber("KP found", kp);
+			//float angle_rate = gyro->GetRate();
+			drivebase->Drive_v(0, 1.0f, -angle_pos*10.0);
+
+			//AutonBot->update();
 		}
 
 		void TeleopInit()
 		{
 			GlobalInit();
+			gyro->Reset();
 		}
 
-		void TeleopPeriodic()
-		{			/*
-			int16_t ax, ay, az, gx, gy, gz, mx, my, mz;
-			IMU->getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);// ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz
+		void TeleopPeriodic() {
+			/*
+			int16_t ax, ay, az, gx, gy, gz;
+			IMU->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);// ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz
 			SmartDashboard::PutNumber("a-x", ax);
-			//SmartDashboard::PutNumber("a-y", ay);
-			//SmartDashboard::PutNumber("a-z", az);
 			*/
-			drivebase->SD_RetrievePID();
-			Input->updateDrivebase();
-			//drivebase->SD_OutputDiagnostics();
-			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
+			drivebase->SD_RetrievePID();
+			drivebase->SD_OutputDiagnostics();
+			//float angle_rate = gyro->GetRate();
+			drivebase->Drive_v(
+				gamepad->GetRawAxis(0),
+				gamepad->GetRawAxis(1),
+				//-(gamepad->GetRawAxis(4) - angle_rate*op_angle_scale)*kp_rot
+				gamepad->GetRawAxis(4)
+			);
+
+			//Output controls
+			float intakeInput = gamepad->GetRawAxis(3);
+			float intakeInput_duncan = gamepad_duncan->GetRawAxis(3);
+			//float intakeInput_duncan = 0.0f;
+			intake->Set(((float) (intakeInput > 0.15) * -0.8) + (float) (intakeInput_duncan > 0.15));
+
+			float liftInput = gamepad->GetRawAxis(2);
+			float liftInput_duncan = gamepad_duncan->GetRawAxis(2);
+			//float liftInput_duncan = 0.0f;
+			if (liftInput_duncan > 0.15) {
+				// Lower the lift arms until they set the limit switch to false
+				if (lift_switch->Get()) {
+					lift->Set(-1.0f);
+				} else {
+					lift->Set(0.0f);
+				}
+			} else {
+				lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
+			}
+
+			float armInput = (float) gamepad->GetRawButton(6);
+			intakeArms->Set(-armInput + (float) gamepad_duncan->GetRawButton(2));
+
+			float liftArmInput = (float) gamepad->GetRawButton(5);
+			liftArms->Set(-liftArmInput);
+
+
+
+			// Container push demo
+			if (gamepad->GetRawButton(1)) {
+				Input->getPWMMotor(0)->Set(1.0f);
+				Input->getPWMMotor(1)->Set(1.0f);
+			}
+
+
+			//sorry, need to nerf xml control over the drivebase atm
+			//Input->updateDrivebase();
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if ((gamepad->GetRawAxis(3) > 0.8) && viewerCooldown == 0) //Start button
+			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
-				//Create cooldown and set the boolean thingy
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
-
 				if (viewingBack)
 				{
 					//Rear camera: Camera 2
@@ -188,37 +241,11 @@ namespace dreadbot
  * Intake arms: rt axis 3 > 0.5
  * Intake arms pneumatics: rb button 6
  */
-			//Output controls
-			float intakeInput = gamepad->GetRawAxis(3);
-			//float intakeInput_duncan = gamepad_duncan->GetRawAxis(3);
-			float intakeInput_duncan = 0.0f;
-			if (intake != NULL)
-				intake->Set(((float) (intakeInput > 0.15) * -1) + (float) (intakeInput_duncan > 0.15));
 
-			float liftInput = gamepad->GetRawAxis(2);
-			float liftInput_duncan = gamepad_duncan->GetRawAxis(2);
-			if (liftInput_duncan > 0.15) {
-				// Lower the lift arms until they set the limit switch to false
-				if (lift_switch->Get()) {
-					lift->Set(-1.0f);
-				} else {
-					lift->Set(0.0f);
-				}
-			} else {
-				if (lift != NULL)
-					lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
-			}
-			float armInput = (float) gamepad->GetRawButton(6);
-			if (intakeArms != NULL)
-				intakeArms->Set(-armInput);
 
-			float liftArmInput = (float) gamepad->GetRawButton(5);
-			if (liftArms != NULL)
-					liftArms->Set(-liftArmInput);
-
-			SmartDashboard::PutBoolean("R transit switch", transit_switch_r->Get());
-			SmartDashboard::PutBoolean("L transit switch", transit_switch_l->Get());
-			SmartDashboard::PutBoolean("Lift switch", lift_switch->Get());
+			//SmartDashboard::PutBoolean("R transit switch", transit_switch_r->Get());
+			//SmartDashboard::PutBoolean("L transit switch", transit_switch_l->Get());
+			//SmartDashboard::PutBoolean("Lift switch", lift_switch->Get());
 		}
 
 		void TestInit()

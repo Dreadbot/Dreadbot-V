@@ -29,7 +29,7 @@ namespace dreadbot {
 		Notifier *m_controlLoop;
 		static void CallCalculate(void *controller);
 		void Calculate();
-		DISALLOW_COPY_AND_ASSIGN(SimplePID);
+		//DISALLOW_COPY_AND_ASSIGN(SimplePID);
 
 	public:
 		SimplePID(double p, double i, double d, bool continuous, double period = 0.05);
