@@ -6,7 +6,6 @@
 #include "Autonomous.h"
 //#include "Robot.h"
 
-
 namespace dreadbot
 {
 	class Robot: public IterativeRobot
@@ -142,16 +141,54 @@ namespace dreadbot
 			drivebase->SD_OutputDiagnostics();
 			SmartDashboard::PutBoolean("viewingBack", viewingBack);
 
-			//Vision switch control
+
+			/* Lift down: lt axis 2 > 0.8
+ 			* Actuate fork: lb button 5
+ 			* Intake arms: rt axis 3 > 0.5
+			* Intake arms pneumatics: rb button 6
+ 			*/
+
+			//Output controls
+			float intakeInput = gamepad->GetRawAxis(3);
+			float intakeInput_duncan = gamepad_duncan->GetRawAxis(3);
+			//float intakeInput_duncan = 0.0f;
+			intake->Set(((float) (intakeInput > 0.15) * -0.8) + (float) (intakeInput_duncan > 0.15));
+
+			float liftInput = gamepad->GetRawAxis(2);
+			float liftInput_duncan = gamepad_duncan->GetRawAxis(2);
+			//float liftInput_duncan = 0.0f;
+			if (liftInput_duncan > 0.15) 
+			{
+				// Lower the lift arms until they set the limit switch to false
+				if (lift_switch->Get()) 
+				{
+					lift->Set(-1.0f);
+				} 
+				else 
+				{
+					lift->Set(0.0f);
+				}
+			} 
+			else 
+			{
+				lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
+			}
+
+			float armInput = (float) gamepad->GetRawButton(6);
+			intakeArms->Set(-armInput + (float) gamepad_duncan->GetRawButton(2));
+
+			float liftArmInput = (float) gamepad->GetRawButton(5);
+			liftArms->Set(-liftArmInput);
+
+
+			/*Vision switch control*/
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if ((gamepad->GetRawAxis(3) > 0.8) && viewerCooldown == 0) //Start button
+			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
-				//Create cooldown and set the boolean thingy
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
-
 				if (viewingBack)
 				{
 					//Rear camera: Camera 2
@@ -176,42 +213,6 @@ namespace dreadbot
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
-/* Lift down: lt axis 2 > 0.8
- * Actuate fork: lb button 5
- * Intake arms: rt axis 3 > 0.5
- * Intake arms pneumatics: rb button 6
- */
-			//Output controls
-			float intakeInput = gamepad->GetRawAxis(3);
-			//float intakeInput_duncan = gamepad2->GetRawAxis(3);
-			float intakeInput_duncan = 0.0f;
-			if (intake != NULL)
-				intake->Set(((float) (intakeInput > 0.15) * -1) + (float) (intakeInput_duncan > 0.15));
-
-			float liftInput = gamepad->GetRawAxis(2);
-			float liftInput_duncan = gamepad2->GetRawAxis(2);
-			if (liftInput_duncan > 0.15) {
-				// Lower the lift arms until they set the limit switch to false
-				if (lift_switch->Get()) {
-					lift->Set(-1.0f);
-				} else {
-					lift->Set(0.0f);
-				}
-			} else {
-				if (lift != NULL)
-					lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
-			}
-			float armInput = (float) gamepad->GetRawButton(6);
-			if (intakeArms != NULL)
-				intakeArms->Set(-armInput);
-
-			float liftArmInput = (float) gamepad->GetRawButton(5);
-			if (liftArms != NULL)
-					liftArms->Set(-liftArmInput);
-
-			SmartDashboard::PutBoolean("R transit switch", transit_switch_r->Get());
-			SmartDashboard::PutBoolean("L transit switch", transit_switch_l->Get());
-			SmartDashboard::PutBoolean("Lift switch", lift_switch->Get());
 		}
 
 		void TestInit()
