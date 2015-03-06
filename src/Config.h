@@ -1,3 +1,12 @@
+#pragma once
+#include <string>
+using std::string;
+
+
+#define MULTILINE(...) #__VA_ARGS__
+
+string config = MULTILINE(
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!--SET CONTROLLER TO XMODE!-->
 <Dreadbot version="5.0">
@@ -10,18 +19,18 @@
 		</motors>
 		<controller controllerID="0">
 			<axis dir="transY">
-				<ID>0</ID>
-				<deadzone>0.01</deadzone>
+				<ID>1</ID>
+				<deadzone>0.05</deadzone>
 				<invert>false</invert>
 			</axis>
 			<axis dir="transX">
-				<ID>1z</ID>
-				<deadzone>0.01</deadzone>
+				<ID>0</ID>
+				<deadzone>0.05</deadzone>
 				<invert>false</invert>
 			</axis>
 			<axis dir="rot">
 				<ID>4</ID>
-				<deadzone>0.01</deadzone>
+				<deadzone>0.05</deadzone>
 				<invert>false</invert>
 			</axis>
 		</controller>
@@ -46,3 +55,5 @@
 		</group>
 	</pneumaticgroups>
 </Dreadbot>
+
+);

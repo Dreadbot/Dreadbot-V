@@ -20,6 +20,8 @@ namespace dreadbot
 	const int MAX_MOTORS = 10;
 	const int MAX_PNEUMS = 10;
 
+	const int VEL_DEADZONE = 0.05;
+
 	class SimplePneumatic
 	{
 	public:
@@ -74,8 +76,9 @@ namespace dreadbot
 	public:
 		static XMLInput* getInstance();
 		void setDrivebase(MecanumDrive* newDrivebase);
-		void loadXMLConfig(string filename);
+		void loadXMLConfig();
 		void updateDrivebase();
+		void zeroVels();
 		Joystick* getController(int ID); //!< Gets a joystick with the given ID. If joystick does not exist, creates joystick with ID and returns it.
 		CANTalon* getCANMotor(int ID); //!< Gets a CANTalon with the given ID. If the CANTalon does not exist, creates CANTalon with ID and returns it.
 		Talon* getPWMMotor(int ID); //!< Gets a Talon with the given ID. If the Talon does not exist, creates CANTalon with ID and returns it.
@@ -98,17 +101,12 @@ namespace dreadbot
 		Solenoid * sPneums[MAX_PNEUMS];
 
 		//Axis stuff for drivebase-specific controls
-		int transXAxis;
-		int transYAxis;
-		int rotAxis;
-		bool invertX;
-		bool invertY;
-		bool invertR;
-		float transXDeadzone;
-		float transYDeadzone;
-		float rotDeadzone; //Rot Deadzone. I call that as a band name.
 		int driveController;
+		enum dirCodes {x, y, r};
+		int axes[3];
+		bool inverts[3];
+		float deadzones[3];;
 
 		DISALLOW_COPY_AND_ASSIGN(XMLInput); //Prevents copying/assigning - critical for a singleton. That's a cool macro.
 	};
-};
+}
