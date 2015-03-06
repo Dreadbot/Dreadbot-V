@@ -179,8 +179,10 @@ namespace dreadbot
 
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, -0.75, 0); //Straight forward
-		if (pushers != nullptr)
-			pushers->Set(1); //Push the container?
+		if (pusher1 != nullptr)
+			pusher1->Set(1); //Push the container?
+		if (pusher2 != nullptr)
+			pusher2->Set(1);
 		SmartDashboard::PutString("State", "pushContainer");
 		return HALBot::no_update;
 	}
@@ -241,7 +243,8 @@ namespace dreadbot
 		rotate->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
 		pushContainer->setHardware(drivebase);
-		pushContainer->pushers = nullptr;
+		pushContainer->pusher1 = XMLInput::getInstance()->getPWMMotor(0);
+		pushContainer->pusher2 = XMLInput::getInstance()->getPWMMotor(1);
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
 		backAway->lift = lift;
@@ -273,7 +276,7 @@ namespace dreadbot
 			transitionTable[6] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
-s		if (mode == AUTON_MODE_CONTAINER)
+		if (mode == AUTON_MODE_CONTAINER)
 		{
 			transitionTable[0] = END_STATE_TABLE;
 			defState = stopped;

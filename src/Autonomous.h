@@ -68,7 +68,8 @@ namespace dreadbot
 	{
 	public:
 		int update();
-		MotorGrouping* pushers;
+		SimpleMotor* pusher1;
+		SimpleMotor* pusher2;
 	};
 	class BackAway : public ForkGrab
 	{
