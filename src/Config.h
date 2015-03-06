@@ -21,7 +21,7 @@ string config = MULTILINE(
 			<axis dir="transY">
 				<ID>1</ID>
 				<deadzone>0.05</deadzone>
-				<invert>true</invert>
+				<invert>false</invert>
 			</axis>
 			<axis dir="transX">
 				<ID>0</ID>
@@ -31,7 +31,7 @@ string config = MULTILINE(
 			<axis dir="rot">
 				<ID>4</ID>
 				<deadzone>0.05</deadzone>
-				<invert>true</invert>
+				<invert>false</invert>
 			</axis>
 		</controller>
 	</Drivebase>
@@ -41,10 +41,6 @@ string config = MULTILINE(
 			<motor outputID="1" invert="false" CAN="false"></motor>
 			<motor outputID="2" invert="false" CAN="false"></motor>
 			<motor outputID="3" invert="true" CAN="false"></motor>
-		</group>
-		<group name="pushers" deadzone="0.1">
-			<motor outputID="0" invert="false" CAN="false"</motor>
-			<motor outputID="1" invert="false" CAN="false"</motor>
 		</group>
 	</motorgroups>
 	<pneumaticgroups>

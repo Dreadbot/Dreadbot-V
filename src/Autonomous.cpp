@@ -193,7 +193,7 @@ namespace dreadbot
 		switch (mode)
 		{
 		case AUTON_MODE_TOTE:
-			if (toteCount == 1)
+			if (toteCount >= 1)
 				return true;
 			else return false;
 			break;
@@ -241,7 +241,7 @@ namespace dreadbot
 		rotate->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
 		pushContainer->setHardware(drivebase);
-		pushContainer->pushers = XMLInput::getInstance()->getMGroup("pushers");
+		pushContainer->pushers = nullptr;
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
 		backAway->lift = lift;
@@ -264,15 +264,16 @@ namespace dreadbot
 		}
 		if (mode == AUTON_MODE_TOTE)
 		{
-			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, rotate};
-			transitionTable[1] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[2] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[3] = {rotate2, HALBot::timerExpired, nullptr, backAway};
-			transitionTable[4] = {backAway, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[5] = END_STATE_TABLE;
+			transitionTable[0] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
+			transitionTable[1] = {forkGrab, HALBot::finish, nullptr, rotate};
+			transitionTable[2] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[3] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
+			transitionTable[4] = {rotate2, HALBot::timerExpired, nullptr, backAway};
+			transitionTable[5] = {backAway, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[6] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
-		if (mode == AUTON_MODE_CONTAINER)
+s		if (mode == AUTON_MODE_CONTAINER)
 		{
 			transitionTable[0] = END_STATE_TABLE;
 			defState = stopped;
