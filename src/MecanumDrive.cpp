@@ -111,14 +111,12 @@ void MecanumDrive::SetDriveMode(drivemode newMode) {
 void MecanumDrive::Engage() {
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		motors[i]->EnableControl();
-		motors[i]->SetSafetyEnabled(false);
 	}
 	m_enabled = true;
 }
 
 void MecanumDrive::Disengage() {
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->SetSafetyEnabled(true);
 		motors[i]->Disable();
 	}
 	m_enabled = false;
