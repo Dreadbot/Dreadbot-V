@@ -141,34 +141,22 @@ namespace dreadbot
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(3);
-			float intakeInput_duncan = gamepad2->GetRawAxis(3);
-			//float intakeInput_duncan = 0.0f;
-			intake->Set(((float) (intakeInput > 0.15) * -0.8) + (float) (intakeInput_duncan > 0.15));
+			intake->Set(((float) (intakeInput > 0.15) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
-			float liftInput = gamepad->GetRawAxis(2);
-			float liftInput_duncan = gamepad2->GetRawAxis(2);
-			//float liftInput_duncan = 0.0f;
-			if (liftInput_duncan > 0.15) {
-				// Lower the lift arms until they set the limit switch to false
-				if (lift_switch->Get()) {
-					lift->Set(-1.0f);
-				} else {
-					lift->Set(0.0f);
-				}
+
+			if (gamepad->GetRawButton(1)) {
+				lift->Set(0.0f);
 			} else {
-				lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
+				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
 			}
+			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
 
-			float armInput = (float) gamepad->GetRawButton(6);
-			intakeArms->Set(-armInput + (float) gamepad2->GetRawButton(2));
-
-			float liftArmInput = (float) gamepad->GetRawButton(5);
-			liftArms->Set(-liftArmInput);
+			liftArms->Set(-(float) gamepad->GetRawButton(5));
 
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
+			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;

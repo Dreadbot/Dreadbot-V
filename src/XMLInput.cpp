@@ -139,11 +139,17 @@ namespace dreadbot
 			if (fabs(sPoints[i]) < deadzones[i])
 				sPoints[i] = 0;
 
+			// Square the value to desensitize the joystick
+			sPoints[i] *= std::fabs(sPoints[i]);
+
 			//Inverts
 			if (inverts[i])
 				sPoints[i] *= -1;
 		}
 		
+		// Desensitize rotation even more
+		sPoints[r] /= 1.5;
+
 		SmartDashboard::PutNumber("sX", sPoints[x]);
 		SmartDashboard::PutNumber("sY", sPoints[y]);
 		SmartDashboard::PutNumber("sR", sPoints[r]);

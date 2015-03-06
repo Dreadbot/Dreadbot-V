@@ -10,6 +10,7 @@ namespace dreadbot
 	class FSMState
 	{
 	public:
+		virtual void enter() = 0;
 		virtual int update() = 0;
 	};
 

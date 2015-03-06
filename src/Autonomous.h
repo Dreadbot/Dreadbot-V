@@ -11,11 +11,12 @@
 
 //All timings
 #define TOTE_GRAB_DELAY 1.0
-#define DRIVE_TO_ZONE_TIME 2.75
+#define DRIVE_TO_ZONE_TIME 3
 #define PUSH_TIME 1.5
 #define BACK_AWAY_TIME 1
-#define ROTATE_TIME 0.66
+#define ROTATE_TIME 0.75
 #define LOWER_STACK_TIME 2
+#define RAISE_STACK_TIME 2
 
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
@@ -27,7 +28,8 @@ namespace dreadbot
 	{
 	public:
 		GettingTote();
-		int update();
+		virtual void enter();
+		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
 		Timer getTimer;
 	private:
@@ -35,10 +37,12 @@ namespace dreadbot
 		MotorGrouping* intake;
 		bool timerActive;
 	};
+
 	class DriveToZone : public FSMState
 	{
 	public:
 		DriveToZone();
+		virtual void enter();
 		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase);
 		Timer driveTimer;
@@ -46,10 +50,12 @@ namespace dreadbot
 		MecanumDrive* drivebase;
 		bool timerActive;
 	};
+
 	class ForkGrab : public FSMState
 	{
 	public:
 		ForkGrab();
+		virtual void enter();
 		virtual int update();
 		Timer grabTimer;
 		PneumaticGrouping* lift;
@@ -59,26 +65,43 @@ namespace dreadbot
 	class Rotate : public DriveToZone
 	{
 	public:
-		int update();
+		Rotate();
+		virtual void enter();
+		virtual int update();
 	};
 	class Stopped : public FSMState
 	{
 	public:
-		int update();
+		virtual void enter();
+		virtual int update();
 		PneumaticGrouping* lift;
 	};
 	class PushContainer : public DriveToZone
 	{
 	public:
-		int update();
+		virtual void enter();
+		virtual int update();
 		Talon* pusher1;
 		Talon* pusher2;
 	};
 	class BackAway : public ForkGrab
 	{
 	public:
-		int update();
+		virtual void enter();
+		virtual int update();
 		MecanumDrive* drivebase;
+	};
+
+	class RaiseForks : public FSMState
+	{
+	public:
+		RaiseForks();
+		virtual void enter();
+		virtual int update();
+		Timer grabTimer;
+		PneumaticGrouping* lift;
+	protected:
+		bool timerActive;
 	};
 
 	class HALBot
@@ -101,6 +124,7 @@ namespace dreadbot
 		FSMTransition transitionTable[15];
 		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
+		RaiseForks* raiseForks;
 		ForkGrab* forkGrab;
 		Rotate* rotate;
 		Rotate* rotate2;
