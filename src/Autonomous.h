@@ -85,6 +85,7 @@ namespace dreadbot
 		virtual int update();
 		Talon* pusher1;
 		Talon* pusher2;
+		int pushConstant;
 	};
 	class BackAway : public ForkGrab
 	{

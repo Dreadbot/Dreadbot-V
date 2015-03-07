@@ -211,7 +211,7 @@ namespace dreadbot
 	}
 	void PushContainer::enter()
 	{
-
+		pushConstant *= 1;
 	}
 	int PushContainer::update()
 	{
@@ -232,9 +232,9 @@ namespace dreadbot
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, -0.75, 0); //Straight forward
 		if (pusher1 != nullptr)
-			pusher1->Set(1); //Push the container?
+			pusher1->Set(1 * pushConstant); //Push the container?
 		if (pusher2 != nullptr)
-			pusher2->Set(1);
+			pusher2->Set(1 * pushConstant);
 		SmartDashboard::PutString("State", "pushContainer");
 		return HALBot::no_update;
 	}
@@ -298,6 +298,7 @@ namespace dreadbot
 		pushContainer->setHardware(drivebase);
 		pushContainer->pusher1 = XMLInput::getInstance()->getPWMMotor(0);
 		pushContainer->pusher2 = XMLInput::getInstance()->getPWMMotor(1);
+		pushContainer->pushConstant = 1;
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;
 		backAway->lift = lift;
