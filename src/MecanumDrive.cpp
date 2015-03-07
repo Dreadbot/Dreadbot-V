@@ -79,7 +79,11 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	wspeeds[m_leftRear] = -vec_out.x + vec_out.y + rot_out;
 	wspeeds[m_rightRear] = vec_out.x + vec_out.y - rot_out;
 
-	double maxMagnitude = *std::max_element(wspeeds, wspeeds + MOTOR_COUNT);
+	float absSpeeds[4];
+	for (int i = 0; i < 4; ++i)
+		absSpeeds[i] = fabs(wspeeds[i]);
+
+	double maxMagnitude = *std::max_element(absSpeeds, absSpeeds + MOTOR_COUNT);
 	if (maxMagnitude > 1.0) {
 		for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 			wspeeds[i] /= maxMagnitude;
