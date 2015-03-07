@@ -10,11 +10,11 @@
 
 
 //All timings
-#define TOTE_GRAB_DELAY 1.0
-#define DRIVE_TO_ZONE_TIME 3
+#define TOTE_GRAB_DELAY 3
+#define DRIVE_TO_ZONE_TIME 2.7
 #define PUSH_TIME 1.5
 #define BACK_AWAY_TIME 1
-#define ROTATE_TIME 0.75
+#define ROTATE_TIME 0.83
 #define LOWER_STACK_TIME 2
 #define RAISE_STACK_TIME 2
 
@@ -68,6 +68,8 @@ namespace dreadbot
 		Rotate();
 		virtual void enter();
 		virtual int update();
+
+		int rotateConstant;
 	};
 	class Stopped : public FSMState
 	{
