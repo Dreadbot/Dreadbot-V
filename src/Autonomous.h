@@ -10,12 +10,12 @@
 
 
 //All timings
-#define TOTE_GRAB_DELAY 3
+#define TOTE_GRAB_DELAY 1.05
 #define DRIVE_TO_ZONE_TIME 2.7
-#define PUSH_TIME 1.5
+#define PUSH_TIME 1
 #define BACK_AWAY_TIME 1
-#define ROTATE_TIME 0.83
-#define LOWER_STACK_TIME 2
+#define ROTATE_TIME 1.8
+#define LOWER_STACK_TIME 2.5
 #define RAISE_STACK_TIME 2
 
 #define DIST_FROM_WALL 2000 //Millimeters!

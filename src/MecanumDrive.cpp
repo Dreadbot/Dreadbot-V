@@ -26,7 +26,7 @@ void MecanumDrive::Set(int motorId_lf, int motorId_rf, int motorId_lr, int motor
 		motors[i]->SetControlMode(CANSpeedController::ControlMode::kSpeed);
 		motors[i]->SetPosition(0.0);
 		motors[i]->SelectProfileSlot(0);
-		motors[i]->SetPID(0.2, 0, 0, 0);
+		motors[i]->SetPID(0.5, 0, 0, 0);
 		motors[i]->SetVoltageRampRate(0.5f); //Ramp up for drive motors
 	}
 

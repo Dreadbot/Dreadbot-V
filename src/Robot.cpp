@@ -93,7 +93,6 @@ namespace dreadbot
 			Input->loadXMLConfig();
 			gamepad = Input->getController(0);
 			gamepad2 = Input->getController(1);
-			drivebase->Engage();
 
 			intake = Input->getMGroup("intake");
 			lift = Input->getPGroup("lift");

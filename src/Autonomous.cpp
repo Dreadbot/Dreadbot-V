@@ -28,6 +28,7 @@ namespace dreadbot
 			getTimer.Reset();
 			getTimer.Start();
 			drivebase->Drive_v(0, 0, 0);
+			SmartDashboard::PutBoolean("Tote collected", true);
 		}
 		if (getTimer.HasPeriodPassed(TOTE_GRAB_DELAY) && timerActive)
 		{
@@ -40,13 +41,14 @@ namespace dreadbot
 		if (timerActive)
 		{
 			//Keep sucking a tote in
-			intake->Set(-0.75);
+			intake->Set(-0.5);
 			return HALBot::no_update;
 		}
 
 		drivebase->Drive_v(0, -0.5, 0);
-		intake->Set(-0.75);
+		intake->Set(-0.5);
 		SmartDashboard::PutString("State", "gettingTote");
+		SmartDashboard::PutBoolean("Tote collected", false);
 		return HALBot::no_update;
 	}
 
@@ -95,13 +97,15 @@ namespace dreadbot
 	}
 	int ForkGrab::update()
 	{
-		if (grabTimer.HasPeriodPassed(LOWER_STACK_TIME))
+		DigitalInput* lowSwitch = new DigitalInput(0); //DI slot?
+
+		if (!lowSwitch->Get())
 		{
 			timerActive = false;
 			grabTimer.Stop();
 			//Raise the lift
 			lift->Set(1);
-			XMLInput::getInstance()->getPGroup("liftArms")->Set(1);
+			Wait(0.5); //Cheat
 			HALBot::incrTote();
 			if (HALBot::enoughTotes())
 			{
@@ -113,7 +117,6 @@ namespace dreadbot
 		SmartDashboard::PutString("State", "ForkGrab");
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift for grabbing?
-		XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 		return HALBot::no_update;
 	}
 
@@ -175,7 +178,7 @@ namespace dreadbot
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0, 1 * rotateConstant);
+			drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
 
 		SmartDashboard::PutNumber("rotateTimer", driveTimer.Get());
 		SmartDashboard::PutString("State", "rotate");
@@ -192,6 +195,9 @@ namespace dreadbot
 			grabTimer.Reset();
 			grabTimer.Start();
 			timerActive = true;
+			if (lift != nullptr)
+				lift->Set(0);
+			Wait(0.66); //Another cheat
 		}
 
 		if (grabTimer.HasPeriodPassed(BACK_AWAY_TIME))
@@ -203,7 +209,7 @@ namespace dreadbot
 		}
 
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0.75, 0); //Back up
+			drivebase->Drive_v(0, -0.75, 0); //Back up
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift so the tote goes free
 		SmartDashboard::PutString("State", "backAway");
@@ -244,13 +250,14 @@ namespace dreadbot
 	AutonMode HALBot::mode = AUTON_MODE_STOP;
 	bool HALBot::enoughTotes()
 	{
+		SmartDashboard::PutNumber("toteCount", toteCount);
 		switch (mode)
 		{
 		case AUTON_MODE_TOTE:
 			return toteCount >= 1;
 			break;
 		case AUTON_MODE_STACK3:
-			if (toteCount == 3) //Probably works now. Probably.
+			if (toteCount >= 4) //Probably works now. Probably.
 				return true;
 			else return false;
 		default:
@@ -357,6 +364,7 @@ namespace dreadbot
 		if (mode == AUTON_MODE_STACK3 || mode == AUTON_MODE_STACK2)
 		{
 			i = 0;
+			rotate->rotateConstant = -1;
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
 			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
