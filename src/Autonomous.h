@@ -11,7 +11,7 @@
 
 //All timings
 #define TOTE_GRAB_DELAY 1.05
-#define DRIVE_TO_ZONE_TIME 2.7
+#define DRIVE_TO_ZONE_TIME 3.3
 #define PUSH_TIME 1
 #define BACK_AWAY_TIME 1
 #define ROTATE_TIME 1.8
@@ -59,6 +59,7 @@ namespace dreadbot
 		virtual int update();
 		Timer grabTimer;
 		PneumaticGrouping* lift;
+		MecanumDrive* drivebase;
 	protected:
 		bool timerActive;
 	};
@@ -110,12 +111,13 @@ namespace dreadbot
 	class HALBot
 	{
 	public:
-		enum fsmInputs {no_update, finish, timerExpired, nextTote, sensorHit};
+		enum fsmInputs {no_update, finish, timerExpired, nextTote, eStop};
 
 		HALBot();
 		~HALBot();
 		static bool enoughTotes();
 		static void incrTote();
+		static int getToteCount();
 		void setMode(AutonMode newMode);
 		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift);
 		void update();
