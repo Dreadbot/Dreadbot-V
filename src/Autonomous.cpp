@@ -53,6 +53,7 @@ namespace dreadbot
 	{
 		drivebase = nullptr;
 		timerActive = false;
+		strafe = false;
 	}
 	void DriveToZone::setHardware(MecanumDrive* newDrivebase)
 	{
@@ -76,7 +77,13 @@ namespace dreadbot
 		}
 
 		if (drivebase != nullptr)
-			drivebase->Drive_v(1, 0, 0); //Straight forward
+		{
+			if (strafe)
+				drivebase->Drive_v(1, 0, 0); //Right
+			else
+				drivebase->Drive_v(0, -0.75, 0);
+		}
+
 		SmartDashboard::PutString("State", "driveToZone");
 		return HALBot::no_update;
 	}
@@ -113,33 +120,6 @@ namespace dreadbot
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift for grabbing?
 		delete lowSwitch;
-		return HALBot::no_update;
-	}
-
-	RaiseForks::RaiseForks()
-	{
-		timerActive = false;
-		lift = nullptr;
-	}
-	void RaiseForks::enter()
-	{
-		timerActive = false;
-		grabTimer.Stop();
-		grabTimer.Reset();
-		grabTimer.Start();
-	}
-	int RaiseForks::update()
-	{
-		if (grabTimer.HasPeriodPassed(RAISE_STACK_TIME))
-		{
-			timerActive = false;
-			grabTimer.Stop();
-			lift->Set(0);
-			return HALBot::timerExpired;
-		}
-		SmartDashboard::PutString("State", "raiseForks");
-		if (lift != nullptr)
-			lift->Set(1);
 		return HALBot::no_update;
 	}
 
@@ -283,7 +263,6 @@ namespace dreadbot
 		rotate = new Rotate;
 		rotate2 = new Rotate;
 		forkGrab = new ForkGrab;
-		raiseForks = new RaiseForks;
 		pushContainer = new PushContainer;
 		backAway = new BackAway;
 		fsm = new FiniteStateMachine;
@@ -296,7 +275,6 @@ namespace dreadbot
 		delete driveToZone;
 		delete rotate;
 		delete forkGrab;
-		delete raiseForks;
 		delete pushContainer;
 		delete backAway;
 		delete fsm;
@@ -317,7 +295,6 @@ namespace dreadbot
 		forkGrab->lift = lift;
 		forkGrab->drivebase = drivebase;
 		backAway->lift = lift;
-		raiseForks->lift = lift;
 		backAway->drivebase = drivebase;
 
 
@@ -339,7 +316,7 @@ namespace dreadbot
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = driveToZone;
 		}
-		if (mode == AUTON_MODE_TOTE || mode == AUTON_MODE_CONTAINER)
+		if (mode == AUTON_MODE_TOTE)
 		{
 			i = 0;
 			rotate->rotateConstant = -1;
@@ -353,6 +330,15 @@ namespace dreadbot
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
+		if (mode == AUTON_MODE_CONTAINER)
+		{
+			driveToZone->strafe = true;
+			i = 0;
+			rotate->rotateConstant = -1;
+			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[i++] = END_STATE_TABLE;
+		}
 		if (mode == AUTON_MODE_BOTH)
 		{
 			i = 0;
@@ -362,6 +348,7 @@ namespace dreadbot
 		}
 		if (mode == AUTON_MODE_STACK3 || mode == AUTON_MODE_STACK2)
 		{
+			driveToZone->strafe = true;
 			i = 0;
 			rotate->rotateConstant = -1;
 			pushContainer->pushConstant = -1;

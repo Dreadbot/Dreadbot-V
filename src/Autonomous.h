@@ -37,7 +37,6 @@ namespace dreadbot
 		MotorGrouping* intake;
 		bool timerActive;
 	};
-
 	class DriveToZone : public FSMState
 	{
 	public:
@@ -45,12 +44,12 @@ namespace dreadbot
 		virtual void enter();
 		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase);
+		bool strafe;
 		Timer driveTimer;
 	protected:
 		MecanumDrive* drivebase;
 		bool timerActive;
 	};
-
 	class ForkGrab : public FSMState
 	{
 	public:
@@ -96,18 +95,6 @@ namespace dreadbot
 		MecanumDrive* drivebase;
 	};
 
-	class RaiseForks : public FSMState
-	{
-	public:
-		RaiseForks();
-		virtual void enter();
-		virtual int update();
-		Timer grabTimer;
-		PneumaticGrouping* lift;
-	protected:
-		bool timerActive;
-	};
-
 	class HALBot
 	{
 	public:
@@ -129,7 +116,6 @@ namespace dreadbot
 		FSMTransition transitionTable[15];
 		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
-		RaiseForks* raiseForks;
 		ForkGrab* forkGrab;
 		Rotate* rotate;
 		Rotate* rotate2;
