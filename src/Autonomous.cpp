@@ -35,7 +35,6 @@ namespace dreadbot
 			//Tote successfully collected.
 			intake->Set(0);
 			timerActive = false;
-			HALBot::incrTote();
 			return HALBot::timerExpired;
 		}
 		if (timerActive)
@@ -107,16 +106,16 @@ namespace dreadbot
 			lift->Set(1);
 			Wait(0.5); //Cheat
 			HALBot::incrTote();
+			delete lowSwitch;
 			if (HALBot::enoughTotes())
-			{
 				return HALBot::finish;
-			}
 			else
 				return HALBot::nextTote;
 		}
 		SmartDashboard::PutString("State", "ForkGrab");
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift for grabbing?
+		delete lowSwitch;
 		return HALBot::no_update;
 	}
 
@@ -257,7 +256,7 @@ namespace dreadbot
 			return toteCount >= 1;
 			break;
 		case AUTON_MODE_STACK3:
-			if (toteCount >= 4) //Probably works now. Probably.
+			if (toteCount >= 3) //Probably works now. Probably.
 				return true;
 			else return false;
 		default:
