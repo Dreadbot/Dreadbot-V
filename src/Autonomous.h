@@ -32,11 +32,12 @@ namespace dreadbot
 		virtual void enter();
 		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
-		Timer getTimer;
 	private:
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
 		bool timerActive;
+		Timer getTimer;
+		Timer eStopTimer;
 	};
 	class DriveToZone : public FSMState
 	{
