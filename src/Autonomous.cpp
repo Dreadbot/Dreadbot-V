@@ -49,7 +49,7 @@ namespace dreadbot
 		SmartDashboard::PutBoolean("Tote collected", false);
 
 		//E-stop in case the tote is missed
-		if (eStopTimer.HasPeriodPassed(5.5))
+		if (eStopTimer.HasPeriodPassed(6))
 		{
 			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
 			if (intake != nullptr) intake->Set(0);
