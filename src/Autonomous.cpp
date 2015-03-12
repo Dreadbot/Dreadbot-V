@@ -68,7 +68,7 @@ namespace dreadbot
 	}
 	int DriveToZone::update()
 	{
-		if (driveTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME))
+		if ((driveTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME) && !strafe) || (driveTimer.HasPeriodPassed(STRAFE_TO_ZONE_TIME) && strafe))
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
