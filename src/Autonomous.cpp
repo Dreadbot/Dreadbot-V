@@ -43,8 +43,8 @@ namespace dreadbot
 			intake->Set(-0.5);
 			return HALBot::no_update;
 		}
-		//if (HALBot::getToteCount() != 0)
-			//XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
+		if (HALBot::getToteCount() != 0) //Open the intake arms for grabbing totes after the first tote is collected
+			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
 		drivebase->Drive_v(0, -0.75, 0);
 		intake->Set(-0.6);
 		SmartDashboard::PutString("State", "gettingTote");
@@ -84,7 +84,7 @@ namespace dreadbot
 	{
 		float drvZoneTime = DRIVE_TO_ZONE_TIME;
 		if (HALBot::getToteCount() == 0)
-			drvZoneTime += 0.7f;
+			drvZoneTime += 0.25f;
 
 		SmartDashboard::PutBoolean("strafe", strafe);
 		SmartDashboard::PutBoolean("strafe to zone time passed", driveTimer.Get() >= STRAFE_TO_ZONE_TIME);
@@ -106,7 +106,7 @@ namespace dreadbot
 			if (strafe)
 				drivebase->Drive_v(1, 0, 0); //Right
 			else
-				drivebase->Drive_v(0, 0.75, 0);
+				drivebase->Drive_v(0, 1, 0);
 		}
 
 		SmartDashboard::PutString("State", "driveToZone");
@@ -249,7 +249,6 @@ namespace dreadbot
 		SmartDashboard::PutString("State", "pushContainer");
 		return HALBot::no_update;
 	}
-
 
 	int HALBot::toteCount = 0;
 	AutonMode HALBot::mode = AUTON_MODE_STOP;
