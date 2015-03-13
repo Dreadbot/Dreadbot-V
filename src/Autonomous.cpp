@@ -33,6 +33,8 @@ namespace dreadbot
 			//Tote successfully collected.
 			intake->Set(0);
 			timerActive = false;
+			eStopTimer.Stop();
+			eStopTimer.Reset();
 			return HALBot::timerExpired;
 		}
 		if (timerActive)
@@ -53,8 +55,6 @@ namespace dreadbot
 		{
 			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
 			if (intake != nullptr) intake->Set(0);
-			eStopTimer.Stop();
-			eStopTimer.Reset();
 			return HALBot::eStop;
 		}
 
