@@ -107,12 +107,18 @@ namespace dreadbot
 				AutonBot = new HALBot;
 			AutonBot->setMode(GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
+
+			if (AutonBot->getMode() == AUTON_MODE_STACK3)
+			{
+				lift->Set(1);
+				Wait(0.2);
+			}
 		}
 
 		void AutonomousPeriodic()
 		{
 			drivebase->SD_RetrievePID();
-		//	if (DriverStation::GetMatchTime() <= 15.0)
+			if (DriverStation::GetInstance()->GetMatchTime() <= 15)
 				AutonBot->update();
 			drivebase->SD_OutputDiagnostics();
 

@@ -68,6 +68,7 @@ namespace dreadbot
 		drivebase = nullptr;
 		timerActive = false;
 		strafe = false;
+		dir = 1;
 	}
 	void DriveToZone::setHardware(MecanumDrive* newDrivebase)
 	{
@@ -78,13 +79,14 @@ namespace dreadbot
 		driveTimer.Reset();
 		driveTimer.Start();
 		timerActive = true;
-		XMLInput::getInstance()->getPGroup("lift")->Set(1);
+		if (HALBot::getToteCount() < 3)
+			XMLInput::getInstance()->getPGroup("lift")->Set(1);
 	}
 	int DriveToZone::update()
 	{
 		float drvZoneTime = DRIVE_TO_ZONE_TIME;
 		if (HALBot::getToteCount() == 0)
-			drvZoneTime += 0.25f;
+			drvZoneTime += 0.4f;
 
 		SmartDashboard::PutBoolean("strafe", strafe);
 		SmartDashboard::PutBoolean("strafe to zone time passed", driveTimer.Get() >= STRAFE_TO_ZONE_TIME);
@@ -106,7 +108,7 @@ namespace dreadbot
 			if (strafe)
 				drivebase->Drive_v(1, 0, 0); //Right
 			else
-				drivebase->Drive_v(0, 1, 0);
+				drivebase->Drive_v(0, 1 * dir, 0);
 		}
 
 		SmartDashboard::PutString("State", "driveToZone");
@@ -128,14 +130,17 @@ namespace dreadbot
 
 		if (!lowSwitch->Get())
 		{
-			//Raise the lift and cheat.
+			//special 3-tote auton condition. Really sketchy.
+			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
+				return HALBot::finish;
 
-			//Cheat
-			drivebase->Drive_v(0, 1, 0);
-			Wait(0.15);
-			HALBot::incrTote();
+			//Raise the lift and cheat.
 			delete lowSwitch;
-				lift->Set(1);
+			drivebase->Drive_v(0, 1, 0);
+			Wait(0.25);
+			drivebase->Drive_v(0, 0, 0);
+			HALBot::incrTote();
+			lift->Set(1);
 			Wait(0.3);
 			if (HALBot::enoughTotes())
 				return HALBot::finish;
@@ -144,9 +149,8 @@ namespace dreadbot
 		}
 
 		if (lift != nullptr)
-			lift->Set(-1); //Lower the lift for grabbing?
+			lift->Set(-1); //Lower the lift for grabbing
 		delete lowSwitch;
-	//	SmartDashboard::PutString("State", "ForkGrab");
 		return HALBot::no_update;
 	}
 
@@ -156,9 +160,6 @@ namespace dreadbot
 	}
 	int Stopped::update()
 	{
-		if (HALBot::getToteCount() > 2)
-			lift->Set(-1);
-		SmartDashboard::PutString("State", "stopped");
 		return HALBot::no_update;
 	}
 
@@ -219,12 +220,19 @@ namespace dreadbot
 		SmartDashboard::PutString("State", "backAway");
 		return HALBot::no_update;
 	}
+	PushContainer::PushContainer()
+	{
+		enableScaling = false;
+	}
 	void PushContainer::enter()
 	{
-		pushConstant *= 1;
+		pushConstant *= -1;
 	}
 	int PushContainer::update()
 	{
+		float pushTime = PUSH_TIME;
+		if (enableScaling)
+			pushTime += ((float)HALBot::getToteCount() - 1) / 3;
 		XMLInput::getInstance()->getPGroup("intakeArms")->Set(1);
 		if (!timerActive)
 		{
@@ -233,7 +241,7 @@ namespace dreadbot
 			timerActive = true;
 		}
 
-		if (driveTimer.Get() >= PUSH_TIME)
+		if (driveTimer.Get() >= pushTime)
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
@@ -243,9 +251,9 @@ namespace dreadbot
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, -0.75, 0); //Straight forward
 		if (pusher1 != nullptr)
-			pusher1->Set(1 * pushConstant); //Push the container?
+			pusher1->Set(1); //Push the container?
 		if (pusher2 != nullptr)
-			pusher2->Set(1 * pushConstant);
+			pusher2->Set(1);
 		SmartDashboard::PutString("State", "pushContainer");
 		return HALBot::no_update;
 	}
@@ -265,7 +273,7 @@ namespace dreadbot
 			return toteCount >= 1;
 			break;
 		case AUTON_MODE_STACK3:
-			if (toteCount >= 2) //Probably works now. Probably.
+			if (toteCount >= 3) //Probably works now. Probably.
 				return true;
 			else return false;
 		case AUTON_MODE_STACK2:
@@ -336,6 +344,7 @@ namespace dreadbot
 		{
 			i = 0;
 			driveToZone->strafe = false;
+			driveToZone->dir = -1;
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate};
 			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
@@ -379,6 +388,7 @@ namespace dreadbot
 			rotate2->rotateConstant = -1;
 			pushContainer->pushConstant = -1;
 			driveToZone->strafe = false;
+
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
 			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
@@ -394,9 +404,11 @@ namespace dreadbot
 		if (mode == AUTON_MODE_STACK3)
 		{
 			i = 0;
-			rotate->rotateConstant = 1;
+			rotate->rotateConstant = -1;
 			pushContainer->pushConstant = -1;
+			pushContainer->enableScaling = true;
 			driveToZone->strafe = false;
+			incrTote(); //We already have a tote
 
 			//Iffy
 			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
@@ -420,6 +432,10 @@ namespace dreadbot
 	void HALBot::setMode(AutonMode newMode)
 	{
 		mode = newMode;
+	}
+	AutonMode HALBot::getMode()
+	{
+		return mode;
 	}
 
 	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra)

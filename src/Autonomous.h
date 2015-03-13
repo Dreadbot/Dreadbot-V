@@ -11,8 +11,8 @@
 
 //All timings
 #define STRAFE_TO_ZONE_TIME 3.1
-#define DRIVE_TO_ZONE_TIME 1.8
-#define PUSH_TIME 1
+#define DRIVE_TO_ZONE_TIME 2.0
+#define PUSH_TIME 0.9
 #define BACK_AWAY_TIME 1
 #define ROTATE_TIME 2
 
@@ -43,11 +43,14 @@ namespace dreadbot
 		virtual void enter();
 		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase);
-		bool strafe;
 		Timer driveTimer;
 	protected:
 		MecanumDrive* drivebase;
 		bool timerActive;
+	private:
+		int dir;
+		bool strafe;
+		friend class HALBot; //I HATE this.
 	};
 	class ForkGrab : public FSMState
 	{
@@ -80,11 +83,13 @@ namespace dreadbot
 	class PushContainer : public DriveToZone
 	{
 	public:
+		PushContainer();
 		virtual void enter();
 		virtual int update();
 		Talon* pusher1;
 		Talon* pusher2;
 		int pushConstant;
+		bool enableScaling;
 	};
 	class BackAway : public ForkGrab
 	{
@@ -105,6 +110,7 @@ namespace dreadbot
 		static void incrTote();
 		static int getToteCount();
 		void setMode(AutonMode newMode);
+		AutonMode getMode();
 		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift);
 		void update();
 	private:
