@@ -11,7 +11,7 @@
 
 //All timings
 #define STRAFE_TO_ZONE_TIME 3.1
-#define DRIVE_TO_ZONE_TIME 2.6
+#define DRIVE_TO_ZONE_TIME 2.8
 #define PUSH_TIME 1
 #define BACK_AWAY_TIME 1
 #define ROTATE_TIME 2

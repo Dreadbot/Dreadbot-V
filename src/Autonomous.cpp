@@ -43,8 +43,8 @@ namespace dreadbot
 			intake->Set(-0.5);
 			return HALBot::no_update;
 		}
-	//	if (HALBot::getToteCount() != 0)
-	//		XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
+		//if (HALBot::getToteCount() != 0)
+			//XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
 		drivebase->Drive_v(0, -0.75, 0);
 		intake->Set(-0.6);
 		SmartDashboard::PutString("State", "gettingTote");
@@ -106,7 +106,7 @@ namespace dreadbot
 			if (strafe)
 				drivebase->Drive_v(1, 0, 0); //Right
 			else
-				drivebase->Drive_v(0, -0.75, 0);
+				drivebase->Drive_v(0, 0.75, 0);
 		}
 
 		SmartDashboard::PutString("State", "driveToZone");
@@ -136,6 +136,7 @@ namespace dreadbot
 			HALBot::incrTote();
 			delete lowSwitch;
 				lift->Set(1);
+			Wait(0.3);
 			if (HALBot::enoughTotes())
 				return HALBot::finish;
 			else
@@ -345,7 +346,7 @@ namespace dreadbot
 		if (mode == AUTON_MODE_TOTE)
 		{
 			i = 0;
-			rotate->rotateConstant = -1;
+			rotate->rotateConstant = 1;
 			driveToZone->strafe = false;
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
@@ -375,16 +376,17 @@ namespace dreadbot
 		if (mode == AUTON_MODE_STACK2)
 		{
 			i = 0;
-			rotate->rotateConstant = -1;
+			rotate->rotateConstant = 1;
+			rotate2->rotateConstant = -1;
 			pushContainer->pushConstant = -1;
-			driveToZone->strafe = true;
+			driveToZone->strafe = false;
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, driveToZone};
+			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
 			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
-			//transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
-			//transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, backAway};
+			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
+			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, stopped};
 			//transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
@@ -393,7 +395,7 @@ namespace dreadbot
 		if (mode == AUTON_MODE_STACK3)
 		{
 			i = 0;
-			rotate->rotateConstant = -1;
+			rotate->rotateConstant = 1;
 			pushContainer->pushConstant = -1;
 			driveToZone->strafe = false;
 
