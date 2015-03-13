@@ -331,6 +331,7 @@ namespace dreadbot
 		if (mode == AUTON_MODE_DRIVE)
 		{
 			i = 0;
+			driveToZone->strafe = false;
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate};
 			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
@@ -341,6 +342,7 @@ namespace dreadbot
 		{
 			i = 0;
 			rotate->rotateConstant = -1;
+			driveToZone->strafe = false;
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
 			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
@@ -368,10 +370,10 @@ namespace dreadbot
 		}
 		if (mode == AUTON_MODE_STACK2)
 		{
-			driveToZone->strafe = true;
 			i = 0;
 			rotate->rotateConstant = -1;
 			pushContainer->pushConstant = -1;
+			driveToZone->strafe = true;
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
 			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, driveToZone};
@@ -386,10 +388,10 @@ namespace dreadbot
 		}
 		if (mode == AUTON_MODE_STACK3)
 		{
-			driveToZone->strafe = false;
 			i = 0;
 			rotate->rotateConstant = -1;
 			pushContainer->pushConstant = -1;
+			driveToZone->strafe = false;
 
 			//Iffy
 			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
