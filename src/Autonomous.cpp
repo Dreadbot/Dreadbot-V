@@ -43,16 +43,18 @@ namespace dreadbot
 			intake->Set(-0.5);
 			return HALBot::no_update;
 		}
-		if (HALBot::getToteCount() != 0)
-			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
+	//	if (HALBot::getToteCount() != 0)
+	//		XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
 		drivebase->Drive_v(0, -0.75, 0);
 		intake->Set(-0.6);
 		SmartDashboard::PutString("State", "gettingTote");
 		SmartDashboard::PutBoolean("Tote collected", false);
 
 		//E-stop in case the tote is missed
-		if (eStopTimer.HasPeriodPassed(6))
+		if (eStopTimer.Get() >= 6)
 		{
+			eStopTimer.Stop();
+			eStopTimer.Reset();
 			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
 			if (intake != nullptr) intake->Set(0);
 			return HALBot::eStop;
@@ -80,12 +82,19 @@ namespace dreadbot
 	}
 	int DriveToZone::update()
 	{
-		if ((driveTimer.HasPeriodPassed(DRIVE_TO_ZONE_TIME) && !strafe) || (driveTimer.HasPeriodPassed(STRAFE_TO_ZONE_TIME) && strafe))
+		SmartDashboard::PutBoolean("strafe", strafe);
+		SmartDashboard::PutBoolean("strafe to zone time passed", driveTimer.Get() >= STRAFE_TO_ZONE_TIME);
+		if (driveTimer.Get() >= DRIVE_TO_ZONE_TIME && !strafe)
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
 			return HALBot::timerExpired;
-
+		}
+		if (driveTimer.Get() >= STRAFE_TO_ZONE_TIME && strafe)
+		{
+			timerActive = false;
+			drivebase->Drive_v(0, 0, 0);
+			return HALBot::timerExpired;
 		}
 
 		if (drivebase != nullptr)
@@ -119,7 +128,7 @@ namespace dreadbot
 
 			//Cheat
 			drivebase->Drive_v(0, 1, 0);
-			Wait(0.2);
+			Wait(0.15);
 			HALBot::incrTote();
 			delete lowSwitch;
 				lift->Set(1);
@@ -161,7 +170,7 @@ namespace dreadbot
 	}
 	int Rotate::update()
 	{
-		if (driveTimer.HasPeriodPassed(ROTATE_TIME))
+		if (driveTimer.Get() >= ROTATE_TIME)
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
@@ -190,7 +199,7 @@ namespace dreadbot
 			Wait(0.66); //Another cheat
 		}
 
-		if (grabTimer.HasPeriodPassed(BACK_AWAY_TIME))
+		if (grabTimer.Get() >= BACK_AWAY_TIME)
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
@@ -219,7 +228,7 @@ namespace dreadbot
 			timerActive = true;
 		}
 
-		if (driveTimer.HasPeriodPassed(PUSH_TIME))
+		if (driveTimer.Get() >= PUSH_TIME)
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
