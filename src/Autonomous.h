@@ -15,6 +15,8 @@
 #define PUSH_TIME 0.9
 #define BACK_AWAY_TIME 1
 #define ROTATE_TIME 2
+#define ESTOP_TIME 6
+#define STACK_CORRECTION_TIME 0.25
 
 #define DIST_FROM_WALL 2000 //Millimeters!
 #define ULTRASONIC_SEPARATION 750 //Also millimeters!
@@ -128,6 +130,4 @@ namespace dreadbot
 		PushContainer* pushContainer;
 		BackAway* backAway;
 	};
-
-	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);
 }

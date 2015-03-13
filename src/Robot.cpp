@@ -17,9 +17,6 @@ namespace dreadbot
 		PowerDistributionPanel *pdp;
 		Compressor* compressor;
 
-		//Ultrasonic *frontUltra;
-		//Ultrasonic *rearUltra;
-
 		XMLInput* Input;
 		MecanumDrive *drivebase;
 
@@ -50,17 +47,12 @@ namespace dreadbot
 		{
 			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
-		//	lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
 
 			lift_switch = new DigitalInput(0); // 0
 			transit_switch_l = new DigitalInput(1); // 1
 			transit_switch_r = new DigitalInput(2); // 2
-
-
-			//frontUltra = new Ultrasonic(6, 7); //Dummy values for the ultrasonics
-			//rearUltra = new Ultrasonic(4, 5);
 
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
@@ -86,9 +78,6 @@ namespace dreadbot
 		{
 			compressor->Start();
 			drivebase->Engage();
-
-			//frontUltra->SetAutomaticMode(true);
-			//rearUltra->SetAutomaticMode(true);
 
 			Input->loadXMLConfig();
 			gamepad = Input->getController(0);
@@ -205,7 +194,6 @@ namespace dreadbot
 
 		void TestPeriodic()
 		{
-			//lw->Run();
 		}
 
 		void DisabledInit()
@@ -218,9 +206,6 @@ namespace dreadbot
 				delete AutonBot;
 				AutonBot = nullptr;
 			}
-
-			//frontUltra->SetAutomaticMode(false);
-			//rearUltra->SetAutomaticMode(false);
 		}
 
 		void DisabledPeriodic()

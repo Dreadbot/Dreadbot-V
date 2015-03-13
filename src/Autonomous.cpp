@@ -16,17 +16,16 @@ namespace dreadbot
 	}
 	void GettingTote::enter()
 	{
-		XMLInput::getInstance()->getPGroup("lift")->Set(1);
-		eStopTimer.Start();
+		XMLInput::getInstance()->getPGroup("lift")->Set(1); //Raise the lift
+		eStopTimer.Start(); //estop timer - if limit is passed, automatically estops the robot.
 	}
 	int GettingTote::update()
 	{
 		if (isToteInTransit() && !timerActive)
 		{
 			//Stay still while a tote is loaded
-			timerActive = true;
+			timerActive = true; //This doesn't really control a timer anymore...
 			drivebase->Drive_v(0, 0, 0);
-			SmartDashboard::PutBoolean("Tote collected", true);
 		}
 		if (!isToteInTransit() && timerActive)
 		{
@@ -47,11 +46,9 @@ namespace dreadbot
 			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
 		drivebase->Drive_v(0, -0.75, 0);
 		intake->Set(-0.6);
-		SmartDashboard::PutString("State", "gettingTote");
-		SmartDashboard::PutBoolean("Tote collected", false);
 
-		//E-stop in case the tote is missed
-		if (eStopTimer.Get() >= 6)
+		//E-stop in case the tote is missed. Zeros the velocity and intake/transit motors, and puts the robot into Stopped
+		if (eStopTimer.Get() >= ESTOP_TIME)
 		{
 			eStopTimer.Stop();
 			eStopTimer.Reset();
@@ -68,7 +65,7 @@ namespace dreadbot
 		drivebase = nullptr;
 		timerActive = false;
 		strafe = false;
-		dir = 1;
+		dir = 1; //Multiplier that changes the direction the robot moves.
 	}
 	void DriveToZone::setHardware(MecanumDrive* newDrivebase)
 	{
@@ -80,29 +77,25 @@ namespace dreadbot
 		driveTimer.Start();
 		timerActive = true;
 		if (HALBot::getToteCount() < 3)
-			XMLInput::getInstance()->getPGroup("lift")->Set(1);
+			XMLInput::getInstance()->getPGroup("lift")->Set(1); //Raise the lift for tote transit - it's more stable that way.
 	}
 	int DriveToZone::update()
 	{
 		float drvZoneTime = DRIVE_TO_ZONE_TIME;
 		if (HALBot::getToteCount() == 0)
-			drvZoneTime += 0.4f;
+			drvZoneTime += 0.4f; //The robot starts farther back when no tote is collected. This adds on additional time to make sure the robot still drives far enough.
 
-		SmartDashboard::PutBoolean("strafe", strafe);
-		SmartDashboard::PutBoolean("strafe to zone time passed", driveTimer.Get() >= STRAFE_TO_ZONE_TIME);
-		if (driveTimer.Get() >= drvZoneTime && !strafe)
+		//Break once the robot has moved far enough - timing based.
+		if ((driveTimer.Get() >= drvZoneTime && !strafe) || (driveTimer.Get() >= STRAFE_TO_ZONE_TIME && strafe))
 		{
-			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
-			return HALBot::timerExpired;
-		}
-		if (driveTimer.Get() >= STRAFE_TO_ZONE_TIME && strafe)
-		{
+			driveTimer.Stop();
+			driveTimer.Reset();
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
 			return HALBot::timerExpired;
 		}
 
+		//Apply actual velocity changes
 		if (drivebase != nullptr)
 		{
 			if (strafe)
@@ -111,7 +104,6 @@ namespace dreadbot
 				drivebase->Drive_v(0, 1 * dir, 0);
 		}
 
-		SmartDashboard::PutString("State", "driveToZone");
 		return HALBot::no_update;
 	}
 
@@ -127,17 +119,18 @@ namespace dreadbot
 	int ForkGrab::update()
 	{
 		DigitalInput* lowSwitch = new DigitalInput(0); //DI slot?
+		bool atLow = !lowSwitch->Get();
+		delete lowSwitch;
 
-		if (!lowSwitch->Get())
+		if (atLow)
 		{
-			//special 3-tote auton condition. Really sketchy.
+			//special 3-tote auton condition. Really sketchy. Causes the robot to NOT lift before rotating/driving
 			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
 				return HALBot::finish;
 
-			//Raise the lift and cheat.
-			delete lowSwitch;
+			//Raise the lift and cheat to alight the tote
 			drivebase->Drive_v(0, 1, 0);
-			Wait(0.25);
+			Wait(STACK_CORRECTION_TIME);
 			drivebase->Drive_v(0, 0, 0);
 			HALBot::incrTote();
 			lift->Set(1);
@@ -150,7 +143,6 @@ namespace dreadbot
 
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift for grabbing
-		delete lowSwitch;
 		return HALBot::no_update;
 	}
 
@@ -160,13 +152,13 @@ namespace dreadbot
 	}
 	int Stopped::update()
 	{
-		return HALBot::no_update;
+		return HALBot::no_update; //Does nothing of significance.
 	}
 
 	Rotate::Rotate()
 	{
 		timerActive = false;
-		rotateConstant = 1;
+		rotateConstant = 1; //Changes the direction that the robot turns.
 	}
 	void Rotate::enter()
 	{
@@ -177,16 +169,13 @@ namespace dreadbot
 	int Rotate::update()
 	{
 		if (driveTimer.Get() >= ROTATE_TIME)
-		{
+		{ //Rotated far enough; break
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
-
-		SmartDashboard::PutNumber("rotateTimer", driveTimer.Get());
-		SmartDashboard::PutString("State", "rotate");
 		return HALBot::no_update;
 	}
 	void BackAway::enter()
@@ -195,6 +184,7 @@ namespace dreadbot
 	}
 	int BackAway::update()
 	{
+		//This entire function may not work properly.
 		if (!timerActive)
 		{
 			grabTimer.Reset();
@@ -217,7 +207,6 @@ namespace dreadbot
 			drivebase->Drive_v(0, -0.75, 0); //Back up
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift so the tote goes free
-		SmartDashboard::PutString("State", "backAway");
 		return HALBot::no_update;
 	}
 	PushContainer::PushContainer()
@@ -226,14 +215,14 @@ namespace dreadbot
 	}
 	void PushContainer::enter()
 	{
-		pushConstant *= -1;
+		pushConstant *= -1; //Not used, but it can change the direction the robot pushes containers
 	}
 	int PushContainer::update()
 	{
 		float pushTime = PUSH_TIME;
 		if (enableScaling)
-			pushTime += ((float)HALBot::getToteCount() - 1) / 3;
-		XMLInput::getInstance()->getPGroup("intakeArms")->Set(1);
+			pushTime += ((float)HALBot::getToteCount() - 1) / 3; //Scaling for three-tote autonomous, since the second container is farther away than the first
+		XMLInput::getInstance()->getPGroup("intakeArms")->Set(1); //Intake arms in
 		if (!timerActive)
 		{
 			driveTimer.Reset();
@@ -254,7 +243,6 @@ namespace dreadbot
 			pusher1->Set(1); //Push the container?
 		if (pusher2 != nullptr)
 			pusher2->Set(1);
-		SmartDashboard::PutString("State", "pushContainer");
 		return HALBot::no_update;
 	}
 
@@ -266,7 +254,6 @@ namespace dreadbot
 	}
 	bool HALBot::enoughTotes()
 	{
-		SmartDashboard::PutNumber("toteCount", toteCount);
 		switch (mode)
 		{
 		case AUTON_MODE_TOTE:
@@ -427,7 +414,6 @@ namespace dreadbot
 	void HALBot::update()
 	{
 		fsm->update();
-		SmartDashboard::PutNumber("toteCount", toteCount);
 	}
 	void HALBot::setMode(AutonMode newMode)
 	{
@@ -435,21 +421,6 @@ namespace dreadbot
 	}
 	AutonMode HALBot::getMode()
 	{
-		return mode;
-	}
-
-	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra)
-	{
-		if (frontUltra == 0 || rearUltra == 0)
-			return 0;
-
-		//Get the approximate difference in distances - used for angle calculation?
-		float frontDelta = frontUltra->GetRangeMM() - DIST_FROM_WALL;
-		float rearDelta = rearUltra->GetRangeMM() - DIST_FROM_WALL;
-		float totalDelta = frontDelta + (rearDelta * -1);
-
-		//Get the actual angle, then return the cosine of it (for steering?)
-		float angle = atan(totalDelta / ULTRASONIC_SEPARATION); //This might need testing
-		return cos(angle);
+		return mode; //Used exactly once, in AutonInit(). This must be killed with fire when possible.
 	}
 }
