@@ -53,6 +53,8 @@ namespace dreadbot
 		{
 			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
 			if (intake != nullptr) intake->Set(0);
+			eStopTimer.Stop();
+			eStopTimer.Reset();
 			return HALBot::eStop;
 		}
 
@@ -370,7 +372,6 @@ namespace dreadbot
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
 			//transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, backAway};
 			//transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
-			//transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
