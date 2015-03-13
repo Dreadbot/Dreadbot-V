@@ -128,10 +128,11 @@ namespace dreadbot
 			else
 				return HALBot::nextTote;
 		}
-		SmartDashboard::PutString("State", "ForkGrab");
+
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift for grabbing?
 		delete lowSwitch;
+	//	SmartDashboard::PutString("State", "ForkGrab");
 		return HALBot::no_update;
 	}
 
@@ -141,7 +142,7 @@ namespace dreadbot
 	}
 	int Stopped::update()
 	{
-		if (HALBot::getToteCount() > 0)
+		if (HALBot::getToteCount() > 2)
 			lift->Set(-1);
 		SmartDashboard::PutString("State", "stopped");
 		return HALBot::no_update;
@@ -335,9 +336,7 @@ namespace dreadbot
 			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
 			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, backAway};
-			transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
+			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
