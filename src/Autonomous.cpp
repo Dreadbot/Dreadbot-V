@@ -82,9 +82,13 @@ namespace dreadbot
 	}
 	int DriveToZone::update()
 	{
+		float drvZoneTime = DRIVE_TO_ZONE_TIME;
+		if (HALBot::getToteCount() == 0)
+			drvZoneTime += 0.7f;
+
 		SmartDashboard::PutBoolean("strafe", strafe);
 		SmartDashboard::PutBoolean("strafe to zone time passed", driveTimer.Get() >= STRAFE_TO_ZONE_TIME);
-		if (driveTimer.Get() >= DRIVE_TO_ZONE_TIME && !strafe)
+		if (driveTimer.Get() >= drvZoneTime && !strafe)
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
