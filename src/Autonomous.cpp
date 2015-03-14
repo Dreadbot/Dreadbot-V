@@ -124,15 +124,20 @@ namespace dreadbot
 
 		if (atLow)
 		{
+			HALBot::incrTote();
+
 			//special 3-tote auton condition. Really sketchy. Causes the robot to NOT lift before rotating/driving
 			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
+			{
+				lift->Set(1); //Raise lift
+				Wait(0.2); //Totes must engage first
 				return HALBot::finish;
+			}
 
 			//Raise the lift and cheat to alight the tote
 			drivebase->Drive_v(0, 1, 0);
 			Wait(STACK_CORRECTION_TIME);
 			drivebase->Drive_v(0, 0, 0);
-			HALBot::incrTote();
 			lift->Set(1);
 			Wait(0.3);
 			if (HALBot::enoughTotes())
@@ -172,6 +177,8 @@ namespace dreadbot
 		{ //Rotated far enough; break
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
+			if (HALBot::getToteCount() == 3)
+				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
