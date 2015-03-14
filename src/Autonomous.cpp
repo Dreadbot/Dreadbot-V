@@ -130,7 +130,8 @@ namespace dreadbot
 			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
 			{
 				lift->Set(1); //Raise lift
-				Wait(0.2); //Totes must engage first
+				Wait(0.25); //Totes must engage first
+				lift->Set(0);
 				return HALBot::finish;
 			}
 
@@ -198,20 +199,17 @@ namespace dreadbot
 			grabTimer.Start();
 			timerActive = true;
 			if (lift != nullptr)
-				lift->Set(0);
-			Wait(0.66); //Another cheat
+				lift->Set(-1); //Lower the lift
 		}
 
 		if (grabTimer.Get() >= BACK_AWAY_TIME)
 		{
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
-			lift->Set(0);
+			XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 			return HALBot::timerExpired;
 		}
 
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, -0.75, 0); //Back up
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift so the tote goes free
 		return HALBot::no_update;
