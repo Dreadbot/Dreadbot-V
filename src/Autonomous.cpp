@@ -186,6 +186,7 @@ namespace dreadbot
 			drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
 		return HALBot::no_update;
 	}
+
 	void BackAway::enter()
 	{
 		// do nothing
@@ -214,6 +215,7 @@ namespace dreadbot
 			lift->Set(-1); //Lower the lift so the tote goes free
 		return HALBot::no_update;
 	}
+
 	PushContainer::PushContainer()
 	{
 		enableScaling = false;
@@ -250,6 +252,31 @@ namespace dreadbot
 			pusher2->Set(1);
 		return HALBot::no_update;
 	}
+
+	RotateDrive::RotateDrive()
+	{
+		timerActive = false;
+		rotateConstant = 1;
+	}
+	void RotateDrive::enter()
+	{
+		//Does nothing
+	}
+	int RotateDrive::update()
+	{
+		if (driveTimer.Get() >= ROTATE_TIME)
+		{ //Rotated far enough; break
+			timerActive = false;
+			drivebase->Drive_v(0, 0, 0);
+			if (HALBot::getToteCount() == 3)
+				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
+			return HALBot::timerExpired;
+		}
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, 0.75 * dir, 0.5 * rotateConstant);
+		return HALBot::no_update;
+	}
+
 
 	int HALBot::toteCount = 0;
 	AutonMode HALBot::mode = AUTON_MODE_STOP;
@@ -291,6 +318,7 @@ namespace dreadbot
 		pushContainer = new PushContainer;
 		backAway = new BackAway;
 		fsm = new FiniteStateMachine;
+		rotateDrive = new RotateDrive;
 		mode = AUTON_MODE_DRIVE;
 	}
 	HALBot::~HALBot()
@@ -299,6 +327,7 @@ namespace dreadbot
 		delete gettingTote;
 		delete driveToZone;
 		delete rotate;
+		delete rotateDrive;
 		delete forkGrab;
 		delete pushContainer;
 		delete backAway;
@@ -311,6 +340,7 @@ namespace dreadbot
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 		rotate->setHardware(drivebase);
+		rotateDrive->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
 		pushContainer->setHardware(drivebase);
 		pushContainer->pusher1 = XMLInput::getInstance()->getPWMMotor(0);
@@ -396,18 +426,17 @@ namespace dreadbot
 		if (mode == AUTON_MODE_STACK3)
 		{
 			i = 0;
-			rotate->rotateConstant = -1;
+			rotateDrive->rotateConstant = -1;
 			pushContainer->pushConstant = -1;
 			pushContainer->enableScaling = true;
 			driveToZone->strafe = false;
 			incrTote(); //We already have a tote
 
-			//Iffy
 			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
-			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
+			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotateDrive};
+			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, driveToZone};
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, backAway};
 			transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};

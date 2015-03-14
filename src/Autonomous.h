@@ -100,6 +100,13 @@ namespace dreadbot
 		virtual int update();
 		MecanumDrive* drivebase;
 	};
+	class RotateDrive : public Rotate
+	{
+	public:
+		RotateDrive();
+		int update();
+		void enter();
+	};
 
 	class HALBot
 	{
@@ -129,5 +136,6 @@ namespace dreadbot
 		Stopped* stopped;
 		PushContainer* pushContainer;
 		BackAway* backAway;
+		RotateDrive* rotateDrive;
 	};
 }
