@@ -264,7 +264,7 @@ namespace dreadbot
 	}
 	int RotateDrive::update()
 	{
-		if (driveTimer.Get() >= ROTATE_TIME)
+		if (driveTimer.Get() >= (ROTATE_TIME - 1.0f))
 		{ //Rotated far enough; break
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);

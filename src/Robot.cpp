@@ -107,9 +107,9 @@ namespace dreadbot
 		void AutonomousPeriodic()
 		{
 			drivebase->SD_RetrievePID();
-			if (DriverStation::GetInstance()->GetMatchTime() <= 15)
+			if (DriverStation::GetInstance()->GetMatchTime() <= 15.0f)
 				AutonBot->update();
-			drivebase->SD_OutputDiagnostics();
+			//drivebase->SD_OutputDiagnostics();
 
 			//Vision during auton
 			if (viewingBack && Cam2Enabled)
