@@ -46,13 +46,11 @@ namespace dreadbot
 		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase);
 		Timer driveTimer;
+		int dir;
+		bool strafe;
 	protected:
 		MecanumDrive* drivebase;
 		bool timerActive;
-	private:
-		int dir;
-		bool strafe;
-		friend class HALBot; //I HATE this.
 	};
 	class ForkGrab : public FSMState
 	{
