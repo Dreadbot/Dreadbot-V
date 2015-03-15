@@ -8,18 +8,14 @@
 #include "FSM.h"
 #include "DreadbotDIO.h"
 
-
 //All timings
-#define STRAFE_TO_ZONE_TIME 3.1
-#define DRIVE_TO_ZONE_TIME 2.0
-#define PUSH_TIME 0.9
-#define BACK_AWAY_TIME 1
+#define STRAFE_TO_ZONE_TIME 3.1f
+#define DRIVE_TO_ZONE_TIME 2.0f
+#define PUSH_TIME 0.9f
+#define BACK_AWAY_TIME 1.0f
 #define ROTATE_TIME 2.0f
-#define ESTOP_TIME 6
-#define STACK_CORRECTION_TIME 0.35
-
-#define DIST_FROM_WALL 2000 //Millimeters!
-#define ULTRASONIC_SEPARATION 750 //Also millimeters!
+#define ESTOP_TIME 6.0f
+#define STACK_CORRECTION_TIME 0.35f
 
 namespace dreadbot 
 {
