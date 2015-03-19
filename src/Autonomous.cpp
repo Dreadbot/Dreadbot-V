@@ -101,7 +101,7 @@ namespace dreadbot
 			if (strafe)
 				drivebase->Drive_v(1, 0, 0); //Right
 			else
-				drivebase->Drive_v(0, 1 * dir, 0);
+				drivebase->Drive_v(0, 0.8 * dir, 0); // Do a short dance
 		}
 
 		return HALBot::no_update;
@@ -132,7 +132,7 @@ namespace dreadbot
 			}
 
 			//Raise the lift and cheat to alight the tote
-			drivebase->Drive_v(0, 1, 0);
+			drivebase->Drive_v(0, 1, 0); // @todo Calibrate
 			Wait(STACK_CORRECTION_TIME);
 			drivebase->Drive_v(0, 0, 0);
 			lift->Set(1);
@@ -142,7 +142,7 @@ namespace dreadbot
 			else
 				return HALBot::nextTote;
 		}
-
+		drivebase->Drive_v(0, 0, 0);
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift for grabbing
 		return HALBot::no_update;
@@ -241,7 +241,7 @@ namespace dreadbot
 		}
 
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, -0.75, 0); //Straight forward
+			drivebase->Drive_v(0, -PUSH_SPEED, 0); //Straight forward
 		if (pusher1 != nullptr)
 			pusher1->Set(1); //Push the container?
 		if (pusher2 != nullptr)
@@ -264,12 +264,14 @@ namespace dreadbot
 		{ //Rotated far enough; break
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
-			if (HALBot::getToteCount() == 3)
+			if (HALBot::getToteCount() == 3) {
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
+				XMLInput::getInstance()->getPGroup("lift")->Set(-1);
+			}
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0.75 * dir, 0.5 * rotateConstant);
+			drivebase->Drive_v(0, 1.0 * dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
 		return HALBot::no_update;
 	}
 
