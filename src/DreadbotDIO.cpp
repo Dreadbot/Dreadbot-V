@@ -49,7 +49,7 @@ namespace dreadbot
 		return in_transit;
 	}
 
-	bool isAtStepHeight(void)
+	bool isLiftDown(void)
 	{
 		DigitalInput *height = new DigitalInput(0);
 		bool at_height = !height->Get();
