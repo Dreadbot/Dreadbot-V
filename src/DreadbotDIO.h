@@ -38,6 +38,6 @@ namespace dreadbot
 	};
 	enum AutonMode GetAutonMode(void);
 	bool isToteInTransit(void);
-	bool isAtStepHeight(void);
+	bool isLiftDown(void);
 };
 
