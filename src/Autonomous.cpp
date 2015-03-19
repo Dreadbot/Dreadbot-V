@@ -118,7 +118,7 @@ namespace dreadbot
 	}
 	int ForkGrab::update()
 	{
-		if (isAtStepHeight())
+		if (isLiftDown())
 		{
 			HALBot::incrTote();
 
