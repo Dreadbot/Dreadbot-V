@@ -118,11 +118,7 @@ namespace dreadbot
 	}
 	int ForkGrab::update()
 	{
-		DigitalInput* lowSwitch = new DigitalInput(0); //DI slot?
-		bool atLow = !lowSwitch->Get();
-		delete lowSwitch;
-
-		if (atLow)
+		if (isAtStepHeight())
 		{
 			HALBot::incrTote();
 
@@ -292,13 +288,11 @@ namespace dreadbot
 			return toteCount >= 1;
 			break;
 		case AUTON_MODE_STACK3:
-			if (toteCount >= 3) //Probably works now. Probably.
-				return true;
-			else return false;
+			return toteCount >= 3;
+			break;
 		case AUTON_MODE_STACK2:
-			if (toteCount >= 2)
-				return true;
-			else return false;
+			return toteCount >= 2;
+			break;
 		default:
 			return true;
 		}
