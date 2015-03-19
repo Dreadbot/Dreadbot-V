@@ -1,6 +1,6 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 #include "WPILib.h"
 #include "Timer.h"
 #include "MecanumDrive.h"
@@ -9,9 +9,14 @@
 #include "DreadbotDIO.h"
 
 //All timings
+
 #define STRAFE_TO_ZONE_TIME 3.1f
 #define DRIVE_TO_ZONE_TIME 2.0f
-#define PUSH_TIME 0.9f
+
+// PUSH_TIME*PUSH_SPEED ~= 0.71
+#define PUSH_TIME 0.71f
+#define PUSH_SPEED 1.0f
+
 #define BACK_AWAY_TIME 1.0f
 #define ROTATE_TIME 2.0f
 #define ESTOP_TIME 6.0f
