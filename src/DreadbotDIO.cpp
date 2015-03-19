@@ -55,7 +55,7 @@ namespace dreadbot
 		bool at_height = !height->Get();
 		delete height;
 
-		SmartDashboard::PutBoolean("At Step Height", at_height);
+		SmartDashboard::PutBoolean("Lift down", at_height);
 		return at_height;
 	}
 };
