@@ -1,10 +1,15 @@
-#include <WPILib.h>
-#include "SmartDashboard/SmartDashboard.h"
-#include "DigitalInput.h"
+#include "WPILib.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Autonomous.h"
-//#include "Robot.h"
+#include "Robot.h"
+#include "Vision.h"
+
+
+// When the TESTMODE_AUTON macro is commented out, enabling test will make the robot give an audible three-second warning and then run autonomous.
+// Otherwise, test mode will charge the compressor.
+#define TESTMODE_AUTON
+
 
 namespace dreadbot
 {
@@ -38,21 +43,14 @@ namespace dreadbot
 		bool viewingBack;
 		int viewerCooldown;
 
-		DigitalInput* lift_switch; // 0
-		DigitalInput* transit_switch_l; // 1
-		DigitalInput* transit_switch_r; // 2
-
+		Vision* visionProvider;
 	public:
-		void RobotInit()
+		void RobotInit() override
 		{
 			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
-
-			lift_switch = new DigitalInput(0); // 0
-			transit_switch_l = new DigitalInput(1); // 1
-			transit_switch_r = new DigitalInput(2); // 2
 
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
@@ -89,7 +87,7 @@ namespace dreadbot
 			intakeArms = Input->getPGroup("intakeArms");
 		}
 
-		void AutonomousInit()
+		void AutonomousInit() override
 		{
 			GlobalInit();
 			if (AutonBot == nullptr)
@@ -104,11 +102,16 @@ namespace dreadbot
 			}
 		}
 
-		void AutonomousPeriodic()
+		void AutonomousPeriodic() override
 		{
-			drivebase->SD_RetrievePID();
-			if (DriverStation::GetInstance()->GetMatchTime() <= 15.0f)
+			visionProvider->UpdateImage(frame1);
+
+
+			if (DriverStation::GetInstance()->GetMatchTime() <= 15.0f) {
 				AutonBot->update();
+			} else {
+				drivebase->Drive_v(0, 0, 0);
+			}
 			//drivebase->SD_OutputDiagnostics();
 
 			//Vision during auton
@@ -124,36 +127,40 @@ namespace dreadbot
 			}
 		}
 
-		void TeleopInit()
+		void TeleopInit() override
 		{
 			GlobalInit();
 		}
 
-		void TeleopPeriodic()
+		void TeleopPeriodic() override
 		{
-			drivebase->SD_RetrievePID();
+			// Test code. Get rid of in here
+			visionProvider->UpdateImage(frame1);
+
+
+
+			//drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 
-			//Output controls
-			float intakeInput = gamepad->GetRawAxis(3);
-			intake->Set(((float) (intakeInput > 0.15) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
-
-
-			if (gamepad->GetRawButton(1)) {
+			// Intake & transit wheels
+			intake->Set(((float) (gamepad->GetRawAxis(AXS_INTAKE_IN) > 0.15) * -0.8) + gamepad2->GetRawAxis(B_AXS_TOTE_OUT) - gamepad2->GetRawAxis(B_AXS_TOTE_IN));
+			// Lift
+			if (gamepad->GetRawButton(BTN_STOP_LIFT))
 				lift->Set(0.0f);
-			} else {
-				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
-			}
-			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
+			else
+				lift->Set(gamepad->GetRawAxis(AXS_LIFT_DOWN) > 0.1 ? -1.0f : 1.0f);
+				// @todo: Raise from 0.1 to 0.9
+			// Arms
+			intakeArms->Set(-(float) gamepad->GetRawButton(BTN_ARMS_OUT) + (float) gamepad2->GetRawButton(B_BTN_ARMS_IN) - (float) gamepad2->GetRawButton(B_BTN_ARMS_OUT));
+			// Forks
+			liftArms->Set(-(float) gamepad->GetRawButton(BTN_OPEN_FORK));
 
-			liftArms->Set(-(float) gamepad->GetRawButton(5));
 
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
+			if ((gamepad->GetRawButton(BTN_SWITCH_CAM) || gamepad2->GetRawButton(BTN_SWITCH_CAM)) && viewerCooldown == 0) //Start button
 			{
-				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
 				if (viewingBack)
@@ -170,6 +177,7 @@ namespace dreadbot
 					Cam2Enabled = false;
 				}
 			}
+
 			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
@@ -187,16 +195,49 @@ namespace dreadbot
 			 */
 		}
 
-		void TestInit()
-		{
-			GlobalInit();
+		// Test mode is the same as auton, except the robot gives a fair warning before starting up.
+		void TestInit() override {
+			#ifdef TESTMODE_AUTON
+				/*
+				// Drum the tote three times before taking off.
+				// Not something you'll ever want to use.
+				float inbetween = 1;
+				Wait(1);
+				for (uint8_t i = 0; i < 3; ++i) {
+					liftArms->Set(-1);
+					Wait(inbetween);
+					liftArms->Set(0);
+					Wait(inbetween);
+				}
+				*/
+
+				float p = 1;
+				float vt = 0.1;
+
+				for (uint8_t i = 0; i < 3; ++i) {
+					Wait(p - 2*vt);
+					lift->Set(1);
+					Wait(vt);
+					lift->Set(-1);
+					Wait(vt);
+				}
+
+				Wait(0.8);
+
+				AutonomousInit();
+			#else
+				compressor->Start();
+			#endif
 		}
 
-		void TestPeriodic()
-		{
+		void TestPeriodic() override {
+			#ifdef TESTMODE_AUTON
+				AutonomousPeriodic(); // Just run teleop in test mode
+				visionProvider->UpdateImage(frame1);
+			#endif
 		}
 
-		void DisabledInit()
+		void DisabledInit() override
 		{
 			compressor->Stop();
 			drivebase->Disengage();
@@ -208,7 +249,7 @@ namespace dreadbot
 			}
 		}
 
-		void DisabledPeriodic()
+		void DisabledPeriodic() override
 		{
 			if (viewingBack && Cam2Enabled)
 			{
