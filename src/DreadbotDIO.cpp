@@ -49,13 +49,28 @@ namespace dreadbot
 		return in_transit;
 	}
 
-	bool isAtStepHeight(void)
+	bool isLiftDown(void)
 	{
 		DigitalInput *height = new DigitalInput(0);
 		bool at_height = !height->Get();
 		delete height;
 
-		SmartDashboard::PutBoolean("At Step Height", at_height);
+		SmartDashboard::PutBoolean("Lift down", at_height);
 		return at_height;
+	}
+
+	bool isPracticeBot(void)
+	{
+		DigitalInput *io = new DigitalInput(5);
+		bool practice = !io->Get();
+		delete io;
+
+		SmartDashboard::PutBoolean("Practice Bot", practice);
+		return practice;
+	}
+
+	bool isCompetitionBot(void)
+	{
+		return !isPracticeBot();
 	}
 };

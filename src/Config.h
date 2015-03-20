@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 using std::string;
 
@@ -19,20 +20,17 @@ string config = MULTILINE(
 		<controller controllerID="0">
 			<axis dir="transY">
 				<ID>1</ID>
-				<deadzone>0.1</deadzone>
-				<accel>0.02</accel>
+				<deadzone>0.05</deadzone>
 				<invert>false</invert>
 			</axis>
 			<axis dir="transX">
 				<ID>0</ID>
-				<deadzone>0.1</deadzone>
-				<accel>0.02</accel>
-				<invert>true</invert>
+				<deadzone>0.05</deadzone>
+				<invert>false</invert>
 			</axis>
 			<axis dir="rot">
 				<ID>4</ID>
-				<deadzone>0.1</deadzone>
-				<accel>0.02</accel>
+				<deadzone>0.05</deadzone>
 				<invert>false</invert>
 			</axis>
 		</controller>

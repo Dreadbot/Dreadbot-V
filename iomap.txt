@@ -32,12 +32,12 @@ Right
 
     Digital In
 --- -------------------
-0   Step switch
+0   Lift Down switch
 1   Left transit switch
 2   Right transit switch
 3
 4
-5
+5   Practice Bot
 6
 7   Auton Mode LSB
 8   Auton Mode

@@ -1,6 +1,5 @@
 #include "XMLInput.h"
 #include "Config.h"
-#include "Velocity.h"
 
 namespace dreadbot
 {
@@ -116,14 +115,6 @@ namespace dreadbot
 			deadzones[i] = 0;
 			inverts[i] = 0; //Since inverts is an array of bools, this sets it to false
 		}
-
-		//Velocities and accels
-		accels[x] = 0.25;
-		accels[y] = 0.25;
-		accels[r] = 0.25;
-		vels = Velocity(0,0,0);
-		vels.label = "vels";
-		vels.set_limit(accels[x], accels[r]);
 	}
 	XMLInput* XMLInput::getInstance()
 	{
@@ -137,38 +128,33 @@ namespace dreadbot
 	}
 	void XMLInput::updateDrivebase()
 	{
-		Velocity *sPoints = new Velocity(
-		    controllers[driveController]->GetRawAxis(axes[x]),
-		    controllers[driveController]->GetRawAxis(axes[y]),
-		    controllers[driveController]->GetRawAxis(axes[r]));
-		sPoints->label = "sPoints";
-		sPoints->Put();
+		double sPoints[3];
+		sPoints[x] = controllers[driveController]->GetRawAxis(axes[x]);
+		sPoints[y] = controllers[driveController]->GetRawAxis(axes[y]);
+		sPoints[r] = controllers[driveController]->GetRawAxis(axes[r]);
 
-		//Deadzones
-		if (fabs(sPoints->x) < deadzones[x]) { sPoints->x = 0; }
-		if (fabs(sPoints->y) < deadzones[y]) { sPoints->y = 0; }
-		if (fabs(sPoints->r) < deadzones[r]) { sPoints->r = 0; }
+		for (int i = 0; i < 3; i++)
+		{
+			//Deadzones
+			if (fabs(sPoints[i]) < deadzones[i])
+				sPoints[i] = 0;
 
-		//Inverts
-		if (inverts[x]) { sPoints->x *= -1; }
-		if (inverts[y]) { sPoints->y *= -1; }
-		if (inverts[r]) { sPoints->r *= -1; }
+			// Square the value to desensitize the joystick
+			sPoints[i] *= std::fabs(sPoints[i]);
 
-		// Ramp
-		vels.ramp_to(sPoints);
-		if (vels.x < VEL_DEADZONE) { vels.x = 0.0; }
-		if (vels.y < VEL_DEADZONE) { vels.y = 0.0; }
-		if (vels.r < VEL_DEADZONE) { vels.r = 0.0; }
-
-		vels.Put();
-
-		if (drivebase != nullptr) {
-			drivebase->Drive_v(vels.x, vels.y, vels.r);
+			//Inverts
+			if (inverts[i])
+				sPoints[i] *= -1;
 		}
-	}
-	void XMLInput::zeroVels()
-	{
-		vels.set(0,0,0);
+		
+		// Desensitize rotation even more
+		sPoints[r] /= 1.5;
+
+		SmartDashboard::PutNumber("sX", sPoints[x]);
+		SmartDashboard::PutNumber("sY", sPoints[y]);
+		SmartDashboard::PutNumber("sR", sPoints[r]);
+		if (drivebase != nullptr) //Idiot check
+			drivebase->Drive_v(sPoints[x], sPoints[y], sPoints[r]);
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -272,7 +258,6 @@ namespace dreadbot
 			{
 				axes[y] = atoi(axis.child_value("ID"));
 				deadzones[y] = atof(axis.child_value("deadzone"));
-				accels[y] = atof(axis.child_value("accel"));
 
 				if (invert.find("true")) //I really don't understand how this works...
 					inverts[y] = false;
@@ -283,7 +268,6 @@ namespace dreadbot
 			{
 				axes[x] = atoi(axis.child_value("ID"));
 				deadzones[x] = atof(axis.child_value("deadzone"));
-				accels[x] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
 					inverts[x] = false;
@@ -294,7 +278,6 @@ namespace dreadbot
 			{
 				axes[r] = atoi(axis.child_value("ID"));
 				deadzones[r] = atof(axis.child_value("deadzone"));
-				accels[r] = atof(axis.child_value("accel"));
 
 				if (invert.find("true"))
 					inverts[r] = false;
