@@ -3,8 +3,9 @@
 #include <cmath>
 
 
-// Intended behavior:
-// It will
+// Calling UpdateImage() with the current video frame from the front camera will return
+// the amount of strafing necessary to center the tote in the front arms.  This shouldn't
+// be necessary in most situations, but it might prevent some match-ending auton accidents.
 
 class Vision {
 	//A structure to hold measurements of a particle
