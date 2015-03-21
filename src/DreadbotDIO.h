@@ -39,5 +39,7 @@ namespace dreadbot
 	enum AutonMode GetAutonMode(void);
 	bool isToteInTransit(void);
 	bool isLiftDown(void);
+	bool isPracticeBot(void);
+	bool isCompetitionBot(void);
 };
 
