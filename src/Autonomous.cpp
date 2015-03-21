@@ -264,10 +264,8 @@ namespace dreadbot
 		{ //Rotated far enough; break
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
-			if (HALBot::getToteCount() == 3) {
+			if (HALBot::getToteCount() == 3)
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
-				XMLInput::getInstance()->getPGroup("lift")->Set(-1);
-			}
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
