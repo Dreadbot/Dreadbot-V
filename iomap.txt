@@ -17,9 +17,15 @@ RB		Transit intake
 LT 		Intake Outtake
 RT 		Intake Intake
 Back
+<<<<<<< HEAD
 Start	Toggle camera
 Up		
 Down	
+=======
+Start
+Up
+Down
+>>>>>>> 98eef26ec2545c07da31549b73b14cb4f5f7eb37
 Left
 Right
 
@@ -32,14 +38,14 @@ Right
 
     Digital In
 --- -------------------
-0   Step switch
+0   Lift Down switch
 1   Left transit switch
 2   Right transit switch
-3   
+3
 4
-5
-6   Auton Mode LSB
-7   Auton Mode
+5   Practice Bot
+6
+7   Auton Mode LSB
 8   Auton Mode
 9   Auton Mode MSB
 
