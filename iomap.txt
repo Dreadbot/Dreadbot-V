@@ -17,15 +17,9 @@ RB		Transit intake
 LT 		Intake Outtake
 RT 		Intake Intake
 Back
-<<<<<<< HEAD
 Start	Toggle camera
 Up		
 Down	
-=======
-Start
-Up
-Down
->>>>>>> 6a98a8caa3895b9ef77cb8b06958bc0c1074674b
 Left
 Right
 
