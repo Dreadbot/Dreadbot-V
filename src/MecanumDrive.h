@@ -25,7 +25,7 @@ namespace dreadbot {
 		MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr);
 		~MecanumDrive();
 
-		void Drive_v(double x, double y, double rotation);
+		void Drive(double x, double y, double rotation);
 		
 		void Engage();
 		void Disengage();
@@ -36,12 +36,7 @@ namespace dreadbot {
 	protected:
 		bool m_enabled = false;
 		const uint8_t syncGroup = 0x00;
-		const std::string motorNames[MOTOR_COUNT] = {
-			"Left-front",
-			"Right-front",
-			"Left-rear",
-			"Right-rear"
-		};
+		const std::string motorNames[MOTOR_COUNT] = {"Left-front", "Right-front", "Left-rear", "Right-rear"};
 		const double motorReversals[MOTOR_COUNT] = {-1.0, 1.0, -1.0, 1.0};
 		CANTalon* motors[4];
 

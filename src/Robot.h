@@ -8,6 +8,9 @@
 
 #ifdef LOGITECH_F310_X
 	// Primary driver controls
+	#define AXS_DRIVE_X 0
+	#define AXS_DRIVE_Y 1
+	#define AXS_DRIVE_R 4
   	#define AXS_LIFT_DOWN 2 // LB
  	#define AXS_INTAKE_IN 3 // RB
 	#define BTN_ARMS_OUT  6 // RT

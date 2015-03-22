@@ -40,7 +40,7 @@ MecanumDrive::~MecanumDrive() {
 
 
 // Drive with wheel velocity
-void MecanumDrive::Drive_v(double x, double y, double rotation) {
+void MecanumDrive::Drive(double x, double y, double rotation) {
 	if (!m_enabled)
 		return;
 
@@ -64,13 +64,17 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 		}
 	}
 
+/*
+	// Let's do some tests to find out how much current you need to break #25 chain! Woohoo
 	bool stall = true;
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		// files.andymark.com/CIM-motor-curve.pdf
 		stall = stall && (motors[i]->GetOutputCurrent() > STALL_MOTOR_CURRENT);
 	}
+*/
+
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->Set(wspeeds[i]*motorReversals[i]*1023.0, syncGroup); // *stall
+		motors[i]->Set(wspeeds[i]*motorReversals[i]*1023.0, syncGroup);
 	}
 }
 

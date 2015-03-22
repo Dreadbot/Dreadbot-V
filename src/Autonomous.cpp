@@ -25,7 +25,7 @@ namespace dreadbot
 		{
 			//Stay still while a tote is loaded
 			timerActive = true; //This doesn't really control a timer anymore...
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive(0, 0, 0);
 		}
 		if (!isToteInTransit() && timerActive)
 		{
@@ -44,7 +44,18 @@ namespace dreadbot
 		}
 		if (HALBot::getToteCount() != 0) //Open the intake arms for grabbing totes after the first tote is collected
 			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
-		drivebase->Drive_v(0, -0.75, 0);
+
+	#ifdef AIMBOT
+		double err = DreadVision::GetAlignmentError();
+		if (std::fabs(err) < MAX_ALIGN_ERROR)
+			err = 0.0;
+		else
+			err = err > 0 ? 1.0 : -1.0;
+		drivebase->Drive(err*CORRECTION_GAIN, -1.0, 0);
+	#else
+		drivebase->Drive(0, -1.0, 0);
+	#endif
+
 		intake->Set(-0.6);
 
 		//E-stop in case the tote is missed. Zeros the velocity and intake/transit motors, and puts the robot into Stopped
@@ -52,8 +63,9 @@ namespace dreadbot
 		{
 			eStopTimer.Stop();
 			eStopTimer.Reset();
-			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
-			if (intake != nullptr) intake->Set(0);
+			drivebase->Drive(0, 0, 0);
+			intake->Set(0);
+			XMLInput::getInstance()->getPGroup("lift")->Set(1);
 			return HALBot::eStop;
 		}
 
@@ -91,7 +103,7 @@ namespace dreadbot
 			driveTimer.Stop();
 			driveTimer.Reset();
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive(0, 0, 0);
 			return HALBot::timerExpired;
 		}
 
@@ -99,9 +111,9 @@ namespace dreadbot
 		if (drivebase != nullptr)
 		{
 			if (strafe)
-				drivebase->Drive_v(1, 0, 0); //Right
+				drivebase->Drive(1, 0, 0); //Right
 			else
-				drivebase->Drive_v(0, 0.8 * dir, 0); // Do a short dance
+				drivebase->Drive(0, 0.8 * dir, 0); // Do a short dance
 		}
 
 		return HALBot::no_update;
@@ -121,7 +133,7 @@ namespace dreadbot
 		if (isLiftDown())
 		{
 			HALBot::incrTote();
-			// @todo Close forks here
+			//XMLInput::getInstance()->getPGroup("liftArms")->Set(0);// @todo see if this works
 			//special 3-tote auton condition. Really sketchy. Causes the robot to NOT lift before rotating/driving
 			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
 			{
@@ -132,9 +144,9 @@ namespace dreadbot
 			}
 
 			//Raise the lift and cheat to alight the tote
-			drivebase->Drive_v(0, 1, 0); // @todo Calibrate speed
+			drivebase->Drive(0, 1, 0); // @todo Calibrate speed
 			Wait(STACK_CORRECTION_TIME);
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive(0, 0, 0);
 			lift->Set(1);
 			Wait(0.3);
 			if (HALBot::enoughTotes())
@@ -142,11 +154,10 @@ namespace dreadbot
 			else
 				return HALBot::nextTote;
 		} else {
-			// @todo Open forks here
+			//XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);// @todo see if this works
 		}
-		drivebase->Drive_v(0, 0, 0);
-		if (lift != nullptr)
-			lift->Set(-1); //Lower the lift for grabbing
+		drivebase->Drive(0, 0, 0);
+		lift->Set(-1); //Lower the lift for grabbing
 		return HALBot::no_update;
 	}
 
@@ -175,20 +186,17 @@ namespace dreadbot
 		if (driveTimer.Get() >= ROTATE_TIME)
 		{ //Rotated far enough; break
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive(0, 0, 0);
 			if (HALBot::getToteCount() == 3)
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
+			drivebase->Drive(0, 0, 0.5 * rotateConstant);
 		return HALBot::no_update;
 	}
 
-	void BackAway::enter()
-	{
-		// do nothing
-	}
+	void BackAway::enter() {}
 	int BackAway::update()
 	{
 		//This entire function may not work properly.
@@ -197,26 +205,25 @@ namespace dreadbot
 			grabTimer.Reset();
 			grabTimer.Start();
 			timerActive = true;
-			if (lift != nullptr)
-				lift->Set(-1); //Lower the lift
+			lift->Set(-1); //Lower the lift
 		}
 
 		if (grabTimer.Get() >= BACK_AWAY_TIME)
 		{
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive(0, 0, 0);
 			XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 			return HALBot::timerExpired;
 		}
 
-		if (lift != nullptr)
-			lift->Set(-1); //Lower the lift so the tote goes free
+		lift->Set(-1); //Lower the lift so the tote goes free
 		return HALBot::no_update;
 	}
 
 	PushContainer::PushContainer()
 	{
-		enableScaling = false;
+		pusher1 = XMLInput::getInstance()->getPWMMotor(0);
+		pusher2 = XMLInput::getInstance()->getPWMMotor(1);
 	}
 	void PushContainer::enter()
 	{
@@ -238,16 +245,14 @@ namespace dreadbot
 		if (driveTimer.Get() >= pushTime)
 		{
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive(0, 0, 0);
 			return HALBot::timerExpired;
 		}
 
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, -PUSH_SPEED, 0); //Straight forward
-		if (pusher1 != nullptr)
-			pusher1->Set(1); //Push the container?
-		if (pusher2 != nullptr)
-			pusher2->Set(1);
+		drivebase->Drive(0, -PUSH_SPEED, 0); //Straight forward
+		pusher1->Set(CONTAINER_SPIN_SPEED); //Push the container?
+		pusher2->Set(CONTAINER_SPIN_SPEED);
+
 		return HALBot::no_update;
 	}
 
@@ -265,15 +270,12 @@ namespace dreadbot
 		if (driveTimer.Get() >= (ROTATE_TIME - 1.0f))
 		{ //Rotated far enough; break
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
-			if (HALBot::getToteCount() == 3) {
+			drivebase->Drive(0, 0, 0);
+			if (HALBot::getToteCount() == 3)
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
-				XMLInput::getInstance()->getPGroup("lift")->Set(-1);
-			}
 			return HALBot::timerExpired;
 		}
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 1.0 * dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
+		drivebase->Drive(0, 1.0 * dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
 		return HALBot::no_update;
 	}
 
@@ -341,8 +343,6 @@ namespace dreadbot
 		rotateDrive->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
 		pushContainer->setHardware(drivebase);
-		pushContainer->pusher1 = XMLInput::getInstance()->getPWMMotor(0);
-		pushContainer->pusher2 = XMLInput::getInstance()->getPWMMotor(1);
 		pushContainer->pushConstant = 1;
 		stopped->lift = lift; //Don't know if I like these...
 		forkGrab->lift = lift;

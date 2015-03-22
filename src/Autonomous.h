@@ -7,20 +7,28 @@
 #include "XMLInput.h"
 #include "FSM.h"
 #include "DreadbotDIO.h"
+#include "Vision.h"
+
 
 //All timings
+#define STRAFE_TO_ZONE_TIME 3.1
+#define DRIVE_TO_ZONE_TIME 2.0
 
-#define STRAFE_TO_ZONE_TIME 3.1f
-#define DRIVE_TO_ZONE_TIME 2.0f
+// PUSH_TIME*PUSH_SPEED ~= 0.7
+#define PUSH_TIME 0.71
+#define PUSH_SPEED 1.0
 
-// PUSH_TIME*PUSH_SPEED ~= 0.71
-#define PUSH_TIME 0.71f
-#define PUSH_SPEED 1.0f
+#define BACK_AWAY_TIME 1.0
+#define ROTATE_TIME 2.0
+#define ESTOP_TIME 6.0
+#define STACK_CORRECTION_TIME 0.35
+#define CONTAINER_SPIN_SPEED 0.8
 
-#define BACK_AWAY_TIME 1.0f
-#define ROTATE_TIME 2.0f
-#define ESTOP_TIME 6.0f
-#define STACK_CORRECTION_TIME 0.35f
+
+//#define AIMBOT // Enables vision-based guiding to assist in tote collection.
+#define MAX_ALIGN_ERROR 0.1 // How off-target a tote can be before course correction kicks in
+//#define GAIN_KP 0.024 // For proportional control, Kp of 0.5/21 would probably be in the ballpark. I think.
+#define CORRECTION_GAIN 0.5 // How fast the robot should strafe regardless of error. Different approach than KP
 
 namespace dreadbot 
 {
@@ -71,7 +79,6 @@ namespace dreadbot
 		Rotate();
 		virtual void enter();
 		virtual int update();
-
 		int rotateConstant;
 	};
 	class Stopped : public FSMState
@@ -89,8 +96,8 @@ namespace dreadbot
 		virtual int update();
 		Talon* pusher1;
 		Talon* pusher2;
-		int pushConstant;
-		bool enableScaling;
+		int pushConstant = 1;
+		bool enableScaling = false;
 	};
 	class BackAway : public ForkGrab
 	{
