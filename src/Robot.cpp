@@ -38,10 +38,6 @@ namespace dreadbot
 		bool viewingBack;
 		int viewerCooldown;
 
-		DigitalInput* lift_switch; // 0
-		DigitalInput* transit_switch_l; // 1
-		DigitalInput* transit_switch_r; // 2
-
 	public:
 		void RobotInit()
 		{
@@ -49,10 +45,6 @@ namespace dreadbot
 			SmartDashboard::init();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
-
-			lift_switch = new DigitalInput(0); // 0
-			transit_switch_l = new DigitalInput(1); // 1
-			transit_switch_r = new DigitalInput(2); // 2
 
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
