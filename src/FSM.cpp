@@ -11,7 +11,6 @@ namespace dreadbot
 	void FiniteStateMachine::update()
 	{
 		int input = currentState->update();
-		SmartDashboard::PutNumber("update input", input);
 		for (auto state = &this->stateTable[0]; state->currentState != nullptr; state++)
 		{
 			if (state->input == input && state->currentState == this->currentState)
@@ -23,7 +22,6 @@ namespace dreadbot
 					state->nextState->enter();
 				}
 				this->currentState = state->nextState;
-				SmartDashboard::PutBoolean("Some kind of state transition happened", true);
 				break;
 			}
 		}

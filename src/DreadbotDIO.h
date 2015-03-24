@@ -24,6 +24,7 @@
 **      Grab all 3 totes, stack them, drive to auton zone.
 **
 *******************************************************************************/
+#pragma once
 
 namespace dreadbot
 {
