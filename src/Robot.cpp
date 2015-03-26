@@ -100,6 +100,8 @@ namespace dreadbot
 			drivebase->SD_RetrievePID();
 			if (DriverStation::GetInstance()->GetMatchTime() <= 15.0f)
 				AutonBot->update();
+			else
+				drivebase->Drive_v(0, 0, 0);
 
 			//Vision during auton
 			if (viewingBack && Cam2Enabled)
