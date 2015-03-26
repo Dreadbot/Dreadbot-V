@@ -126,23 +126,26 @@ namespace dreadbot
 			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 
-			// Intake & transit wheels
-			intake->Set(((float) (gamepad->GetRawAxis(AXS_INTAKE_IN) > 0.05) * -0.8) + gamepad2->GetRawAxis(B_AXS_TOTE_OUT) - gamepad2->GetRawAxis(B_AXS_TOTE_IN));
-			// Lift
-			if (gamepad->GetRawButton(BTN_STOP_LIFT))
+			//Output controls
+			float intakeInput = gamepad->GetRawAxis(3);
+			intake->Set(((float) (intakeInput > 0.15) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
+
+
+			if (gamepad->GetRawButton(1)) {
 				lift->Set(0.0f);
-			else
-				lift->Set(gamepad->GetRawAxis(AXS_LIFT_DOWN) > 0.1 ? -1.0f : 1.0f);
-			// Arms
-			intakeArms->Set(-(float) gamepad->GetRawButton(BTN_ARMS_OUT) + (float) gamepad2->GetRawButton(B_BTN_ARMS_IN) - (float) gamepad2->GetRawButton(B_BTN_ARMS_OUT));
-			// Forks
-			liftArms->Set(-(float) gamepad->GetRawButton(BTN_OPEN_FORK));
+			} else {
+				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
+			}
+			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
+
+			liftArms->Set(-(float) gamepad->GetRawButton(5));
 
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if ((gamepad->GetRawButton(BTN_SWITCH_CAM) || gamepad2->GetRawButton(BTN_SWITCH_CAM)) && viewerCooldown == 0) 
+			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
 			{
+				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
 				if (viewingBack)
