@@ -12,9 +12,8 @@
 #define STRAFE_TO_ZONE_TIME 3.1f
 #define DRIVE_TO_ZONE_TIME 2.0f
 
-// PUSH_TIME*PUSH_SPEED ~= 0.71
-#define PUSH_TIME 0.71f
-#define PUSH_SPEED 1.0f
+#define PUSH_TIME 0.9
+#define PUSH_SPEED 0.75
 
 #define BACK_AWAY_TIME 1.0f
 #define ROTATE_TIME 2.0f
