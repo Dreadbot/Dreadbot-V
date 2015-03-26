@@ -142,6 +142,7 @@ void MecanumDrive::SD_OutputDiagnostics() {
 //		SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetEncVel());
 //		SmartDashboard::PutNumber(motorNames[i] + ".error", motors[i]->GetClosedLoopError());
 		SmartDashboard::PutNumber(motorNames[i] + ".voltage", motors[i]->GetOutputVoltage());
+		SmartDashboard::PutNumber(motorNames[i] + ".amperage", motors[i]->GetOutputCurrent());
 	}
 
 }
