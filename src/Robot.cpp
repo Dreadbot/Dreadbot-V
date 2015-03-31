@@ -94,7 +94,7 @@ namespace dreadbot
 			AutonBot->setMode(GetAutonMode());
 			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
-
+			drivebase->GoSlow();
 			if (AutonBot->getMode() == AUTON_MODE_STACK3)
 			{
 				lift->Set(1);
@@ -127,11 +127,11 @@ namespace dreadbot
 		{
 			sysLog->log("Initializing Teleop");
 			GlobalInit();
+			drivebase->GoSlow();
 		}
 
 		void TeleopPeriodic()
 		{
-			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 
 			//Output controls
@@ -195,6 +195,7 @@ namespace dreadbot
 		void DisabledInit()
 		{
 			sysLog->log("Disabled robot.");
+			logger->flushLogBuffers();
 			compressor->Stop();
 			drivebase->Disengage();
 

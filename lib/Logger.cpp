@@ -7,7 +7,7 @@ namespace Hydra
         name = newName;
         filename = newFilename + ".txt";
         log("Init creation of logfile " + filename);
-}
+    }
     void Log::log(string message, logFlag flag)
     {
         //Output time for logging purposes

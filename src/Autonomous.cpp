@@ -185,7 +185,7 @@ namespace dreadbot
 
 	void BackAway::enter()
 	{
-		// do nothing
+		SmartDashboard::PutString("state", "backAway");
 	}
 	int BackAway::update()
 	{

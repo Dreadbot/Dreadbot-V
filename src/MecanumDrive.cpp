@@ -49,6 +49,18 @@ MecanumDrive::~MecanumDrive() {
 	}
 }
 
+void MecanumDrive::GoFast() {
+	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+		motors[i]->SetPID(1, 0, 0);
+	}
+}
+
+void MecanumDrive::GoSlow() {
+	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+		motors[i]->SetPID(0.5, 0, 0);
+	}
+}
+
 // Drive to position
 void MecanumDrive::Drive_p(double x, double y, double rotation) {
 	if (mode == drivemode::absolute) {

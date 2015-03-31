@@ -32,6 +32,8 @@ namespace dreadbot {
 		MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr);
 		~MecanumDrive();
 
+		void GoSlow();
+		void GoFast();
 		void Drive_p(double x, double y, double rotation);
 		void Drive_v(double x, double y, double rotation);
 		void SetDriveMode(drivemode newMode);
