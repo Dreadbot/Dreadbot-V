@@ -4,7 +4,8 @@
 #include "Autonomous.h"
 #include "Robot.h"
 #include "DreadbotDIO.h"
-
+#include "../lib/Logger.h"
+using namespace Hydra;
 
 namespace dreadbot 
 {
@@ -16,6 +17,8 @@ namespace dreadbot
 		PowerDistributionPanel *pdp;
 		Compressor* compressor;
 
+		Logger* logger;
+		Log* sysLog;
 		XMLInput* Input;
 		MecanumDrive *drivebase;
 
@@ -45,6 +48,8 @@ namespace dreadbot
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
 
+			logger = Logger::getInstance();
+			sysLog = logger->getLog("sysLog");
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
@@ -82,10 +87,12 @@ namespace dreadbot
 
 		void AutonomousInit()
 		{
+			sysLog->log("Initializing Autonomous");
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
 			AutonBot->setMode(GetAutonMode());
+			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
 
 			if (AutonBot->getMode() == AUTON_MODE_STACK3)
@@ -118,6 +125,7 @@ namespace dreadbot
 
 		void TeleopInit()
 		{
+			sysLog->log("Initializing Teleop");
 			GlobalInit();
 		}
 
@@ -176,6 +184,7 @@ namespace dreadbot
 
 		void TestInit()
 		{
+			sysLog->log("Initializing Test mode.");
 			GlobalInit();
 		}
 
@@ -185,6 +194,7 @@ namespace dreadbot
 
 		void DisabledInit()
 		{
+			sysLog->log("Disabled robot.");
 			compressor->Stop();
 			drivebase->Disengage();
 
