@@ -6,6 +6,7 @@ namespace dreadbot
 {
 	enum AutonMode GetAutonMode(void)
 	{
+		/*
 		DigitalInput *bit0 = new DigitalInput(7);
 		DigitalInput *bit1 = new DigitalInput(8);
 		DigitalInput *bit2 = new DigitalInput(9);
@@ -30,6 +31,8 @@ namespace dreadbot
 
 		SmartDashboard::PutNumber("Auton Mode", mode);
 		return mode;
+		*/
+		return AUTON_MODE_STACK3;
 	}
 
 	bool isToteInTransit(void)

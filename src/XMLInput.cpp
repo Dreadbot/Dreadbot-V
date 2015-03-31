@@ -128,6 +128,27 @@ namespace dreadbot
 	}
 	void XMLInput::updateDrivebase()
 	{
+		double sPoints[3];
+		sPoints[x] = controllers[driveController]->GetRawAxis(axes[x]);
+		sPoints[y] = controllers[driveController]->GetRawAxis(axes[y]);
+		sPoints[r] = controllers[driveController]->GetRawAxis(axes[r]);
+
+		for (int i = 0; i < 3; i++)
+		{
+			//Deadzones
+			if (fabs(sPoints[i]) < deadzones[i])
+				sPoints[i] = 0;
+
+			//Inverts
+			if (inverts[i])
+				sPoints[i] *= -1;
+		}
+
+		SmartDashboard::PutNumber("sX", sPoints[x]);
+		SmartDashboard::PutNumber("sY", sPoints[y]);
+		SmartDashboard::PutNumber("sR", sPoints[r]);
+		if (drivebase != nullptr) //Idiot check
+			drivebase->Drive(sPoints[x], sPoints[y], sPoints[r]);
 	}
 	Joystick* XMLInput::getController(int ID)
 	{
@@ -197,8 +218,23 @@ namespace dreadbot
 		SmartDashboard::PutNumber("XML Load Status: ", result.status);
 		SmartDashboard::PutString("XML Load Result: ", result.description());
 
+		//Load drivebase motors
+		int motorList[4];
 		pugi::xml_node base = doc.child("Dreadbot").child("Drivebase");
+		for (auto motor = base.child("motors").child("motor"); motor; motor = motor.next_sibling())
+		{
+			string motorPos = motor.attribute("position").as_string();
 
+			if (motorPos == "frontLeft")
+				motorList[0] = atoi(motor.child_value());
+			else if (motorPos == "frontRight")
+				motorList[1] = atoi(motor.child_value());
+			else if (motorPos == "backLeft")
+				motorList[2] = atoi(motor.child_value());
+			else if (motorPos == "backRight")
+				motorList[3] = atoi(motor.child_value());
+		}
+		drivebase->Set(motorList[0], motorList[1], motorList[2], motorList[3]);
 
 		//Drivebase control loading - rig joystick
 		int controlID = base.child("controller").attribute("controllerID").as_int();
@@ -206,6 +242,43 @@ namespace dreadbot
 			controllers[controlID] = new Joystick(controlID);
 		driveController = controlID;
 
+		//Drivebase control loading - get axes
+		string invert;
+		for (auto axis = base.child("controller").child("axis"); axis; axis = axis.next_sibling())
+		{
+			string axisDir = axis.attribute("dir").as_string();
+			invert = axis.child_value("invert");
+			if (axisDir == "transY")
+			{
+				axes[y] = atoi(axis.child_value("ID"));
+				deadzones[y] = atof(axis.child_value("deadzone"));
+
+				if (invert.find("true")) //I really don't understand how this works...
+					inverts[y] = false;
+				else
+					inverts[y] = true;
+			}
+			else if (axisDir == "transX")
+			{
+				axes[x] = atoi(axis.child_value("ID"));
+				deadzones[x] = atof(axis.child_value("deadzone"));
+
+				if (invert.find("true"))
+					inverts[x] = false;
+				else
+					inverts[x] = true;
+			}
+			else if (axisDir == "rot")
+			{
+				axes[r] = atoi(axis.child_value("ID"));
+				deadzones[r] = atof(axis.child_value("deadzone"));
+
+				if (invert.find("true"))
+					inverts[r] = false;
+				else
+					inverts[r] = true;
+			}
+		}
 
 		//Load all motor groups
 		pugi::xml_node motorgroups = doc.child("Dreadbot").child("motorgroups");

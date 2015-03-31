@@ -5,27 +5,21 @@
 
 #define END_STATE_TABLE {nullptr, 0, nullptr, nullptr}
 
-namespace dreadbot
-{
-	class FSMState
-	{
-	public:
+namespace dreadbot {
+	struct FSMState {
 		virtual void enter() = 0;
 		virtual int update() = 0;
 		virtual ~FSMState() {}
 	};
 
-	class FSMTransition
-	{
-	public:
+	struct FSMTransition {
 		FSMState* currentState;
 		int input;
 		void (*action)(int input, FSMState* current, FSMState* nextState);
 		FSMState* nextState;
 	};
 
-	class FiniteStateMachine
-	{
+	class FiniteStateMachine {
 	public:
 		virtual void init(FSMTransition* newStateTable, FSMState* initState);
 		virtual void update();

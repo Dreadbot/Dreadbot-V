@@ -1,7 +1,6 @@
 #pragma once
 
 #include "WPILib.h"
-#include "Vector2.h"
 #include <algorithm>
 #include <cmath>
 
@@ -25,8 +24,10 @@ namespace dreadbot {
 		MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr);
 		~MecanumDrive();
 
+		void GoFast();
+		void GoSlow();
 		void Drive(double x, double y, double rotation);
-		
+
 		void Engage();
 		void Disengage();
 

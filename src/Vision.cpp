@@ -22,3 +22,4 @@ DreadVision::Scores DreadVision::scores;
 
 double DreadVision::strafeValue;
 double DreadVision::distValue;
+bool DreadVision::seesTote;

@@ -50,9 +50,9 @@ namespace dreadbot {
 		static ParticleFilterCriteria2 criteria[1];
 		static Scores scores;
 
-
 		static double strafeValue;
 		static double distValue;
+		static bool seesTote;
 
 		//Comparator function for sorting particles. Returns true if particle 1 is larger
 		static bool CompareParticleSizes(ParticleReport particle1, ParticleReport particle2) {
@@ -233,7 +233,7 @@ namespace dreadbot {
 						isTote = true;
 					}
 				}
-
+				seesTote = isTote;
 				SmartDashboard::PutBoolean("IsTote", isTote);
 				if (isTote) {
 					strafeValue = computeStrafe(poi);

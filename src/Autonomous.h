@@ -8,7 +8,7 @@
 #include "FSM.h"
 #include "DreadbotDIO.h"
 #include "Vision.h"
-
+#include "Hardware.h"
 
 //All timings
 #define STRAFE_TO_ZONE_TIME 3.1
@@ -22,75 +22,57 @@
 #define ROTATE_TIME 2.0
 #define ESTOP_TIME 6.0
 #define STACK_CORRECTION_TIME 0.35
-#define CONTAINER_SPIN_SPEED 0.8
+#define CONTAINER_SPIN_SPEED 1.0
 
 
 //#define AIMBOT // Enables vision-based guiding to assist in tote collection.
 #define MAX_ALIGN_ERROR 0.1 // How off-target a tote can be before course correction kicks in
-//#define GAIN_KP 0.024 // For proportional control, Kp of 0.5/21 would probably be in the ballpark. I think.
+//#define GAIN_KP 0.024 // For proportional control, Kp = 0.5/21 would probably be in the ballpark. I think.
 #define CORRECTION_GAIN 0.5 // How fast the robot should strafe regardless of error. Different approach than KP
 
-namespace dreadbot 
-{
-	//States
-	class GettingTote : public FSMState
-	{
-	public:
+// @todo Document each state
+namespace dreadbot {
+	//
+	struct GettingTote : public FSMState {
 		GettingTote();
 		virtual void enter();
 		virtual int update();
-		void setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
-	private:
-		MecanumDrive* drivebase;
-		MotorGrouping* intake;
 		bool timerActive;
 		Timer getTimer;
 		Timer eStopTimer;
 	};
-	class DriveToZone : public FSMState
-	{
-	public:
+	//
+	struct DriveToZone : public FSMState {
 		DriveToZone();
 		virtual void enter();
 		virtual int update();
-		void setHardware(MecanumDrive* newDrivebase);
 		Timer driveTimer;
 		int dir;
 		bool strafe;
-	protected:
-		MecanumDrive* drivebase;
 		bool timerActive;
 	};
-	class ForkGrab : public FSMState
-	{
-	public:
+	//
+	struct ForkGrab : public FSMState {
 		ForkGrab();
 		virtual void enter();
 		virtual int update();
 		Timer grabTimer;
-		PneumaticGrouping* lift;
-		MecanumDrive* drivebase;
-	protected:
 		bool timerActive;
 	};
-	class Rotate : public DriveToZone
-	{
-	public:
+	//
+	struct Rotate : public DriveToZone {
 		Rotate();
 		virtual void enter();
 		virtual int update();
 		int rotateConstant;
 	};
-	class Stopped : public FSMState
-	{
-	public:
+	//
+	struct Stopped : public FSMState {
 		virtual void enter();
 		virtual int update();
-		PneumaticGrouping* lift;
 	};
-	class PushContainer : public DriveToZone
-	{
-	public:
+	//
+	struct PushContainer : public DriveToZone {
 		PushContainer();
 		virtual void enter();
 		virtual int update();
@@ -99,23 +81,19 @@ namespace dreadbot
 		int pushConstant = 1;
 		bool enableScaling = false;
 	};
-	class BackAway : public ForkGrab
-	{
-	public:
+	// Used in: 3 tote stack
+	struct BackAway : public ForkGrab {
 		virtual void enter();
 		virtual int update();
-		MecanumDrive* drivebase;
 	};
-	class RotateDrive : public Rotate
-	{
-	public:
+	// Used in:
+	struct RotateDrive : public Rotate {
 		RotateDrive();
 		int update();
 		void enter();
 	};
 
-	class HALBot
-	{
+	class HALBot {
 	public:
 		enum fsmInputs {no_update, finish, timerExpired, nextTote, eStop};
 
@@ -125,8 +103,7 @@ namespace dreadbot
 		static void incrTote();
 		static int getToteCount();
 		void setMode(AutonMode newMode);
-		AutonMode getMode();
-		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift);
+		void init();
 		void update();
 	private:
 		static int toteCount;

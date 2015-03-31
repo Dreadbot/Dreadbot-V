@@ -1,5 +1,5 @@
 #pragma once
-#include "WPILib.h"
+#include <WPILib.h>
 #include "../lib/pugixml.hpp"
 #include "MecanumDrive.h"
 #include <string>
@@ -16,11 +16,11 @@ using std::vector;
 
 namespace dreadbot
 {
-	const int MAX_CONTROLLERS = 4;
+	const int MAX_CONTROLLERS = 5;
 	const int MAX_MOTORS = 10;
 	const int MAX_PNEUMS = 10;
 
-	const int VEL_DEADZONE = 0.01;
+	const int VEL_DEADZONE = 0.05;
 
 	class SimplePneumatic
 	{

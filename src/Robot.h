@@ -1,10 +1,22 @@
-// Control mappings
+#pragma once
 
-#define LOGITECH_F310_X // Use Logitech F310 controllers
+#include <cmath>
+#include "WPILib.h"
+#include "MecanumDrive.h"
+#include "XMLInput.h"
+#include "Autonomous.h"
+#include "Vision.h"
+#include "DreadbotDIO.h"
+#include "Hardware.h"
+
+// Controller
+#define LOGITECH_F310_X // Logitech F310 gamepad in X mode
 
 // COM ports
 #define COM_PRIMARY_DRIVER 0
 #define COM_BACKUP_DRIVER 1
+
+#define DRIVER_DEADZONE 0.05
 
 #ifdef LOGITECH_F310_X
 	// Primary driver controls
@@ -21,8 +33,7 @@
 	#define B_AXS_TOTE_IN 2
 	#define B_BTN_ARMS_OUT 3
 	#define B_BTN_ARMS_IN 2
-	//#define B_BTN_GEDDAN 5 // Robot does a short dance to recover from an intake failure
-
+	#define B_BTN_GEDDAN 5 // Robot does a short dance to recover from an intake failure
 	// Shared controls
-	#define BTN_SWITCH_CAM 8 // Camera change is start
+	#define BTN_SWITCH_CAM 8 // Start
 #endif
