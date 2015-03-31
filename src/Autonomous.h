@@ -17,8 +17,8 @@ using namespace Hydra;
 #define PUSH_TIME 0.9
 #define PUSH_SPEED 0.75
 
-#define BACK_AWAY_TIME 1.0f
-#define ROTATE_TIME 2.0f
+#define BACK_AWAY_TIME 4.0f
+#define ROTATE_TIME 2.5f //Also, timing is modified in RotateDrive::update - 1.0 s is subtracted
 #define ESTOP_TIME 6.0f
 #define STACK_CORRECTION_TIME 0.35f
 

@@ -193,29 +193,37 @@ namespace dreadbot
 	void BackAway::enter()
 	{
 		sysLog->log("State: BackAway");
+		drivebase->Drive_v(0, 0, 0);
+		grabTimer.Reset();
+		grabTimer.Start();
+		timerActive = false; //Cheat way of figuring out if the lift is down
 	}
 	int BackAway::update()
 	{
-		//This entire function may not work properly.
+		//While the lift isn't down
 		if (!timerActive)
 		{
-			grabTimer.Reset();
-			grabTimer.Start();
-			timerActive = true;
-			if (lift != nullptr)
-				lift->Set(-1); //Lower the lift
+			lift->Set(-1);
+
+			//On first lift down
+			if (isLiftDown())
+			{
+				timerActive = true;
+				XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+			}
+
+			return HALBot::no_update;
 		}
 
 		if (grabTimer.Get() >= BACK_AWAY_TIME)
 		{
-			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
 			XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 			return HALBot::timerExpired;
 		}
 
-		if (lift != nullptr)
-			lift->Set(-1); //Lower the lift so the tote goes free
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, -1, 0);
 		return HALBot::no_update;
 	}
 
@@ -266,13 +274,13 @@ namespace dreadbot
 	{
 		sysLog->log("State: RotateDrive");
 		drivebase->GoFast(); //Gotta go faaaaaaaasssst.
+		driveTimer.Start();
 	}
 	int RotateDrive::update()
 	{
 		if (driveTimer.Get() >= (ROTATE_TIME - 1.0f))
 		{ //Rotated far enough; break
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
 			if (HALBot::getToteCount() == 3)
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
 			return HALBot::timerExpired;

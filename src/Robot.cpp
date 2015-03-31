@@ -105,12 +105,9 @@ namespace dreadbot
 		void AutonomousPeriodic()
 		{
 			drivebase->SD_RetrievePID();
-			if (DriverStation::GetInstance()->GetMatchTime() <= 15.0f)
-				AutonBot->update();
-			else
-				drivebase->Drive_v(0, 0, 0);
+			AutonBot->update();
 
-			//Vision during auton
+			//Vision during auton, because why not
 			if (viewingBack && Cam2Enabled)
 			{
 				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
