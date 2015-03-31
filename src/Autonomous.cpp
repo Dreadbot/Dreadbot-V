@@ -218,12 +218,12 @@ namespace dreadbot
 		if (grabTimer.Get() >= BACK_AWAY_TIME)
 		{
 			drivebase->Drive_v(0, 0, 0);
-			XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 			return HALBot::timerExpired;
 		}
 
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, -1, 0);
+		XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 		return HALBot::no_update;
 	}
 
