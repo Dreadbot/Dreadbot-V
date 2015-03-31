@@ -1,5 +1,7 @@
 #include "Autonomous.h"
 
+Log* sysLog;
+
 namespace dreadbot
 {
 	//States
@@ -18,6 +20,7 @@ namespace dreadbot
 	{
 		XMLInput::getInstance()->getPGroup("lift")->Set(1); //Raise the lift
 		eStopTimer.Start(); //estop timer - if limit is passed, automatically estops the robot.
+		sysLog->log("State: GettingTote");
 	}
 	int GettingTote::update()
 	{
@@ -54,6 +57,7 @@ namespace dreadbot
 			eStopTimer.Reset();
 			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
 			if (intake != nullptr) intake->Set(0);
+			sysLog->log("E-stopped in GettingTote", Hydra::error);
 			return HALBot::eStop;
 		}
 
@@ -78,6 +82,7 @@ namespace dreadbot
 		timerActive = true;
 		if (HALBot::getToteCount() < 3)
 			XMLInput::getInstance()->getPGroup("lift")->Set(1); //Raise the lift for tote transit - it's more stable that way.
+		sysLog->log("State: DriveToZone");
 	}
 	int DriveToZone::update()
 	{
@@ -115,6 +120,7 @@ namespace dreadbot
 	}
 	void ForkGrab::enter()
 	{
+		sysLog->log("State: ForkGrab");
 	}
 	int ForkGrab::update()
 	{
@@ -150,7 +156,7 @@ namespace dreadbot
 
 	void Stopped::enter()
 	{
-		// do nothing
+		sysLog->log("State: Stopped");
 	}
 	int Stopped::update()
 	{
@@ -167,6 +173,7 @@ namespace dreadbot
 		driveTimer.Reset();
 		driveTimer.Start();
 		timerActive = true;
+		sysLog->log("State: Rotate");
 	}
 	int Rotate::update()
 	{
@@ -185,7 +192,7 @@ namespace dreadbot
 
 	void BackAway::enter()
 	{
-		SmartDashboard::PutString("state", "backAway");
+		sysLog->log("State: BackAway");
 	}
 	int BackAway::update()
 	{
@@ -219,6 +226,7 @@ namespace dreadbot
 	void PushContainer::enter()
 	{
 		pushConstant *= -1; //Not used, but it can change the direction the robot pushes containers
+		sysLog->log("State: PushContainer");
 	}
 	int PushContainer::update()
 	{
@@ -256,7 +264,8 @@ namespace dreadbot
 	}
 	void RotateDrive::enter()
 	{
-		//Does nothing
+		sysLog->log("State: RotateDrive");
+		drivebase->GoFast(); //Gotta go faaaaaaaasssst.
 	}
 	int RotateDrive::update()
 	{
@@ -331,6 +340,7 @@ namespace dreadbot
 	void HALBot::init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift)
 	{
 		int i;
+		sysLog = Logger::getInstance()->getLog("sysLog");
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 		rotate->setHardware(drivebase);
@@ -430,8 +440,7 @@ namespace dreadbot
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
 			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotateDrive};
-			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, backAway};
+			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, backAway};
 			transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
 			defState = pushContainer;

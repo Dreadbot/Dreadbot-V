@@ -7,6 +7,8 @@
 #include "XMLInput.h"
 #include "FSM.h"
 #include "DreadbotDIO.h"
+#include "../lib/Logger.h"
+using namespace Hydra;
 
 //All timings
 #define STRAFE_TO_ZONE_TIME 3.1f
