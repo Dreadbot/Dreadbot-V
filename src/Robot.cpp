@@ -145,7 +145,6 @@ namespace dreadbot
 				viewerCooldown--;
 			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
 			{
-				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
 				if (viewingBack)
