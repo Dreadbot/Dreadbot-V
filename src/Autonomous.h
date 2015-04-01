@@ -9,6 +9,7 @@
 #include "DreadbotDIO.h"
 #include "../lib/Logger.h"
 #include "Hardware.h"
+
 using namespace Hydra;
 
 //All timings
@@ -33,8 +34,6 @@ namespace dreadbot
 		virtual void enter();
 		virtual int update();
 	private:
-		MecanumDrive* drivebase;
-		MotorGrouping* intake;
 		bool timerActive;
 		Timer getTimer;
 		Timer eStopTimer;
