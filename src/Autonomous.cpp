@@ -21,7 +21,7 @@ namespace dreadbot
 		{
 			//Stay still while a tote is loaded
 			timerActive = true; //This doesn't really control a timer anymore...
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive_v(0, -0.1, 0); // Don't stop
 		}
 		if (!isToteInTransit() && timerActive)
 		{
@@ -40,8 +40,8 @@ namespace dreadbot
 		}
 		if (HALBot::getToteCount() != 0) //Open the intake arms for grabbing totes after the first tote is collected
 			intakeArms->Set(-1);
-		drivebase->Drive_v(0, -0.75, 0);
-		intake->Set(-0.6);
+		drivebase->Drive_v(0, -1, 0);
+		intake->Set(-0.5);
 
 		//E-stop in case the tote is missed. Zeros the velocity and intake/transit motors, and puts the robot into Stopped
 		if (eStopTimer.Get() >= ESTOP_TIME)
@@ -49,7 +49,7 @@ namespace dreadbot
 			eStopTimer.Stop();
 			eStopTimer.Reset();
 			drivebase->Drive_v(0, 0, 0);
-			intake->Set(0);
+			//intake->Set(0);
 			sysLog->log("E-stopped in GettingTote", Hydra::error);
 			return HALBot::eStop;
 		}
@@ -120,12 +120,13 @@ namespace dreadbot
 				return HALBot::finish;
 			}
 
-			//Raise the lift and cheat to alight the tote
+			//Raise the lift and cheat to align the tote
 			drivebase->Drive_v(0, 1, 0); // @todo Calibrate
 			Wait(STACK_CORRECTION_TIME);
 			drivebase->Drive_v(0, 0, 0);
 			lift->Set(1);
 			Wait(0.3);
+			drivebase->GoFast();
 			if (HALBot::enoughTotes())
 				return HALBot::finish;
 			else
@@ -202,7 +203,7 @@ namespace dreadbot
 			return HALBot::timerExpired;
 		}
 
-		drivebase->Drive_v(0, -1, 0);
+		drivebase->Drive_v(0, -1, -0.05);
 		liftArms->Set(-1);
 		return HALBot::no_update;
 	}
