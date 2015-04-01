@@ -5,6 +5,8 @@
 #include "Robot.h"
 #include "DreadbotDIO.h"
 #include "../lib/Logger.h"
+#include "Hardware.h"
+
 using namespace Hydra;
 
 namespace dreadbot 
@@ -20,12 +22,6 @@ namespace dreadbot
 		Logger* logger;
 		Log* sysLog;
 		XMLInput* Input;
-		MecanumDrive *drivebase;
-
-		MotorGrouping* intake;
-		PneumaticGrouping* lift;
-		PneumaticGrouping* liftArms;
-		PneumaticGrouping* intakeArms;
 
 		HALBot* AutonBot;
 
@@ -50,16 +46,23 @@ namespace dreadbot
 
 			logger = Logger::getInstance();
 			sysLog = logger->getLog("sysLog");
+			
 			drivebase = new MecanumDrive(1, 2, 3, 4);
+			
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
+			Input->loadXMLConfig();
+			
+			intake = Input->getMGroup("intake");
+			lift = Input->getPGroup("lift");
+			liftArms = Input->getPGroup("liftArms");
+			intakeArms = Input->getPGroup("intakeArms");
+			
+			gamepad = Input->getController(COM_PRIMARY_DRIVER);
+			gamepad2 = Input->getController(COM_BACKUP_DRIVER);
+			
 			AutonBot = nullptr;
-
-			intake = nullptr;
-			lift = nullptr;
-			liftArms = nullptr;
-			intakeArms = nullptr;
-
+			
 			//Vision stuff
 			frame1 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 			frame2 = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
@@ -74,15 +77,6 @@ namespace dreadbot
 		{
 			compressor->Start();
 			drivebase->Engage();
-
-			Input->loadXMLConfig();
-			gamepad = Input->getController(COM_PRIMARY_DRIVER);
-			gamepad2 = Input->getController(COM_BACKUP_DRIVER);
-
-			intake = Input->getMGroup("intake");
-			lift = Input->getPGroup("lift");
-			liftArms = Input->getPGroup("liftArms");
-			intakeArms = Input->getPGroup("intakeArms");
 		}
 
 		void AutonomousInit()
