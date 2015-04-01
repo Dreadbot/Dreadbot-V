@@ -234,7 +234,7 @@ namespace dreadbot
 				if (imaqError != IMAQdxErrorSuccess)
 				{
 					DriverStation::ReportError(
-						"cam0 IMAQdxCloseCamera error: "
+						"cam2 IMAQdxCloseCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
 					return false;
 				}
