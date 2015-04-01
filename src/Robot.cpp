@@ -94,7 +94,13 @@ namespace dreadbot
 			AutonBot->setMode(AUTON_MODE_STACK3);
 			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
-			drivebase->GoSlow();
+			drivebase->GoSlow
+			if (viewingBack) {
+				StopCamera(2);
+				Cam1Enabled = StartCamera(1);
+				Cam2Enabled = false;
+				viewingBack = false;
+			}
 			if (AutonBot->getMode() == AUTON_MODE_STACK3)
 			{
 				lift->Set(1);
@@ -104,15 +110,9 @@ namespace dreadbot
 
 		void AutonomousPeriodic()
 		{
-			drivebase->SD_RetrievePID();
 			AutonBot->update();
 
 			//Vision during auton, because why not
-			if (viewingBack && Cam2Enabled)
-			{
-				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame2);
-			}
 			if (!viewingBack && Cam1Enabled)
 			{
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
@@ -133,7 +133,7 @@ namespace dreadbot
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(3);
-			intake->Set(((float) (intakeInput > 0.15) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
+			intake->Set(((float) (intakeInput > 0.1) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
 
 			if (gamepad->GetRawButton(1)) {
@@ -141,6 +141,7 @@ namespace dreadbot
 			} else {
 				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
 			}
+			
 			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
 
 			liftArms->Set(-(float) gamepad->GetRawButton(5));
@@ -279,7 +280,7 @@ namespace dreadbot
 				if (imaqError != IMAQdxErrorSuccess)
 				{
 					DriverStation::ReportError(
-						"cam0 IMAQdxOpenCamera error: "
+						"cam2 IMAQdxOpenCamera error: "
 						+ std::to_string((long) imaqError) + "\n");
 					return false;
 				}
@@ -287,7 +288,7 @@ namespace dreadbot
 				if (imaqError != IMAQdxErrorSuccess)
 				{
 					DriverStation::ReportError(
-						"cam0 IMAQdxConfigureGrab error: "
+						"cam2 IMAQdxConfigureGrab error: "
 						+ std::to_string((long) imaqError) + "\n");
 					return false;
 				}
