@@ -7,7 +7,7 @@
 #define lift		Hardware::lift
 #define liftArms	Hardware::fork
 #define intake		Hardware::intake
-#define intakeArm	Hardware::intakeArms
+#define intakeArms	Hardware::intakeArms
 
 namespace dreadbot {
 	struct Hardware {
