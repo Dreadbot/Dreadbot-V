@@ -7,18 +7,11 @@ namespace dreadbot
 	//States
 	GettingTote::GettingTote()
 	{
-		drivebase = nullptr;
-		intake = nullptr;
 		timerActive = false;
-	}
-	void GettingTote::setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
-	{
-		drivebase = newDrivebase;
-		intake = newIntake;
 	}
 	void GettingTote::enter()
 	{
-		XMLInput::getInstance()->getPGroup("lift")->Set(1); //Raise the lift
+		lift->Set(1); //Raise the lift
 		eStopTimer.Start(); //estop timer - if limit is passed, automatically estops the robot.
 		sysLog->log("State: GettingTote");
 	}
@@ -46,7 +39,7 @@ namespace dreadbot
 			return HALBot::no_update;
 		}
 		if (HALBot::getToteCount() != 0) //Open the intake arms for grabbing totes after the first tote is collected
-			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
+			intakeArms->Set(-1);
 		drivebase->Drive_v(0, -0.75, 0);
 		intake->Set(-0.6);
 
@@ -55,8 +48,8 @@ namespace dreadbot
 		{
 			eStopTimer.Stop();
 			eStopTimer.Reset();
-			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
-			if (intake != nullptr) intake->Set(0);
+			drivebase->Drive_v(0, 0, 0);
+			intake->Set(0);
 			sysLog->log("E-stopped in GettingTote", Hydra::error);
 			return HALBot::eStop;
 		}
@@ -66,14 +59,9 @@ namespace dreadbot
 
 	DriveToZone::DriveToZone()
 	{
-		drivebase = nullptr;
 		timerActive = false;
 		strafe = false;
 		dir = 1; //Multiplier that changes the direction the robot moves.
-	}
-	void DriveToZone::setHardware(MecanumDrive* newDrivebase)
-	{
-		drivebase = newDrivebase;
 	}
 	void DriveToZone::enter()
 	{
@@ -81,7 +69,7 @@ namespace dreadbot
 		driveTimer.Start();
 		timerActive = true;
 		if (HALBot::getToteCount() < 3)
-			XMLInput::getInstance()->getPGroup("lift")->Set(1); //Raise the lift for tote transit - it's more stable that way.
+			lift->Set(1); //Raise the lift for tote transit - it's more stable that way.
 		sysLog->log("State: DriveToZone");
 	}
 	int DriveToZone::update()
@@ -101,13 +89,10 @@ namespace dreadbot
 		}
 
 		//Apply actual velocity changes
-		if (drivebase != nullptr)
-		{
-			if (strafe)
-				drivebase->Drive_v(1, 0, 0); //Right
-			else
-				drivebase->Drive_v(0, 0.8 * dir, 0); // Do a short dance
-		}
+		if (strafe)
+			drivebase->Drive_v(1, 0, 0); //Right
+		else
+			drivebase->Drive_v(0, 0.8 * dir, 0); // Do a short dance
 
 		return HALBot::no_update;
 	}
@@ -115,8 +100,6 @@ namespace dreadbot
 	ForkGrab::ForkGrab()
 	{
 		timerActive = false;
-		drivebase = nullptr;
-		lift = nullptr;
 	}
 	void ForkGrab::enter()
 	{
@@ -149,8 +132,7 @@ namespace dreadbot
 				return HALBot::nextTote;
 		}
 		drivebase->Drive_v(0, 0, 0);
-		if (lift != nullptr)
-			lift->Set(-1); //Lower the lift for grabbing
+		lift->Set(-1); //Lower the lift for grabbing
 		return HALBot::no_update;
 	}
 
@@ -182,11 +164,10 @@ namespace dreadbot
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
 			if (HALBot::getToteCount() == 3)
-				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
+				lift->Set(-1); //Lower lift
 			return HALBot::timerExpired;
 		}
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
+		drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
 		return HALBot::no_update;
 	}
 
@@ -209,7 +190,7 @@ namespace dreadbot
 			if (isLiftDown())
 			{
 				timerActive = true;
-				XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+				liftArms->Set(-1);
 			}
 
 			return HALBot::no_update;
@@ -221,9 +202,8 @@ namespace dreadbot
 			return HALBot::timerExpired;
 		}
 
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, -1, 0);
-		XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+		drivebase->Drive_v(0, -1, 0);
+		liftArms->Set(-1);
 		return HALBot::no_update;
 	}
 
@@ -241,7 +221,7 @@ namespace dreadbot
 		float pushTime = PUSH_TIME;
 		if (enableScaling)
 			pushTime += ((float)HALBot::getToteCount() - 1) / 3; //Scaling for three-tote autonomous, since the second container is farther away than the first
-		XMLInput::getInstance()->getPGroup("intakeArms")->Set(1); //Intake arms in
+		intakeArms->Set(1); //Intake arms in
 		if (!timerActive)
 		{
 			driveTimer.Reset();
@@ -256,12 +236,9 @@ namespace dreadbot
 			return HALBot::timerExpired;
 		}
 
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, -PUSH_SPEED, 0); //Straight forward
-		if (pusher1 != nullptr)
-			pusher1->Set(1); //Push the container?
-		if (pusher2 != nullptr)
-			pusher2->Set(1);
+		drivebase->Drive_v(0, -PUSH_SPEED, 0); //Straight forward
+		pusher1->Set(1); //Push the container
+		pusher2->Set(1);
 		return HALBot::no_update;
 	}
 
@@ -282,11 +259,10 @@ namespace dreadbot
 		{ //Rotated far enough; break
 			timerActive = false;
 			if (HALBot::getToteCount() == 3)
-				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
+				lift->Set(-1); //Lower lift
 			return HALBot::timerExpired;
 		}
-		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 1.0 * dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
+		drivebase->Drive_v(0, dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
 		return HALBot::no_update;
 	}
 
@@ -345,25 +321,13 @@ namespace dreadbot
 		delete fsm;
 		toteCount = 0;
 	}
-	void HALBot::init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift)
+	void HALBot::init()
 	{
 		int i;
 		sysLog = Logger::getInstance()->getLog("sysLog");
-		gettingTote->setHardware(drivebase, intake);
-		driveToZone->setHardware(drivebase);
-		rotate->setHardware(drivebase);
-		rotateDrive->setHardware(drivebase);
-		rotate2->setHardware(drivebase);
-		pushContainer->setHardware(drivebase);
 		pushContainer->pusher1 = XMLInput::getInstance()->getPWMMotor(0);
 		pushContainer->pusher2 = XMLInput::getInstance()->getPWMMotor(1);
 		pushContainer->pushConstant = 1;
-		stopped->lift = lift; //Don't know if I like these...
-		forkGrab->lift = lift;
-		forkGrab->drivebase = drivebase;
-		backAway->lift = lift;
-		backAway->drivebase = drivebase;
-
 
 		//Apply state tables and set the starting state
 		FSMState* defState = nullptr;
