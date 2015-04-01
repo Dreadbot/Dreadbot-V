@@ -94,7 +94,7 @@ namespace dreadbot
 			AutonBot->setMode(AUTON_MODE_STACK3);
 			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
-			drivebase->GoSlow
+			drivebase->GoSlow();
 			if (viewingBack) {
 				StopCamera(2);
 				Cam1Enabled = StartCamera(1);
