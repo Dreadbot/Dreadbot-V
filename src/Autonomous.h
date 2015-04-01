@@ -8,6 +8,7 @@
 #include "FSM.h"
 #include "DreadbotDIO.h"
 #include "../lib/Logger.h"
+#include "Hardware.h"
 using namespace Hydra;
 
 //All timings
@@ -31,7 +32,6 @@ namespace dreadbot
 		GettingTote();
 		virtual void enter();
 		virtual int update();
-		void setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
 	private:
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
@@ -45,12 +45,10 @@ namespace dreadbot
 		DriveToZone();
 		virtual void enter();
 		virtual int update();
-		void setHardware(MecanumDrive* newDrivebase);
 		Timer driveTimer;
 		int dir;
 		bool strafe;
 	protected:
-		MecanumDrive* drivebase;
 		bool timerActive;
 	};
 	class ForkGrab : public FSMState
@@ -60,8 +58,6 @@ namespace dreadbot
 		virtual void enter();
 		virtual int update();
 		Timer grabTimer;
-		PneumaticGrouping* lift;
-		MecanumDrive* drivebase;
 	protected:
 		bool timerActive;
 	};
@@ -79,7 +75,6 @@ namespace dreadbot
 	public:
 		virtual void enter();
 		virtual int update();
-		PneumaticGrouping* lift;
 	};
 	class PushContainer : public DriveToZone
 	{
@@ -97,7 +92,6 @@ namespace dreadbot
 	public:
 		virtual void enter();
 		virtual int update();
-		MecanumDrive* drivebase;
 	};
 	class RotateDrive : public Rotate
 	{
@@ -119,7 +113,7 @@ namespace dreadbot
 		static int getToteCount();
 		void setMode(AutonMode newMode);
 		AutonMode getMode();
-		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift);
+		void init();
 		void update();
 	private:
 		static int toteCount;
