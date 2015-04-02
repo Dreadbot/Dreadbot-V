@@ -48,7 +48,9 @@ namespace dreadbot
 			eStopTimer.Stop();
 			eStopTimer.Reset();
 			drivebase->Drive_v(0, 0, 0);
-			//intake->Set(0);
+			intake->Set(0);
+			intakeArms->Set(0);
+			lift->Set(1);
 			sysLog->log("E-stopped in GettingTote", Hydra::error);
 			return HALBot::eStop;
 		}
@@ -64,6 +66,7 @@ namespace dreadbot
 	}
 	void DriveToZone::enter()
 	{
+		drivebase->GoSlow();
 		driveTimer.Reset();
 		driveTimer.Start();
 		timerActive = true;
@@ -119,11 +122,11 @@ namespace dreadbot
 			}
 
 			//Raise the lift and cheat to align the tote
-			drivebase->Drive_v(0, 1, 0); // @todo Calibrate
+			drivebase->Drive_v(0, 1, 0);
 			Wait(STACK_CORRECTION_TIME);
 			drivebase->Drive_v(0, 0, 0);
 			lift->Set(1);
-			Wait(0.3);
+			Wait(0.5);
 			if (HALBot::enoughTotes())
 				return HALBot::finish;
 			else
@@ -196,11 +199,12 @@ namespace dreadbot
 
 		if (grabTimer.Get() >= BACK_AWAY_TIME)
 		{
-			drivebase->Drive_v(0, 0, 0);
+			drivebase->Drive_v(0, 0, 0); // Three tote auton ends here.
+			sysLog->log("Three tote autonomous complete");
 			return HALBot::timerExpired;
 		}
 
-		drivebase->Drive_v(0, -1, -0.05);
+		drivebase->Drive_v(0, -1, -0.06); // Drive forward quickly while rotating to clear the stack
 		liftArms->Set(-1);
 		return HALBot::no_update;
 	}
@@ -256,9 +260,18 @@ namespace dreadbot
 		if (driveTimer.Get() >= (ROTATE_TIME - 1.0f))
 		{ //Rotated far enough; break
 			timerActive = false;
+			// Lower the lift in 3TA mode
 			if (HALBot::getToteCount() == 3)
-				lift->Set(-1); //Lower lift
+				lift->Set(-1);
 			return HALBot::timerExpired;
+		} else if (driveTimer.Get() >= (ROTATE_TIME - 1.3f)) {
+			// Begin lowering ahead of time
+			if (HALBot::getToteCount() == 3)
+				lift->Set(-1);
+		} else {
+			// Raise the lift while driving to stabilize the stack
+			if (HALBot::getToteCount() == 3)
+				lift->Set(1);
 		}
 		drivebase->Drive_v(0, dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
 		return HALBot::no_update;
@@ -339,9 +352,9 @@ namespace dreadbot
 		{
 			driveToZone->strafe = false;
 			driveToZone->dir = -1;
-			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate};
-			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
+			transitionTable[i++] = {driveToZone, 	HALBot::timerExpired, 	nullptr, 	rotate};
+			transitionTable[i++] = {rotate, 		HALBot::timerExpired, 	nullptr, 	stopped};
+			transitionTable[i++] = {stopped, 		HALBot::no_update, 		nullptr, 	stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = driveToZone;
 		}
@@ -349,12 +362,12 @@ namespace dreadbot
 		{
 			rotate->rotateConstant = 1;
 			driveToZone->strafe = false;
-			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
-			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {gettingTote, 	HALBot::timerExpired, 	nullptr,	forkGrab};
+			transitionTable[i++] = {forkGrab, 	HALBot::finish, 	nullptr, 	rotate};
+			transitionTable[i++] = {rotate, 	HALBot::timerExpired, 	nullptr, 	driveToZone};
+			transitionTable[i++] = {driveToZone, 	HALBot::timerExpired, 	nullptr, 	rotate2};
+			transitionTable[i++] = {rotate2, 	HALBot::timerExpired, 	nullptr, 	stopped};
+			transitionTable[i++] = {gettingTote, 	HALBot::eStop, 		nullptr, 	stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
@@ -362,8 +375,8 @@ namespace dreadbot
 		{
 			driveToZone->strafe = true;
 			rotate->rotateConstant = -1;
-			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[i++] = {rotate, 	HALBot::timerExpired, 	nullptr, 	driveToZone};
+			transitionTable[i++] = {driveToZone, 	HALBot::timerExpired, 	nullptr, 	stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 		}
 		else if (mode == AUTON_MODE_BOTH)
@@ -379,17 +392,18 @@ namespace dreadbot
 			pushContainer->pushConstant = -1;
 			driveToZone->strafe = false;
 
-			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
-			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
-			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
-			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, stopped};
-			//transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {gettingTote, 	HALBot::timerExpired,	nullptr,	forkGrab};
+			transitionTable[i++] = {forkGrab, 	HALBot::nextTote, 	nullptr, 	pushContainer};
+			transitionTable[i++] = {forkGrab, 	HALBot::finish, 	nullptr, 	rotate};
+			transitionTable[i++] = {pushContainer, 	HALBot::timerExpired, 	nullptr, 	gettingTote};
+			transitionTable[i++] = {rotate,	 	HALBot::timerExpired, 	nullptr, 	driveToZone};
+			transitionTable[i++] = {driveToZone, 	HALBot::timerExpired, 	nullptr, 	rotate2};
+			transitionTable[i++] = {rotate2, 	HALBot::timerExpired, 	nullptr, 	stopped};
+			//transitionTable[i++] = {backAway, 	HALBot::timerExpired, 	nullptr, 	stopped};
+			transitionTable[i++] = {gettingTote, 	HALBot::eStop, 		nullptr, 	stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
+			sysLog->log("Begin STACK2");
 		}
 		else if (mode == AUTON_MODE_STACK3)
 		{
@@ -399,16 +413,31 @@ namespace dreadbot
 			driveToZone->strafe = false;
 			incrTote(); //We already have a tote
 
-			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
-			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
-			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotateDrive};
-			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, backAway};
-			transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
-			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {pushContainer, 	HALBot::timerExpired, 	nullptr,	gettingTote};
+			transitionTable[i++] = {gettingTote, 	HALBot::timerExpired, 	nullptr, 	forkGrab};
+			transitionTable[i++] = {forkGrab, 	HALBot::nextTote, 	nullptr, 	pushContainer};
+			transitionTable[i++] = {forkGrab, 	HALBot::finish, 	nullptr, 	rotateDrive};
+			transitionTable[i++] = {rotateDrive, 	HALBot::timerExpired, 	nullptr, 	backAway};
+			transitionTable[i++] = {backAway, 	HALBot::timerExpired, 	nullptr, 	stopped};
+			transitionTable[i++] = {gettingTote, 	HALBot::eStop, 		nullptr, 	stopped};
 			defState = pushContainer;
+			sysLog->log("Begin STACK3");
 		}
-
+		/*else if (mode == AUTON_MODE_STACK2_2) {
+			rotateDrive->rotateConstant = -1;
+			pushContainer->pushConstant = -1;
+			pushContainer->enableScaling = true;
+			driveToZone->strafe = false;
+			incrTote(); //We already have a tote
+			incrTote(); // Simulate three-tote auton
+			transitionTable[i++] = {pushContainer, 	HALBot::timerExpired, 	nullptr,	gettingTote};
+			transitionTable[i++] = {gettingTote, 	HALBot::timerExpired, 	nullptr, 	forkGrab};
+			transitionTable[i++] = {forkGrab, 	HALBot::finish, 	nullptr, 	rotateDrive};
+			transitionTable[i++] = {rotateDrive, 	HALBot::timerExpired, 	nullptr, 	backAway};
+			transitionTable[i++] = {backAway, 	HALBot::timerExpired, 	nullptr, 	stopped};
+			transitionTable[i++] = {gettingTote, 	HALBot::eStop, 		nullptr, 	stopped};
+			defState = pushContainer;
+		}*/
 		fsm->init(transitionTable, defState);
 	}
 	void HALBot::update()
