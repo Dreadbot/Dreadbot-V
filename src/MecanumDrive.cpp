@@ -26,13 +26,13 @@ void MecanumDrive::Set(int motorId_lf, int motorId_rf, int motorId_lr, int motor
 		motors[i]->SetControlMode(CANSpeedController::ControlMode::kSpeed);
 		motors[i]->SetPosition(0.0);
 		motors[i]->SelectProfileSlot(0);
-		motors[i]->SetPID(0.2, 0, 0, 0);
-		motors[i]->SetVoltageRampRate(0.25f); //Ramp up for drive motors
+		motors[i]->SetPID(0.5, 0, 0, 0);
+		motors[i]->SetVoltageRampRate(0.5f); //Ramp up for drive motors
 	}
 
-	x_ctrl = new SimplePID(0.2, 0, 0, false);
-	y_ctrl = new SimplePID(0.2, 0, 0, false);
-	r_ctrl = new SimplePID(0.2, 0, 0, true);
+	//x_ctrl = new SimplePID(0.2, 0, 0, false);
+	//y_ctrl = new SimplePID(0.2, 0, 0, false);
+	//r_ctrl = new SimplePID(0.2, 0, 0, true);
 }
 
 // Constructor
@@ -44,7 +44,20 @@ MecanumDrive::MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int m
 MecanumDrive::~MecanumDrive() {
 	Disengage();
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+
 		delete motors[i];
+	}
+}
+
+void MecanumDrive::GoFast() {
+	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+		motors[i]->SetPID(1, 0, 0);
+	}
+}
+
+void MecanumDrive::GoSlow() {
+	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+		motors[i]->SetPID(0.5, 0, 0);
 	}
 }
 
@@ -60,17 +73,7 @@ void MecanumDrive::Drive_p(double x, double y, double rotation) {
 // Drive with wheel velocity
 void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	Vector2<double> vec_out(y, x);
-	double rot_out = -rotation;
-
-	if (mode == drivemode::relative) {
-		/*
-		#ifdef SQUARE_INPUTS
-			vec_out.x = vec_out.x*std::abs(vec_out.x);
-			vec_out.y = vec_out.y*std::abs(vec_out.y);
-			rot_out = rot_out*std::abs(rot_out);
-		#endif
-		*/
-	}
+	double rot_out = -rotation - (sqrt(x*x + y*y) * 0.01f);
 
 	double wspeeds[4];
 	wspeeds[m_leftFront] = vec_out.x + vec_out.y + rot_out;
@@ -78,7 +81,11 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	wspeeds[m_leftRear] = -vec_out.x + vec_out.y + rot_out;
 	wspeeds[m_rightRear] = vec_out.x + vec_out.y - rot_out;
 
-	double maxMagnitude = *std::max_element(wspeeds, wspeeds + MOTOR_COUNT);
+	float absSpeeds[4];
+	for (int i = 0; i < 4; ++i)
+		absSpeeds[i] = fabs(wspeeds[i]);
+
+	double maxMagnitude = *std::max_element(absSpeeds, absSpeeds + MOTOR_COUNT);
 	if (maxMagnitude > 1.0) {
 		for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 			wspeeds[i] /= maxMagnitude;
@@ -137,6 +144,7 @@ void MecanumDrive::SD_OutputDiagnostics() {
 //		SmartDashboard::PutNumber(motorNames[i] + ".encoder v", motors[i]->GetEncVel());
 //		SmartDashboard::PutNumber(motorNames[i] + ".error", motors[i]->GetClosedLoopError());
 		SmartDashboard::PutNumber(motorNames[i] + ".voltage", motors[i]->GetOutputVoltage());
+		SmartDashboard::PutNumber(motorNames[i] + ".amperage", motors[i]->GetOutputCurrent());
 	}
 
 }

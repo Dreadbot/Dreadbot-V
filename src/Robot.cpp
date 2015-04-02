@@ -1,25 +1,24 @@
 #include <WPILib.h>
-#include "SmartDashboard/SmartDashboard.h"
-#include "DigitalInput.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "Autonomous.h"
-//#include "Robot.h"
+#include "Robot.h"
+#include "DreadbotDIO.h"
+#include "../lib/Logger.h"
+using namespace Hydra;
 
-namespace dreadbot
+namespace dreadbot 
 {
-	class Robot: public IterativeRobot
+	class Robot: public IterativeRobot 
 	{
-	private:
 		DriverStation *ds;
 		Joystick* gamepad;
 		Joystick* gamepad2;
 		PowerDistributionPanel *pdp;
 		Compressor* compressor;
 
-		//Ultrasonic *frontUltra;
-		//Ultrasonic *rearUltra;
-
+		Logger* logger;
+		Log* sysLog;
 		XMLInput* Input;
 		MecanumDrive *drivebase;
 
@@ -41,27 +40,16 @@ namespace dreadbot
 		bool viewingBack;
 		int viewerCooldown;
 
-		DigitalInput* lift_switch; // 0
-		DigitalInput* transit_switch_l; // 1
-		DigitalInput* transit_switch_r; // 2
-
 	public:
 		void RobotInit()
 		{
 			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
-		//	lw = LiveWindow::GetInstance();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
 
-			lift_switch = new DigitalInput(0); // 0
-			transit_switch_l = new DigitalInput(1); // 1
-			transit_switch_r = new DigitalInput(2); // 2
-
-
-			//frontUltra = new Ultrasonic(6, 7); //Dummy values for the ultrasonics
-			//rearUltra = new Ultrasonic(4, 5);
-
+			logger = Logger::getInstance();
+			sysLog = logger->getLog("sysLog");
 			drivebase = new MecanumDrive(1, 2, 3, 4);
 			Input = XMLInput::getInstance();
 			Input->setDrivebase(drivebase);
@@ -87,13 +75,9 @@ namespace dreadbot
 			compressor->Start();
 			drivebase->Engage();
 
-			//frontUltra->SetAutomaticMode(true);
-			//rearUltra->SetAutomaticMode(true);
-
 			Input->loadXMLConfig();
-			gamepad = Input->getController(0);
-			gamepad2 = Input->getController(1);
-			drivebase->Engage();
+			gamepad = Input->getController(COM_PRIMARY_DRIVER);
+			gamepad2 = Input->getController(COM_BACKUP_DRIVER);
 
 			intake = Input->getMGroup("intake");
 			lift = Input->getPGroup("lift");
@@ -103,25 +87,31 @@ namespace dreadbot
 
 		void AutonomousInit()
 		{
+			sysLog->log("Initializing Autonomous");
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
-			AutonBot->setMode(GetAutonMode());
+			AutonBot->setMode(AUTON_MODE_STACK3);
 			AutonBot->init(drivebase, intake, lift);
+			drivebase->GoSlow();
+			if (viewingBack) {
+				StopCamera(2);
+				Cam1Enabled = StartCamera(1);
+				Cam2Enabled = false;
+				viewingBack = false;
+			}
+			if (AutonBot->getMode() == AUTON_MODE_STACK3 || AutonBot->getMode() == AUTON_MODE_STACK2)
+			{
+				lift->Set(1);
+				Wait(0.2);
+			}
 		}
 
 		void AutonomousPeriodic()
 		{
-			drivebase->SD_RetrievePID();
 			AutonBot->update();
-			drivebase->SD_OutputDiagnostics();
 
-			//Vision during auton
-			if (viewingBack && Cam2Enabled)
-			{
-				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame2);
-			}
+			//Vision during auton, because why not
 			if (!viewingBack && Cam1Enabled)
 			{
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
@@ -131,44 +121,34 @@ namespace dreadbot
 
 		void TeleopInit()
 		{
+			sysLog->log("Initializing Teleop");
 			GlobalInit();
+			drivebase->GoSlow();
 		}
 
 		void TeleopPeriodic()
 		{
-			drivebase->SD_RetrievePID();
 			Input->updateDrivebase();
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(3);
-			float intakeInput_duncan = gamepad2->GetRawAxis(3);
-			//float intakeInput_duncan = 0.0f;
-			intake->Set(((float) (intakeInput > 0.15) * -0.8) + (float) (intakeInput_duncan > 0.15));
+			intake->Set(((float) (intakeInput > 0.1) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
-			float liftInput = gamepad->GetRawAxis(2);
-			float liftInput_duncan = gamepad2->GetRawAxis(2);
-			//float liftInput_duncan = 0.0f;
-			if (liftInput_duncan > 0.15) {
-				// Lower the lift arms until they set the limit switch to false
-				if (lift_switch->Get()) {
-					lift->Set(-1.0f);
-				} else {
-					lift->Set(0.0f);
-				}
+
+			if (gamepad->GetRawButton(1)) {
+				lift->Set(0.0f);
 			} else {
-				lift->Set(liftInput > 0.15 ? -1.0f : 1.0f);
+				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
 			}
+			
+			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
 
-			float armInput = (float) gamepad->GetRawButton(6);
-			intakeArms->Set(-armInput + (float) gamepad2->GetRawButton(2));
-
-			float liftArmInput = (float) gamepad->GetRawButton(5);
-			liftArms->Set(-liftArmInput);
+			liftArms->Set(-(float) gamepad->GetRawButton(5));
 
 			//Vision switch control
 			if (viewerCooldown > 0)
 				viewerCooldown--;
-			if (gamepad->GetRawButton(8) && viewerCooldown == 0) //Start button
+			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
 			{
 				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;
@@ -197,25 +177,22 @@ namespace dreadbot
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
 			}
-			/* Lift down: lt axis 2 > 0.8
-			 * Actuate fork: lb button 5
-			 * Intake arms: rt axis 3 > 0.5
-			 * Intake arms pneumatics: rb button 6
-			 */
 		}
 
 		void TestInit()
 		{
+			sysLog->log("Initializing Test mode.");
 			GlobalInit();
 		}
 
 		void TestPeriodic()
 		{
-			//lw->Run();
 		}
 
 		void DisabledInit()
 		{
+			sysLog->log("Disabled robot.");
+			logger->flushLogBuffers();
 			compressor->Stop();
 			drivebase->Disengage();
 
@@ -224,9 +201,6 @@ namespace dreadbot
 				delete AutonBot;
 				AutonBot = nullptr;
 			}
-
-			//frontUltra->SetAutomaticMode(false);
-			//rearUltra->SetAutomaticMode(false);
 		}
 
 		void DisabledPeriodic()
@@ -282,17 +256,17 @@ namespace dreadbot
 					IMAQdxCameraControlModeController, &sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam1 IMAQdxOpenCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam1 IMAQdxOpenCamera error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxConfigureGrab error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam0 IMAQdxConfigureGrab error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				// acquire images
@@ -304,17 +278,17 @@ namespace dreadbot
 					IMAQdxCameraControlModeController, &sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxOpenCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam2 IMAQdxOpenCamera - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxConfigureGrab error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam2 IMAQdxConfigureGrab - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				// acquire images
@@ -326,4 +300,3 @@ namespace dreadbot
 }
 
 START_ROBOT_CLASS(dreadbot::Robot);
-

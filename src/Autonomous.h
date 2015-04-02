@@ -1,24 +1,27 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 #include "WPILib.h"
 #include "Timer.h"
 #include "MecanumDrive.h"
 #include "XMLInput.h"
 #include "FSM.h"
 #include "DreadbotDIO.h"
-
+#include "../lib/Logger.h"
+using namespace Hydra;
 
 //All timings
-#define TOTE_GRAB_DELAY 1.0
-#define DRIVE_TO_ZONE_TIME 2.75
-#define PUSH_TIME 1.5
-#define BACK_AWAY_TIME 1
-#define ROTATE_TIME 0.66
-#define LOWER_STACK_TIME 2
+#define STRAFE_TO_ZONE_TIME 3.1f
+#define DRIVE_TO_ZONE_TIME 2.0f
 
-#define DIST_FROM_WALL 2000 //Millimeters!
-#define ULTRASONIC_SEPARATION 750 //Also millimeters!
+#define PUSH_TIME 0.9
+#define PUSH_SPEED 0.75
+
+#define BACK_AWAY_TIME 0.75f
+#define ROTATE_TIME 2.5f //Also, timing is modified in RotateDrive::update - 1.0 s is subtracted
+#define ROTATE_DRIVE_STRAIGHT 1.0f //How long to drive straight in RotateDrive AFTER rotating
+#define ESTOP_TIME 5.0f
+#define STACK_CORRECTION_TIME 0.35f
 
 namespace dreadbot 
 {
@@ -27,21 +30,26 @@ namespace dreadbot
 	{
 	public:
 		GettingTote();
-		int update();
+		virtual void enter();
+		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake);
-		Timer getTimer;
 	private:
 		MecanumDrive* drivebase;
 		MotorGrouping* intake;
 		bool timerActive;
+		Timer getTimer;
+		Timer eStopTimer;
 	};
 	class DriveToZone : public FSMState
 	{
 	public:
 		DriveToZone();
+		virtual void enter();
 		virtual int update();
 		void setHardware(MecanumDrive* newDrivebase);
 		Timer driveTimer;
+		int dir;
+		bool strafe;
 	protected:
 		MecanumDrive* drivebase;
 		bool timerActive;
@@ -50,47 +58,68 @@ namespace dreadbot
 	{
 	public:
 		ForkGrab();
+		virtual void enter();
 		virtual int update();
 		Timer grabTimer;
 		PneumaticGrouping* lift;
+		MecanumDrive* drivebase;
 	protected:
 		bool timerActive;
 	};
 	class Rotate : public DriveToZone
 	{
 	public:
-		int update();
+		Rotate();
+		virtual void enter();
+		virtual int update();
+
+		int rotateConstant;
 	};
 	class Stopped : public FSMState
 	{
 	public:
-		int update();
+		virtual void enter();
+		virtual int update();
 		PneumaticGrouping* lift;
 	};
 	class PushContainer : public DriveToZone
 	{
 	public:
-		int update();
+		PushContainer();
+		virtual void enter();
+		virtual int update();
 		Talon* pusher1;
 		Talon* pusher2;
+		int pushConstant;
+		bool enableScaling;
 	};
 	class BackAway : public ForkGrab
 	{
 	public:
-		int update();
+		virtual void enter();
+		virtual int update();
 		MecanumDrive* drivebase;
+	};
+	class RotateDrive : public Rotate
+	{
+	public:
+		RotateDrive();
+		int update();
+		void enter();
 	};
 
 	class HALBot
 	{
 	public:
-		enum fsmInputs {no_update, finish, timerExpired, nextTote, sensorHit};
+		enum fsmInputs {no_update, finish, timerExpired, nextTote, eStop};
 
 		HALBot();
 		~HALBot();
 		static bool enoughTotes();
 		static void incrTote();
+		static int getToteCount();
 		void setMode(AutonMode newMode);
+		AutonMode getMode();
 		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift);
 		void update();
 	private:
@@ -107,7 +136,6 @@ namespace dreadbot
 		Stopped* stopped;
 		PushContainer* pushContainer;
 		BackAway* backAway;
+		RotateDrive* rotateDrive;
 	};
-
-	float getParallelTurnDir(Ultrasonic* frontUltra, Ultrasonic* rearUltra);
 }

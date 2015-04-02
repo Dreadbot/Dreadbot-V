@@ -24,6 +24,7 @@
 **      Grab all 3 totes, stack them, drive to auton zone.
 **
 *******************************************************************************/
+#pragma once
 
 namespace dreadbot
 {
@@ -38,6 +39,8 @@ namespace dreadbot
 	};
 	enum AutonMode GetAutonMode(void);
 	bool isToteInTransit(void);
-	bool isAtStepHeight(void);
+	bool isLiftDown(void);
+	bool isPracticeBot(void);
+	bool isCompetitionBot(void);
 };
 

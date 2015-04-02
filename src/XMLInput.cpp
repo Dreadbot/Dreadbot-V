@@ -139,11 +139,24 @@ namespace dreadbot
 			if (fabs(sPoints[i]) < deadzones[i])
 				sPoints[i] = 0;
 
+			//Sensitivity
+			bool negative = false;
+			if (sPoints[i] < 0)
+				negative = true;
+
+			//y = 1.75(x - 0.4)^3 + 0.6x^2 + 0.12
+			sPoints[i] = (1.75f * pow((std::fabs(sPoints[i]) - 0.4f), 3.0f)) + (0.6f * pow(std::fabs(sPoints[i]), 2.0f)) + 0.12;
+			if (negative)
+				sPoints[i] *= -1.0f;
+
 			//Inverts
 			if (inverts[i])
 				sPoints[i] *= -1;
 		}
 		
+		// Desensitize rotation even more
+		sPoints[r] /= 1.5;
+
 		SmartDashboard::PutNumber("sX", sPoints[x]);
 		SmartDashboard::PutNumber("sY", sPoints[y]);
 		SmartDashboard::PutNumber("sR", sPoints[r]);
