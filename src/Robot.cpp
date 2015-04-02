@@ -257,17 +257,17 @@ namespace dreadbot
 					IMAQdxCameraControlModeController, &sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam1 IMAQdxOpenCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam1 IMAQdxOpenCamera error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxConfigureGrab error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam0 IMAQdxConfigureGrab error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				// acquire images
@@ -279,17 +279,17 @@ namespace dreadbot
 					IMAQdxCameraControlModeController, &sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam2 IMAQdxOpenCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam2 IMAQdxOpenCamera - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam2 IMAQdxConfigureGrab error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam2 IMAQdxConfigureGrab - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				// acquire images
