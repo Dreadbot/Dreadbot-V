@@ -138,9 +138,11 @@ namespace dreadbot
 			}
 
 			//Raise the lift and cheat to alight the tote
+			drivebase->GoFast();
 			drivebase->Drive_v(0, 1, 0); // @todo Calibrate
 			Wait(STACK_CORRECTION_TIME);
 			drivebase->Drive_v(0, 0, 0);
+			drivebase->GoSlow();
 			lift->Set(1);
 			Wait(0.3);
 			if (HALBot::enoughTotes())
@@ -195,8 +197,6 @@ namespace dreadbot
 	{
 		sysLog->log("State: BackAway");
 		drivebase->Drive_v(0, 0, 0);
-		grabTimer.Reset();
-		grabTimer.Start();
 		timerActive = false; //Cheat way of figuring out if the lift is down
 	}
 	int BackAway::update()
@@ -211,8 +211,10 @@ namespace dreadbot
 			{
 				timerActive = true;
 				XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+				Wait(0.1); //Uber cheap way of getting the totes to disengage
+				grabTimer.Reset();
+				grabTimer.Start();
 			}
-
 			return HALBot::no_update;
 		}
 
@@ -279,9 +281,12 @@ namespace dreadbot
 	}
 	int RotateDrive::update()
 	{
-		if (driveTimer.Get() >= (ROTATE_TIME - 1.0f))
+		if (driveTimer.Get() >= (ROTATE_TIME - 1.2f))
 		{ //Rotated far enough; break
 			timerActive = false;
+			drivebase->GoSlow();
+			drivebase->Drive_v(0, 1, 0);
+			Wait(ROTATE_DRIVE_STRAIGHT);
 			if (HALBot::getToteCount() == 3)
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
 			return HALBot::timerExpired;
