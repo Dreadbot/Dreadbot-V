@@ -157,6 +157,7 @@ namespace dreadbot
 	void Stopped::enter()
 	{
 		sysLog->log("State: Stopped");
+		XMLInput::getInstance()->getPGroup("liftArms")->Set(0);
 	}
 	int Stopped::update()
 	{
@@ -415,7 +416,7 @@ namespace dreadbot
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = stopped;
 		}
-		if (mode == AUTON_MODE_STACK2)
+		/*if (mode == AUTON_MODE_STACK2)
 		{
 			i = 0;
 			rotate->rotateConstant = 1;
@@ -434,8 +435,8 @@ namespace dreadbot
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
-		}
-		if (mode == AUTON_MODE_STACK3)
+		}*/
+		if (mode == AUTON_MODE_STACK3 || mode == AUTON_MODE_STACK2)
 		{
 			i = 0;
 			rotateDrive->rotateConstant = -1;

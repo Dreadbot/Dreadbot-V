@@ -101,7 +101,7 @@ namespace dreadbot
 				Cam2Enabled = false;
 				viewingBack = false;
 			}
-			if (AutonBot->getMode() == AUTON_MODE_STACK3)
+			if (AutonBot->getMode() == AUTON_MODE_STACK3 || AutonBot->getMode() == AUTON_MODE_STACK2)
 			{
 				lift->Set(1);
 				Wait(0.2);
