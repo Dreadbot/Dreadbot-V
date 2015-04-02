@@ -92,7 +92,6 @@ namespace dreadbot
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
 			AutonBot->setMode(AUTON_MODE_STACK3);
-			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
 			drivebase->GoSlow();
 			if (viewingBack) {
