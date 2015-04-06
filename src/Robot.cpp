@@ -75,7 +75,7 @@ namespace dreadbot
 			compressor->Start();
 			drivebase->Engage();
 
-			Input->loadXMLConfig();
+			Input->loadXMLConfig(); //ABSOLUTELY NEEDED! IF THIS IS DELETED, THE WHOLE ROBOT STOPS WORKING!
 			gamepad = Input->getController(COM_PRIMARY_DRIVER);
 			gamepad2 = Input->getController(COM_BACKUP_DRIVER);
 
@@ -91,10 +91,12 @@ namespace dreadbot
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
-			AutonBot->setMode(AUTON_MODE_STACK3);
+			AutonBot->setMode(GetAutonMode()); //Uses the 10-switch to get the auton mode.
 			AutonBot->init(drivebase, intake, lift);
 			drivebase->GoSlow();
-			if (viewingBack) {
+
+			if (viewingBack)
+			{
 				StopCamera(2);
 				Cam1Enabled = StartCamera(1);
 				Cam2Enabled = false;
@@ -111,7 +113,7 @@ namespace dreadbot
 		{
 			AutonBot->update();
 
-			//Vision during auton, because why not
+			//Vision during auton, because why not?
 			if (!viewingBack && Cam1Enabled)
 			{
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
@@ -121,23 +123,26 @@ namespace dreadbot
 
 		void TeleopInit()
 		{
-			sysLog->log("Initializing Teleop");
+			sysLog->log("Initializing Teleop.");
 			GlobalInit();
 			drivebase->GoSlow();
 		}
 
 		void TeleopPeriodic()
 		{
-			Input->updateDrivebase();
+			Input->updateDrivebase(); //Makes the robot drive using Config.h controls and a sensativity curve (tested)
 
 			//Output controls
 			float intakeInput = gamepad->GetRawAxis(3);
 			intake->Set(((float) (intakeInput > 0.1) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
 
-			if (gamepad->GetRawButton(1)) {
+			if (gamepad->GetRawButton(1)) 
+			{
 				lift->Set(0.0f);
-			} else {
+			} 
+			else 
+			{
 				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
 			}
 			
@@ -227,9 +232,9 @@ namespace dreadbot
 				imaqError = IMAQdxCloseCamera(sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam1 IMAQdxCloseCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam1 IMAQdxCloseCamera error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 			}
@@ -239,9 +244,9 @@ namespace dreadbot
 				imaqError = IMAQdxCloseCamera(sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxCloseCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam0 IMAQdxCloseCamera error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 			}

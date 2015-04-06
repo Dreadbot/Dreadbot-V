@@ -2,6 +2,11 @@
 #include <string>
 using std::string;
 
+/*
+* Contents of the original Bot_Config.xml file. Uses a neat multiline trick 
+* to hold the contents of a human/computer readable XML file that PugiXML 
+* can parse.
+*/
 
 #define MULTILINE(...) #__VA_ARGS__
 

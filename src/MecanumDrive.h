@@ -28,21 +28,21 @@ namespace dreadbot {
 			m_rightRear = 3
 		};
 
-		void Set(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr);
+		void Set(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr); //Sets the CAN IDs used for the motors.
 		MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr);
 		~MecanumDrive();
 
 		void GoSlow();
 		void GoFast();
-		void Drive_p(double x, double y, double rotation);
-		void Drive_v(double x, double y, double rotation);
+		void Drive_p(double x, double y, double rotation); //Unimplemented position-based driving.
+		void Drive_v(double x, double y, double rotation); //Velocity based driving.
 		void SetDriveMode(drivemode newMode);
 		
 		void Engage();
 		void Disengage();
 
 		void SD_RetrievePID();
-		void SD_OutputDiagnostics();
+		void SD_OutputDiagnostics(); //Outputs a bunch of useful motor stats, many of which are disabled (commented out)
 
 	protected:
 		bool m_enabled = false;
