@@ -11,17 +11,17 @@
 using namespace Hydra;
 
 //All timings
-#define STRAFE_TO_ZONE_TIME 3.1f
-#define DRIVE_TO_ZONE_TIME 2.0f
+#define STRAFE_TO_ZONE_TIME 3.1f //Used in some auton modes (!2TA !3TA) - how long does the robot strafe?
+#define DRIVE_TO_ZONE_TIME 2.0f //How long the robot normally drives forward
 
-#define PUSH_TIME 0.9
-#define PUSH_SPEED 0.75
+#define PUSH_TIME 0.9 //How long the robot pushes containers out of the way
+#define PUSH_SPEED 0.75 //How fast the robot drives forward when pushing containers
 
-#define BACK_AWAY_TIME 0.75f
+#define BACK_AWAY_TIME 0.75f //How long the robot backs up after releasing totes in 3TA
 #define ROTATE_TIME 2.5f //Also, timing is modified in RotateDrive::update - 1.0 s is subtracted
 #define ROTATE_DRIVE_STRAIGHT 1.0f //How long to drive straight in RotateDrive AFTER rotating
-#define ESTOP_TIME 5.0f
-#define STACK_CORRECTION_TIME 0.35f
+#define ESTOP_TIME 5.0f //How long the robot waits without getting a tote until it e-stops (drops dead in its place)
+#define STACK_CORRECTION_TIME 0.35f //How long the robot jerks backward in order to fix tote alignment
 
 namespace dreadbot 
 {
@@ -108,6 +108,7 @@ namespace dreadbot
 		void enter();
 	};
 
+	//Needs to appear in https://en.wikipedia.org/wiki/Kludge#Computer_science
 	class HALBot
 	{
 	public:
@@ -115,20 +116,22 @@ namespace dreadbot
 
 		HALBot();
 		~HALBot();
-		static bool enoughTotes();
-		static void incrTote();
-		static int getToteCount();
-		void setMode(AutonMode newMode);
-		AutonMode getMode();
-		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift);
-		void update();
+		static bool enoughTotes(); //Stupid global way of determining if the robot has acquired enough totes. Kludgish, really.
+		static void incrTote(); //Increment the collected tote cout.
+		static int getToteCount(); //Gets the tote count. Used in a few kludgish areas. Also stupid.
+		void setMode(AutonMode newMode); //Called during AutonomousInit. Determines what autonomous mode to run.
+		AutonMode getMode(); //Gets the mode. Used in AutonomousInit. Also really, really dumb/stupid.
+		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift); //Sets hardware, intializes stuff, and prepares the transition tables. Assumes that the setMode thing has been used already.
+		void update(); //Basically just a cheap call to FiniteStateMachine::update. 
 	private:
-		static int toteCount;
+		static int toteCount; //How many totes have been acquired. 
 		FiniteStateMachine* fsm;
-		static AutonMode mode;
+		static AutonMode mode; //The mode that the robot is in. Also dumb.
 
-		FSMTransition transitionTable[15];
-		GettingTote* gettingTote;
+		FSMTransition transitionTable[15]; //The transition table used for transitioning. Changes based on the setMode thingy.
+
+		//State objects. These should be self-explanatory.
+		GettingTote* gettingTote; 
 		DriveToZone* driveToZone;
 		ForkGrab* forkGrab;
 		Rotate* rotate;

@@ -44,20 +44,19 @@ MecanumDrive::MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int m
 MecanumDrive::~MecanumDrive() {
 	Disengage();
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-
 		delete motors[i];
 	}
 }
 
 void MecanumDrive::GoFast() {
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->SetPID(1, 0, 0);
+		motors[i]->SetPID(1, 0, 0); //Magically makes the robot drive faster.
 	}
 }
 
 void MecanumDrive::GoSlow() {
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->SetPID(0.5, 0, 0);
+		motors[i]->SetPID(0.5, 0, 0); //Magically makes the robot drive slower.
 	}
 }
 
@@ -86,17 +85,19 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 		absSpeeds[i] = fabs(wspeeds[i]);
 
 	double maxMagnitude = *std::max_element(absSpeeds, absSpeeds + MOTOR_COUNT);
-	if (maxMagnitude > 1.0) {
+	if (maxMagnitude > 1.0) { //Normalizes wheel speeds if any one speed's absolute value is above 1, since the range of accepted inputs is between 1 and -1.
 		for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 			wspeeds[i] /= maxMagnitude;
 		}
 	}
 
+	//Determines if a motor has stalled and proceeds to do exactly nothing with that information.
 	bool stall = true;
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		// files.andymark.com/CIM-motor-curve.pdf
 		stall = stall && (motors[i]->GetOutputCurrent() > STALL_MOTOR_CURRENT);
 	}
+	
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
 		motors[i]->Set(wspeeds[i]*motorReversals[i]*SmartDashboard::GetNumber("Speed", 1000.0), syncGroup); // *stall
 	}

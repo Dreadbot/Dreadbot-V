@@ -24,7 +24,7 @@ namespace dreadbot
 	}
 	int GettingTote::update()
 	{
-		if (isToteInTransit() && !timerActive)
+		if (isToteInTransit() && !timerActive) //Run once, upon tote contact with transit wheels.
 		{
 			//Stay still while a tote is loaded
 			timerActive = true; //This doesn't really control a timer anymore...
@@ -32,7 +32,7 @@ namespace dreadbot
 		}
 		if (!isToteInTransit() && timerActive)
 		{
-			//Tote successfully collected.
+			//Tote successfully collected - it should have just left contact with the transit wheels.
 			intake->Set(0);
 			timerActive = false;
 			eStopTimer.Stop();
@@ -126,9 +126,9 @@ namespace dreadbot
 	{
 		if (isLiftDown())
 		{
-			HALBot::incrTote();
+			HALBot::incrTote(); //Once the lift is down, it is assumed that the tote is actually collected, i.e. in the fork.
 
-			//special 3-tote auton condition. Really sketchy. Causes the robot to NOT lift before rotating/driving
+			//special 3-tote auton condition. Really kludgy. Causes the robot to NOT lift before rotating/driving
 			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
 			{
 				lift->Set(1); //Raise lift
@@ -159,7 +159,8 @@ namespace dreadbot
 	void Stopped::enter()
 	{
 		sysLog->log("State: Stopped");
-		XMLInput::getInstance()->getPGroup("liftArms")->Set(0);
+		if (HALBot::getToteCount() == 3)
+			XMLInput::getInstance()->getPGroup("liftArms")->Set(0); //Only lower the forks when the robot is in 3TA - it's not needed elsewhere
 	}
 	int Stopped::update()
 	{
@@ -197,7 +198,7 @@ namespace dreadbot
 	{
 		sysLog->log("State: BackAway");
 		drivebase->Drive_v(0, 0, 0);
-		timerActive = false; //Cheat way of figuring out if the lift is down
+		timerActive = false; //Cheat way of figuring out if the lift is down. Used elsewhere
 	}
 	int BackAway::update()
 	{
@@ -242,7 +243,7 @@ namespace dreadbot
 	int PushContainer::update()
 	{
 		float pushTime = PUSH_TIME;
-		if (enableScaling)
+		if (enableScaling) //I refuse comment on this bit. Let's just say that it makes the robot push less.
 			pushTime += ((float)HALBot::getToteCount() - 1) / 3; //Scaling for three-tote autonomous, since the second container is farther away than the first
 		XMLInput::getInstance()->getPGroup("intakeArms")->Set(1); //Intake arms in
 		if (!timerActive)
@@ -292,7 +293,7 @@ namespace dreadbot
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 1.0 * dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
+			drivebase->Drive_v(0, 1.0 * dir, 0.5 * rotateConstant);
 		return HALBot::no_update;
 	}
 
@@ -336,7 +337,7 @@ namespace dreadbot
 		backAway = new BackAway;
 		fsm = new FiniteStateMachine;
 		rotateDrive = new RotateDrive;
-		mode = AUTON_MODE_DRIVE;
+		mode = AUTON_MODE_DRIVE; //Just drive straight forward. Assumes a spherical cow.
 	}
 	HALBot::~HALBot()
 	{
