@@ -187,7 +187,7 @@ namespace dreadbot
 		void TestInit()
 		{
 			sysLog->log("Initializing Test mode.");
-			GlobalInit();
+			compressor->Start();
 		}
 
 		void TestPeriodic()
