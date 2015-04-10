@@ -34,6 +34,7 @@ namespace dreadbot {
 
 		void GoSlow();
 		void GoFast();
+		void GoSpeed(double speed);
 		void Drive_p(double x, double y, double rotation); //Unimplemented position-based driving.
 		void Drive_v(double x, double y, double rotation); //Velocity based driving.
 		void SetDriveMode(drivemode newMode);

@@ -10,6 +10,7 @@ namespace dreadbot
 		drivebase = nullptr;
 		intake = nullptr;
 		timerActive = false;
+		armTimer = nullptr;
 	}
 	void GettingTote::setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
 	{
@@ -45,10 +46,20 @@ namespace dreadbot
 			intake->Set(-0.5);
 			return HALBot::no_update;
 		}
-		if (HALBot::getToteCount() != 0) //Open the intake arms for grabbing totes after the first tote is collected
+		if (HALBot::getToteCount() != 0) { //Open the intake arms for grabbing totes after the first tote is collected
 			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
+			armTimer = new Timer();
+			armTimer->Start();
+		}
 		drivebase->Drive_v(0, -0.75, 0);
 		intake->Set(-0.6);
+
+		if ((armTimer != nullptr) && (armTimer->Get() >= ARM_TIME)) {
+			armTimer->Stop();
+			delete armTimer;
+			armTimer = nullptr;
+			XMLInput::getInstance()->getPGroup("intakeArms")->Set(0);
+		}
 
 		//E-stop in case the tote is missed. Zeros the velocity and intake/transit motors, and puts the robot into Stopped
 		if (eStopTimer.Get() >= ESTOP_TIME)
@@ -159,6 +170,8 @@ namespace dreadbot
 	void Stopped::enter()
 	{
 		sysLog->log("State: Stopped");
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, 0, 0);
 		if (HALBot::getToteCount() == 3)
 			XMLInput::getInstance()->getPGroup("liftArms")->Set(0); //Only lower the forks when the robot is in 3TA - it's not needed elsewhere
 	}
@@ -282,10 +295,10 @@ namespace dreadbot
 	}
 	int RotateDrive::update()
 	{
-		if (driveTimer.Get() >= (ROTATE_TIME - 1.2f))
+		if (driveTimer.Get() >= (ROTATE_TIME - 0.5f))
 		{ //Rotated far enough; break
 			timerActive = false;
-			drivebase->GoSlow();
+			drivebase->GoSpeed(0.6);
 			drivebase->Drive_v(0, 1, 0);
 			Wait(ROTATE_DRIVE_STRAIGHT);
 			if (HALBot::getToteCount() == 3)
@@ -366,6 +379,7 @@ namespace dreadbot
 		pushContainer->pusher2 = XMLInput::getInstance()->getPWMMotor(1);
 		pushContainer->pushConstant = 1;
 		stopped->lift = lift; //Don't know if I like these...
+		stopped->drivebase = drivebase;
 		forkGrab->lift = lift;
 		forkGrab->drivebase = drivebase;
 		backAway->lift = lift;
@@ -403,6 +417,7 @@ namespace dreadbot
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
 			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
@@ -413,6 +428,7 @@ namespace dreadbot
 			rotate->rotateConstant = -1;
 			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 		}
 		if (mode == AUTON_MODE_BOTH)
@@ -433,10 +449,11 @@ namespace dreadbot
 
 			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
-			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotateDrive};
-			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotateDrive};
+			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
+			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			defState = pushContainer;
 		}
 		if (mode == AUTON_MODE_STACK3)
@@ -455,6 +472,7 @@ namespace dreadbot
 			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, backAway};
 			transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			defState = pushContainer;
 		}
 

@@ -60,6 +60,12 @@ void MecanumDrive::GoSlow() {
 	}
 }
 
+void MecanumDrive::GoSpeed(double speed) {
+	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
+		motors[i]->SetPID(speed, 0, 0); //Magically makes the robot drive slower.
+	}
+}
+
 // Drive to position
 void MecanumDrive::Drive_p(double x, double y, double rotation) {
 	if (mode == drivemode::absolute) {

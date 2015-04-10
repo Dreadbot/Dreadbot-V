@@ -18,10 +18,11 @@ using namespace Hydra;
 #define PUSH_SPEED 0.75 //How fast the robot drives forward when pushing containers
 
 #define BACK_AWAY_TIME 0.75f //How long the robot backs up after releasing totes in 3TA
-#define ROTATE_TIME 2.5f //Also, timing is modified in RotateDrive::update - 1.0 s is subtracted
-#define ROTATE_DRIVE_STRAIGHT 1.0f //How long to drive straight in RotateDrive AFTER rotating
+#define ROTATE_TIME 2.0f //Also, timing is modified in RotateDrive::update - 1.0 s is subtracted
+#define ROTATE_DRIVE_STRAIGHT 0.7f //How long to drive straight in RotateDrive AFTER rotating
 #define ESTOP_TIME 5.0f //How long the robot waits without getting a tote until it e-stops (drops dead in its place)
 #define STACK_CORRECTION_TIME 0.35f //How long the robot jerks backward in order to fix tote alignment
+#define ARM_TIME 1.0f
 
 namespace dreadbot 
 {
@@ -39,6 +40,7 @@ namespace dreadbot
 		bool timerActive;
 		Timer getTimer;
 		Timer eStopTimer;
+		Timer *armTimer;
 	};
 	class DriveToZone : public FSMState
 	{
@@ -81,6 +83,7 @@ namespace dreadbot
 		virtual void enter();
 		virtual int update();
 		PneumaticGrouping* lift;
+		MecanumDrive* drivebase;
 	};
 	class PushContainer : public DriveToZone
 	{
