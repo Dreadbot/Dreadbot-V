@@ -3,9 +3,9 @@
 #include "../lib/pugixml.hpp"
 #include "MecanumDrive.h"
 #include <string>
-#include <vector>
+#include <map>
 using std::string;
-using std::vector;
+using std::map;
 
 /*
  * Uses an XML config file to create custom control settings
@@ -89,8 +89,8 @@ namespace dreadbot
 	private:
 		XMLInput();
 
-		vector<PneumaticGrouping> pGroups;
-		vector<MotorGrouping> mGroups;
+		map<string, PneumaticGrouping> pGroups;
+		map<string, MotorGrouping> mGroups;
 
 		MecanumDrive* drivebase;
 		static XMLInput* singlePtr;
