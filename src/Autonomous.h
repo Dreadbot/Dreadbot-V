@@ -110,6 +110,13 @@ namespace dreadbot
 		int update();
 		void enter();
 	};
+	class StrafeLeft : public DriveToZone
+	{
+	public:
+		StrafeLeft();
+		int update();
+		void enter();
+	};
 
 	//Needs to appear in https://en.wikipedia.org/wiki/Kludge#Computer_science
 	class HALBot
@@ -143,5 +150,6 @@ namespace dreadbot
 		PushContainer* pushContainer;
 		BackAway* backAway;
 		RotateDrive* rotateDrive;
+		StrafeLeft* strafeLeft;
 	};
 }

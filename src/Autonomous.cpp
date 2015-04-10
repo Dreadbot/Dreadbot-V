@@ -310,6 +310,31 @@ namespace dreadbot
 		return HALBot::no_update;
 	}
 
+	StrafeLeft::StrafeLeft()
+	{
+		drivebase = nullptr;
+		timerActive = false;
+	}
+	void StrafeLeft::enter()
+	{
+		sysLog->log("State: StrafeLeft");
+		driveTimer.Start();
+		timerActive = true;
+		drivebase->GoFast(); //Gotta go faaaaaaaasssst.
+		drivebase->Drive_v(-1, 0, 0); //Left
+	}
+	int StrafeLeft::update()
+	{
+		int rc = HALBot::no_update;
+		if (driveTimer.Get() >= 1.0f) {
+			driveTimer.Stop();
+			driveTimer.Reset();
+			timerActive = false;
+			rc = HALBot::timerExpired;
+		}
+		return rc;
+	}
+
 
 	int HALBot::toteCount = 0;
 	AutonMode HALBot::mode = AUTON_MODE_STOP;
@@ -350,6 +375,7 @@ namespace dreadbot
 		backAway = new BackAway;
 		fsm = new FiniteStateMachine;
 		rotateDrive = new RotateDrive;
+		strafeLeft = new StrafeLeft;
 		mode = AUTON_MODE_DRIVE; //Just drive straight forward. Assumes a spherical cow.
 	}
 	HALBot::~HALBot()
@@ -371,6 +397,7 @@ namespace dreadbot
 		sysLog = Logger::getInstance()->getLog("sysLog");
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
+		strafeLeft->setHardware(drivebase);
 		rotate->setHardware(drivebase);
 		rotateDrive->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
@@ -450,8 +477,9 @@ namespace dreadbot
 			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
 			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotateDrive};
+			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, strafeLeft};
 			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
+			transitionTable[i++] = {strafeLeft, HALBot::timerExpired, nullptr, rotateDrive};
 			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			defState = pushContainer;
