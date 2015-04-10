@@ -46,7 +46,7 @@ namespace dreadbot
 			intake->Set(-0.5);
 			return HALBot::no_update;
 		}
-		if (HALBot::getToteCount() != 0) { //Open the intake arms for grabbing totes after the first tote is collected
+		if (HALBot::getToteCount() != 0 && armTimer == nullptr) { //Open the intake arms for grabbing totes after the first tote is collected
 			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
 			armTimer = new Timer();
 			armTimer->Start();
@@ -56,6 +56,7 @@ namespace dreadbot
 
 		if ((armTimer != nullptr) && (armTimer->Get() >= ARM_TIME)) {
 			armTimer->Stop();
+			armTimer->Reset();
 			delete armTimer;
 			armTimer = nullptr;
 			XMLInput::getInstance()->getPGroup("intakeArms")->Set(0);
