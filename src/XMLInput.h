@@ -4,7 +4,9 @@
 #include "MecanumDrive.h"
 #include <string>
 #include <map>
+#include <vector>
 using std::string;
+using std::vector;
 using std::map;
 
 /*
