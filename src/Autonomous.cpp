@@ -327,15 +327,15 @@ namespace dreadbot
 	int StrafeLeft::update()
 	{
 		int rc = HALBot::no_update;
-		if (driveTimer.Get() >= 1.0f) {
+		if (driveTimer.Get() >= 0.5f) {
 			driveTimer.Stop();
 			driveTimer.Reset();
 			timerActive = false;
+			drivebase->Drive_v(0, 0, 0); //stop
 			rc = HALBot::timerExpired;
 		}
 		return rc;
 	}
-
 
 	int HALBot::toteCount = 0;
 	AutonMode HALBot::mode = AUTON_MODE_STOP;
