@@ -10,7 +10,6 @@ namespace dreadbot
 		drivebase = nullptr;
 		intake = nullptr;
 		timerActive = false;
-		armTimer = nullptr;
 	}
 	void GettingTote::setHardware(MecanumDrive* newDrivebase, MotorGrouping* newIntake)
 	{
@@ -46,21 +45,11 @@ namespace dreadbot
 			intake->Set(-0.5);
 			return HALBot::no_update;
 		}
-		if (HALBot::getToteCount() != 0 && armTimer == nullptr) { //Open the intake arms for grabbing totes after the first tote is collected
+		if (HALBot::getToteCount() != 0) { //Open the intake arms for grabbing totes after the first tote is collected
 			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
-			armTimer = new Timer();
-			armTimer->Start();
 		}
 		drivebase->Drive_v(0, -0.75, 0);
 		intake->Set(-0.6);
-
-		if ((armTimer != nullptr) && (armTimer->Get() >= ARM_TIME)) {
-			armTimer->Stop();
-			armTimer->Reset();
-			delete armTimer;
-			armTimer = nullptr;
-			XMLInput::getInstance()->getPGroup("intakeArms")->Set(0);
-		}
 
 		//E-stop in case the tote is missed. Zeros the velocity and intake/transit motors, and puts the robot into Stopped
 		if (eStopTimer.Get() >= ESTOP_TIME)
