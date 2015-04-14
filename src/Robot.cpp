@@ -7,6 +7,8 @@
 #include "../lib/Logger.h"
 using namespace Hydra;
 
+Log* sysLog;
+
 namespace dreadbot 
 {
 	class Robot: public IterativeRobot 
@@ -18,7 +20,6 @@ namespace dreadbot
 		Compressor* compressor;
 
 		Logger* logger;
-		Log* sysLog;
 		XMLInput* Input;
 		MecanumDrive *drivebase;
 
@@ -87,11 +88,29 @@ namespace dreadbot
 
 		void AutonomousInit()
 		{
+			enum AutonMode mode = AUTON_MODE_STOP;
 			sysLog->log("Initializing Autonomous");
 			GlobalInit();
-			if (AutonBot == nullptr)
-				AutonBot = new HALBot;
-			AutonBot->setMode(GetAutonMode()); //Uses the 10-switch to get the auton mode.
+			if (AutonBot == nullptr) {
+				mode = GetAutonMode(); //Uses the 10-switch to get the auton mode.
+				switch (mode)
+				{
+				case AUTON_MODE_STOP:
+					AutonBot = new AutonStop;
+					break;
+
+				case AUTON_MODE_DRIVE:
+				case AUTON_MODE_TOTE:
+				case AUTON_MODE_CONTAINER:
+				case AUTON_MODE_BOTH:
+				case AUTON_MODE_STACK2:
+				case AUTON_MODE_STACK3:
+				default:
+					AutonBot = new HALBot;
+					break;
+				}
+			}
+			AutonBot->setMode(GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
 			drivebase->GoSlow();
 

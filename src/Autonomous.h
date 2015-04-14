@@ -7,8 +7,6 @@
 #include "XMLInput.h"
 #include "FSM.h"
 #include "DreadbotDIO.h"
-#include "../lib/Logger.h"
-using namespace Hydra;
 
 //All timings
 #define STRAFE_TO_ZONE_TIME 3.1f //Used in some auton modes (!2TA !3TA) - how long does the robot strafe?
@@ -133,7 +131,7 @@ namespace dreadbot
 		AutonMode getMode(); //Gets the mode. Used in AutonomousInit. Also really, really dumb/stupid.
 		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift); //Sets hardware, intializes stuff, and prepares the transition tables. Assumes that the setMode thing has been used already.
 		void update(); //Basically just a cheap call to FiniteStateMachine::update. 
-	private:
+	protected:
 		static int toteCount; //How many totes have been acquired. 
 		FiniteStateMachine* fsm;
 		static AutonMode mode; //The mode that the robot is in. Also dumb.
@@ -151,5 +149,25 @@ namespace dreadbot
 		BackAway* backAway;
 		RotateDrive* rotateDrive;
 		StrafeLeft* strafeLeft;
+	};
+
+	class AutonStop : public HALBot
+	{
+	public:
+		class Stopped : public FSMState
+		{
+		public:
+			virtual void enter();
+			virtual int update();
+			PneumaticGrouping* lift;
+			MecanumDrive* drivebase;
+		};
+
+		AutonStop();
+		~AutonStop();
+		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift); //Sets hardware, intializes stuff, and prepares the transition tables. Assumes that the setMode thing has been used already.
+
+	protected:
+		AutonStop::Stopped* stopped;
 	};
 }

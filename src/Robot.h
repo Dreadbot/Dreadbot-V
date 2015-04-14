@@ -1,6 +1,8 @@
 //Due to encountered issues, most of the controls defined here are NOT used.
 
 // Control mappings
+#pragma once
+#include "../lib/Logger.h"
 
 #define LOGITECH_F310_X // Use Logitech F310 controllers
 
@@ -28,3 +30,5 @@
 	// Shared controls
 	#define BTN_SWITCH_CAM 8 // Camera change is start
 #endif
+
+extern Hydra::Log* sysLog;

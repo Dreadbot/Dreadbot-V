@@ -1,6 +1,5 @@
 #include "Autonomous.h"
-
-Log* sysLog;
+#include "Robot.h"
 
 namespace dreadbot
 {
@@ -384,7 +383,6 @@ namespace dreadbot
 	void HALBot::init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift)
 	{
 		int i;
-		sysLog = Logger::getInstance()->getLog("sysLog");
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
 		strafeLeft->setHardware(drivebase);
