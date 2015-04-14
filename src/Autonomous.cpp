@@ -122,9 +122,16 @@ namespace dreadbot
 	void ForkGrab::enter()
 	{
 		sysLog->log("State: ForkGrab");
+		grabTimer.Reset();
+		grabTimer.Start();
 	}
 	int ForkGrab::update()
 	{
+		if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= 0.35)
+		{
+			drivebase->GoFast();
+			drivebase->Drive_v(0, 1.0, 0.5);
+		}
 		if (isLiftDown())
 		{
 			HALBot::incrTote(); //Once the lift is down, it is assumed that the tote is actually collected, i.e. in the fork.
