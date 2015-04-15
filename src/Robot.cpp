@@ -68,6 +68,8 @@ namespace dreadbot
 			viewingBack = false;
 			Cam2Enabled = false;
 			Cam1Enabled = StartCamera(1);
+			
+			sysLog->log("Robot ready.");
 		}
 
 		void GlobalInit()
@@ -75,7 +77,7 @@ namespace dreadbot
 			compressor->Start();
 			drivebase->Engage();
 
-			Input->loadXMLConfig(); //ABSOLUTELY NEEDED! IF THIS IS DELETED, THE WHOLE ROBOT STOPS WORKING!
+			Input->loadXMLConfig();
 			gamepad = Input->getController(COM_PRIMARY_DRIVER);
 			gamepad2 = Input->getController(COM_BACKUP_DRIVER);
 
@@ -105,20 +107,19 @@ namespace dreadbot
 			if (AutonBot->getMode() == AUTON_MODE_STACK3 || AutonBot->getMode() == AUTON_MODE_STACK2)
 			{
 				lift->Set(1);
-				Wait(0.2);
+				Wait(0.2); // May be able to lower this.
 			}
 		}
 
 		void AutonomousPeriodic()
 		{
 			AutonBot->update();
-
-			//Vision during auton, because why not?
-			if (!viewingBack && Cam1Enabled)
+			
+			/* if (!viewingBack && Cam1Enabled)
 			{
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
 				CameraServer::GetInstance()->SetImage(frame1);
-			}
+			} */
 		}
 
 		void TeleopInit()
@@ -132,18 +133,13 @@ namespace dreadbot
 		{
 			Input->updateDrivebase(); //Makes the robot drive using Config.h controls and a sensativity curve (tested)
 
-			//Output controls
-			float intakeInput = gamepad->GetRawAxis(3);
-			intake->Set(((float) (intakeInput > 0.1) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
+			// Control mappings
+			intake->Set(((float) (gamepad->GetRawAxis(3) > 0.1f) * -0.65f) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
-
-			if (gamepad->GetRawButton(1) || gamepad2->GetRawButton(1)) 
-			{
+			if (gamepad->GetRawButton(1) || gamepad2->GetRawButton(1)) {
 				lift->Set(0.0f);
-			} 
-			else 
-			{
-				lift->Set(gamepad->GetRawAxis(2) > 0.06 ? -1.0f : 1.0f);
+			} else {
+				lift->Set(gamepad->GetRawAxis(2) > 0.06f ? -1.0f : 1.0f);
 			}
 			
 			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
@@ -155,7 +151,6 @@ namespace dreadbot
 				viewerCooldown--;
 			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
 			{
-				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
 				if (viewingBack)
@@ -187,7 +182,7 @@ namespace dreadbot
 		void TestInit()
 		{
 			sysLog->log("Initializing Test mode.");
-			GlobalInit();
+			compressor->Start();
 		}
 
 		void TestPeriodic()
@@ -245,7 +240,7 @@ namespace dreadbot
 				if (imaqError != IMAQdxErrorSuccess)
 				{
 					sysLog->log(
-						"cam0 IMAQdxCloseCamera error - "
+						"cam2 IMAQdxCloseCamera error - "
 						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
@@ -270,7 +265,7 @@ namespace dreadbot
 				if (imaqError != IMAQdxErrorSuccess)
 				{
 					sysLog->log(
-						"cam0 IMAQdxConfigureGrab error - "
+						"cam1 IMAQdxConfigureGrab error - "
 						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
