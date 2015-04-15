@@ -137,13 +137,13 @@ namespace dreadbot
 			intake->Set(((float) (intakeInput > 0.1) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
 
-			if (gamepad->GetRawButton(1)) 
+			if (gamepad->GetRawButton(1) || gamepad2->GetRawButton(1)) 
 			{
 				lift->Set(0.0f);
 			} 
 			else 
 			{
-				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
+				lift->Set(gamepad->GetRawAxis(2) > 0.06 ? -1.0f : 1.0f);
 			}
 			
 			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
