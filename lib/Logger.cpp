@@ -37,7 +37,7 @@ namespace Hydra
         }
 
         stringstream logEntry;
-        logEntry << "[" << timeInfo->tm_hour << ":" << timeInfo->tm_min << ":" << timeInfo->tm_sec << "] ";
+        logEntry << "[" << timeInfo->tm_hour << ":" << timeInfo->tm_min << ":" << timeInfo->tm_sec << "]\t";
         logEntry << flagText;
         logEntry << message;
         logBuffer.push_back(logEntry.str());
