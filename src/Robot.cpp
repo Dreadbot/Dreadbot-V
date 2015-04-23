@@ -39,6 +39,7 @@ namespace dreadbot
 		bool Cam2Enabled;
 		bool viewingBack;
 		int viewerCooldown;
+		int autoToteCooldown;
 
 	public:
 		void RobotInit()
@@ -68,6 +69,9 @@ namespace dreadbot
 			viewingBack = false;
 			Cam2Enabled = false;
 			Cam1Enabled = StartCamera(1);
+
+			viewerCooldown = 0;
+			autoToteCooldown = 0;
 			
 			sysLog->log("Robot ready.");
 		}
@@ -145,6 +149,42 @@ namespace dreadbot
 			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
 
 			liftArms->Set(-(float) gamepad->GetRawButton(5));
+
+			//Autotote system - sketchy but beautiful if it works. Could shave off a lot of time.
+			if (gamepad2->GetRawButton(B_BTN_AUTOTOTE) && autoToteCooldown == 0) //Warning - B_BTN_AUTOTOTE is set to -1! change it!
+			{
+				autoToteCooldown = 20;
+
+				//This cycle is not iterative, because if it wasn't I'd have to make an auton-like routine for this which is nasty.
+				Timer safetyTimer;
+				safetyTimer.start();
+				drivebase->drive(0, 0, 0);
+				while (safetyTimer.get() < 2.f && !isToteInTransit())
+					intake->set(-0.6); //Same as auton
+				safetyTimer.stop();
+				if (safetyTimer.get() < 2.f && isToteInTransit())
+				{
+					//The robot has contacted the transit wheels; keep intaking
+					while (isToteInTransit())
+						intake->set(-0.6);
+					//Tote probably ejected by now.
+					intake->set(0);
+					lift->set(-1); //Lower lift for grabbing
+					while (!isLiftDown())
+						lift->set(-1.f);
+
+					//Do the little jerk-to-align trick copied *ahem* plagiarized *ahem* straight out of auton, so this works for sure
+					drivebase->GoFast();
+					drivebase->Drive_v(0, 1, 0);
+					Wait(STACK_CORRECTION_TIME);
+					drivebase->Drive_v(0, 0, 0);
+					drivebase->GoSlow();
+
+					lift->set(1.f); //Raise the lift again - lift cycle complete.
+				}
+			}
+			if (autoToteCooldown > 0)
+				autoToteCooldown--;
 
 			//Vision switch control
 			if (viewerCooldown > 0)
