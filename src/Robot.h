@@ -23,7 +23,7 @@
 	#define B_AXS_TOTE_IN 2		//LB
 	#define B_BTN_ARMS_OUT 3	
 	#define B_BTN_ARMS_IN 2		
-	#define B_BTN_AUTOTOTE -1	//Temporary - Parker, find a control for this!
+	#define B_BTN_AUTOTOTE 8
 	//#define B_BTN_GEDDAN 5 // Robot does a short dance to recover from an intake failure
 
 	// Shared controls

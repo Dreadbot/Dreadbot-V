@@ -151,27 +151,27 @@ namespace dreadbot
 			liftArms->Set(-(float) gamepad->GetRawButton(5));
 
 			//Autotote system - sketchy but beautiful if it works. Could shave off a lot of time.
-			if (gamepad2->GetRawButton(B_BTN_AUTOTOTE) && autoToteCooldown == 0) //Warning - B_BTN_AUTOTOTE is set to -1! change it!
+			if (gamepad2->GetRawButton(B_BTN_AUTOTOTE) && autoToteCooldown == 0)
 			{
 				autoToteCooldown = 20;
 
 				//This cycle is not iterative, because if it wasn't I'd have to make an auton-like routine for this which is nasty.
 				Timer safetyTimer;
-				safetyTimer.start();
-				drivebase->drive(0, 0, 0);
-				while (safetyTimer.get() < 2.f && !isToteInTransit())
-					intake->set(-0.6); //Same as auton
-				safetyTimer.stop();
-				if (safetyTimer.get() < 2.f && isToteInTransit())
+				safetyTimer.Start();
+				drivebase->Drive_v(0, 0, 0);
+				while (safetyTimer.Get() < 2.f && !isToteInTransit())
+					intake->Set(-0.6); //Same as auton
+				safetyTimer.Stop();
+				if (safetyTimer.Get() < 2.f && isToteInTransit())
 				{
 					//The robot has contacted the transit wheels; keep intaking
 					while (isToteInTransit())
-						intake->set(-0.6);
+						intake->Set(-0.6);
 					//Tote probably ejected by now.
-					intake->set(0);
-					lift->set(-1); //Lower lift for grabbing
+					intake->Set(0);
+					lift->Set(-1); //Lower lift for grabbing
 					while (!isLiftDown())
-						lift->set(-1.f);
+						lift->Set(-1.f);
 
 					//Do the little jerk-to-align trick copied *ahem* plagiarized *ahem* straight out of auton, so this works for sure
 					drivebase->GoFast();
@@ -180,7 +180,7 @@ namespace dreadbot
 					drivebase->Drive_v(0, 0, 0);
 					drivebase->GoSlow();
 
-					lift->set(1.f); //Raise the lift again - lift cycle complete.
+					lift->Set(1.f); //Raise the lift again - lift cycle complete.
 				}
 			}
 			if (autoToteCooldown > 0)
