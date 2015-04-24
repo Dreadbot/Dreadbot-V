@@ -50,7 +50,6 @@ namespace dreadbot
 		bool timerActive;
 		Timer getTimer;
 		Timer eStopTimer;
-		Timer *armTimer;
 	};
 	class DriveToZone : public FSMState
 	{
