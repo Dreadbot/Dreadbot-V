@@ -3,9 +3,11 @@
 #include "../lib/pugixml.hpp"
 #include "MecanumDrive.h"
 #include <string>
+#include <unordered_map>
 #include <vector>
 using std::string;
 using std::vector;
+using std::unordered_map;
 
 /*
  * Uses an XML config file to create custom control settings
@@ -31,7 +33,7 @@ namespace dreadbot
 		DoubleSolenoid* dPneumatic;
 		Solenoid* sPneumatic;
 		int actionCount;
-		bool invert;
+		bool invert; //If true, the given directions are inverted. Forward, Backward = Backward, Forward. On, Off = Off, On
 		friend class XMLInput;
 	};
 	class SimpleMotor
@@ -71,26 +73,26 @@ namespace dreadbot
 		friend class XMLInput;
 	};
 
+	//Singleton class for managing pretty much all motors, pneumatics, and controllers.
 	class XMLInput
 	{
 	public:
 		static XMLInput* getInstance();
-		void setDrivebase(MecanumDrive* newDrivebase);
-		void loadXMLConfig();
-		void updateDrivebase();
-		void zeroVels();
+		void setDrivebase(MecanumDrive* newDrivebase); //Sets the drivebase that velocity information is sent to.
+		void loadXMLConfig(); //Clears previous configuration and loads from the XML doc in Config.h
+		void updateDrivebase(); //Handels all drivebase-related stuff, including inverts, deadzones, and the sensativity curve.
 		Joystick* getController(int ID); //!< Gets a joystick with the given ID. If joystick does not exist, creates joystick with ID and returns it.
 		CANTalon* getCANMotor(int ID); //!< Gets a CANTalon with the given ID. If the CANTalon does not exist, creates CANTalon with ID and returns it.
 		Talon* getPWMMotor(int ID); //!< Gets a Talon with the given ID. If the Talon does not exist, creates CANTalon with ID and returns it.
 		DoubleSolenoid* getDPneum(int forwardID); //!< Gets a DoubleSolenoid based on the ID. The ID is for the FORWARD output thingy.
 		Solenoid* getSPneum(int ID); //!< Gets a single solenoid based on the ID.
-		PneumaticGrouping* getPGroup(string name);
-		MotorGrouping* getMGroup(string name);
+		PneumaticGrouping* getPGroup(string name); //Find a pneumatic grouping by name (found in Config.h)
+		MotorGrouping* getMGroup(string name); //Find a motor grouping by name (found in Config.h)
 	private:
 		XMLInput();
 
-		vector<PneumaticGrouping> pGroups;
-		vector<MotorGrouping> mGroups;
+		unordered_map<string, PneumaticGrouping> pGroups;
+		unordered_map<string, MotorGrouping> mGroups;
 
 		MecanumDrive* drivebase;
 		static XMLInput* singlePtr;

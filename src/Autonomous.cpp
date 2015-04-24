@@ -24,59 +24,70 @@ namespace dreadbot
 	}
 	int GettingTote::update()
 	{
-		if (isToteInTransit() && !timerActive)
+		if (isToteInTransit() && !timerActive) //Run once, upon tote contact with transit wheels.
 		{
 			//Stay still while a tote is loaded
 			timerActive = true; //This doesn't really control a timer anymore...
 			drivebase->Drive_v(0, 0, 0);
 		}
-		if (!isToteInTransit() && timerActive)
-		{
-			//Tote successfully collected.
+		if (!isToteInTransit() && timerActive) {
+			//Tote successfully collected - it should have just left contact with the transit wheels.
 			intake->Set(0);
 			timerActive = false;
 			eStopTimer.Stop();
 			eStopTimer.Reset();
 			return HALBot::timerExpired;
 		}
-		if (timerActive)
-		{
+		if (timerActive) {
 			//Keep sucking a tote in
-			intake->Set(-0.5);
+			if (HALBot::getToteCount() >= 2) {
+				intake->Set(-1);
+			} else {
+				intake->Set(-0.5);
+			}
 			return HALBot::no_update;
 		}
-		if (HALBot::getToteCount() != 0) //Open the intake arms for grabbing totes after the first tote is collected
+		if (HALBot::getToteCount() != 0) { //Open the intake arms for grabbing totes after the first tote is collected
 			XMLInput::getInstance()->getPGroup("intakeArms")->Set(-1);
-		drivebase->Drive_v(0, -0.75, 0);
-		intake->Set(-0.6);
-
-		//E-stop in case the tote is missed. Zeros the velocity and intake/transit motors, and puts the robot into Stopped
-		if (eStopTimer.Get() >= ESTOP_TIME)
-		{
+		}
+		drivebase->Drive_v(0, -0.65, 0);
+		if (HALBot::getToteCount() >= 2) {
+			intake->Set(-1);
+		} else {
+			intake->Set(-0.6);
+		}
+		if (eStopTimer.Get() >= 3.5) {
+			XMLInput::getInstance()->getPGroup("intakeArms")->Set(1);
+		} else if (eStopTimer.Get() >= 2.5 && eStopTimer.Get() < 3.5) {
+			XMLInput::getInstance()->getPGroup("intakeArms")->Set(0);
+		}
+		// Emergeny stop in case the tote is missed.
+		// Stop the drivebase, raise the lift, passify the intake arms, and stop the transit wheels.
+		if (eStopTimer.Get() >= ESTOP_TIME) {
 			eStopTimer.Stop();
 			eStopTimer.Reset();
-			if (drivebase != nullptr) drivebase->Drive_v(0, 0, 0);
-			if (intake != nullptr) intake->Set(0);
-			sysLog->log("E-stopped in GettingTote", Hydra::error);
+			if (drivebase != nullptr) // Stop the drivebase
+				drivebase->Drive_v(0, 0, 0);
+			if (intake != nullptr) // Stop the intake wheels
+				intake->Set(0);
+			XMLInput::getInstance()->getPGroup("lift")->Set(1); // Raise the lift
+			sysLog->log("Emergency-stopped in GettingTote", Hydra::error);
 			return HALBot::eStop;
 		}
 
 		return HALBot::no_update;
 	}
 
-	DriveToZone::DriveToZone()
-	{
+	DriveToZone::DriveToZone() {
 		drivebase = nullptr;
 		timerActive = false;
 		strafe = false;
 		dir = 1; //Multiplier that changes the direction the robot moves.
 	}
-	void DriveToZone::setHardware(MecanumDrive* newDrivebase)
-	{
+	void DriveToZone::setHardware(MecanumDrive* newDrivebase) {
 		drivebase = newDrivebase;
 	}
-	void DriveToZone::enter()
-	{
+	void DriveToZone::enter() {
 		driveTimer.Reset();
 		driveTimer.Start();
 		timerActive = true;
@@ -121,14 +132,32 @@ namespace dreadbot
 	void ForkGrab::enter()
 	{
 		sysLog->log("State: ForkGrab");
+		grabTimer.Reset();
+		grabTimer.Start();
 	}
 	int ForkGrab::update()
 	{
+		if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= LIFT_ENGAGEMENT_DELAY) {
+			XMLInput::getInstance()->getPGroup("intakeArms")->Set(1);
+			drivebase->GoFast();
+			drivebase->Drive_v(0, RD_DRIVE_SPEED, RD_ROTATE_SPEED);
+			if (isLiftDown()) {
+				//XMLInput::getInstance()->getPGroup("liftArms")->Set(0);
+				lift->Set(1); //Raise lift
+				Wait(0.3); //Totes must engage first
+				lift->Set(0);
+				return HALBot::finish;
+			} else {
+				return HALBot::no_update;
+			}
+		} else if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= 0.2) {
+			//XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+		}
 		if (isLiftDown())
 		{
-			HALBot::incrTote();
+			HALBot::incrTote(); //Once the lift is down, it is assumed that the tote is actually collected, i.e. in the fork.
 
-			//special 3-tote auton condition. Really sketchy. Causes the robot to NOT lift before rotating/driving
+			//special 3-tote auton condition. Really kludgy. Causes the robot to NOT lift before rotating/driving
 			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
 			{
 				lift->Set(1); //Raise lift
@@ -136,11 +165,12 @@ namespace dreadbot
 				lift->Set(0);
 				return HALBot::finish;
 			}
-
 			//Raise the lift and cheat to alight the tote
-			drivebase->Drive_v(0, 1, 0); // @todo Calibrate
+			drivebase->GoFast();
+			drivebase->Drive_v(0, STACK_CORRECTION_SPEED, 0); // @todo Calibrate
 			Wait(STACK_CORRECTION_TIME);
 			drivebase->Drive_v(0, 0, 0);
+			drivebase->GoSlow();
 			lift->Set(1);
 			Wait(0.3);
 			if (HALBot::enoughTotes())
@@ -157,6 +187,10 @@ namespace dreadbot
 	void Stopped::enter()
 	{
 		sysLog->log("State: Stopped");
+		if (drivebase != nullptr)
+			drivebase->Drive_v(0, 0, 0);
+		if (HALBot::getToteCount() == 3)
+			XMLInput::getInstance()->getPGroup("liftArms")->Set(0); //Only lower the forks when the robot is in 3TA - it's not needed elsewhere
 	}
 	int Stopped::update()
 	{
@@ -194,9 +228,7 @@ namespace dreadbot
 	{
 		sysLog->log("State: BackAway");
 		drivebase->Drive_v(0, 0, 0);
-		grabTimer.Reset();
-		grabTimer.Start();
-		timerActive = false; //Cheat way of figuring out if the lift is down
+		timerActive = false; //Cheat way of figuring out if the lift is down. Used elsewhere
 	}
 	int BackAway::update()
 	{
@@ -210,8 +242,10 @@ namespace dreadbot
 			{
 				timerActive = true;
 				XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+				Wait(0.13); //Uber cheap way of getting the totes to disengage
+				grabTimer.Reset();
+				grabTimer.Start();
 			}
-
 			return HALBot::no_update;
 		}
 
@@ -221,8 +255,10 @@ namespace dreadbot
 			return HALBot::timerExpired;
 		}
 
-		if (drivebase != nullptr)
+		if (drivebase != nullptr) {
+			drivebase->GoFast();
 			drivebase->Drive_v(0, -1, 0);
+		}
 		XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 		return HALBot::no_update;
 	}
@@ -239,7 +275,7 @@ namespace dreadbot
 	int PushContainer::update()
 	{
 		float pushTime = PUSH_TIME;
-		if (enableScaling)
+		if (enableScaling) //I refuse comment on this bit. Let's just say that it makes the robot push less.
 			pushTime += ((float)HALBot::getToteCount() - 1) / 3; //Scaling for three-tote autonomous, since the second container is farther away than the first
 		XMLInput::getInstance()->getPGroup("intakeArms")->Set(1); //Intake arms in
 		if (!timerActive)
@@ -257,11 +293,11 @@ namespace dreadbot
 		}
 
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, -PUSH_SPEED, 0); //Straight forward
+			drivebase->Drive_v(DRIVE_STRAFE_CORRECTION, -PUSH_SPEED, DRIVE_ROTATE_CORRECTION); //Straight forward
 		if (pusher1 != nullptr)
-			pusher1->Set(1); //Push the container?
+			pusher1->Set(INTAKE_PUSH_SPEED); //Push the container?
 		if (pusher2 != nullptr)
-			pusher2->Set(1);
+			pusher2->Set(INTAKE_PUSH_SPEED);
 		return HALBot::no_update;
 	}
 
@@ -278,18 +314,49 @@ namespace dreadbot
 	}
 	int RotateDrive::update()
 	{
-		if (driveTimer.Get() >= (ROTATE_TIME - 1.0f))
+		if (driveTimer.Get() >= (ROTATE_TIME - 0.5f))
 		{ //Rotated far enough; break
 			timerActive = false;
+			drivebase->GoSpeed(1.0);
+			drivebase->Drive_v(0, 1, 0);
+// Change: The stack is lowered prior to stopping in order to decelerate properly
 			if (HALBot::getToteCount() == 3)
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
+
+			Wait(ROTATE_DRIVE_STRAIGHT);
+
 			return HALBot::timerExpired;
 		}
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 1.0 * dir, 0.5 * rotateConstant); // @todo Add RotateDrive coefficients to preprocessor definitions
+			drivebase->Drive_v(0, RD_DRIVE_SPEED, RD_ROTATE_SPEED);
 		return HALBot::no_update;
 	}
 
+	StrafeLeft::StrafeLeft()
+	{
+		drivebase = nullptr;
+		timerActive = false;
+	}
+	void StrafeLeft::enter()
+	{
+		sysLog->log("State: StrafeLeft");
+		driveTimer.Start();
+		timerActive = true;
+		drivebase->GoFast(); //Gotta go faaaaaaaasssst.
+		drivebase->Drive_v(-1, 0, 0); //Left
+	}
+	int StrafeLeft::update()
+	{
+		int rc = HALBot::no_update;
+		if (driveTimer.Get() >= 0.5f) {
+			driveTimer.Stop();
+			driveTimer.Reset();
+			timerActive = false;
+			drivebase->Drive_v(0, 0, 0); //stop
+			rc = HALBot::timerExpired;
+		}
+		return rc;
+	}
 
 	int HALBot::toteCount = 0;
 	AutonMode HALBot::mode = AUTON_MODE_STOP;
@@ -330,7 +397,8 @@ namespace dreadbot
 		backAway = new BackAway;
 		fsm = new FiniteStateMachine;
 		rotateDrive = new RotateDrive;
-		mode = AUTON_MODE_DRIVE;
+		strafeLeft = new StrafeLeft;
+		mode = AUTON_MODE_DRIVE; //Just drive straight forward. Assumes a spherical cow.
 	}
 	HALBot::~HALBot()
 	{
@@ -351,6 +419,7 @@ namespace dreadbot
 		sysLog = Logger::getInstance()->getLog("sysLog");
 		gettingTote->setHardware(drivebase, intake);
 		driveToZone->setHardware(drivebase);
+		strafeLeft->setHardware(drivebase);
 		rotate->setHardware(drivebase);
 		rotateDrive->setHardware(drivebase);
 		rotate2->setHardware(drivebase);
@@ -359,6 +428,7 @@ namespace dreadbot
 		pushContainer->pusher2 = XMLInput::getInstance()->getPWMMotor(1);
 		pushContainer->pushConstant = 1;
 		stopped->lift = lift; //Don't know if I like these...
+		stopped->drivebase = drivebase;
 		forkGrab->lift = lift;
 		forkGrab->drivebase = drivebase;
 		backAway->lift = lift;
@@ -396,6 +466,7 @@ namespace dreadbot
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
 			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = gettingTote;
 		}
@@ -406,6 +477,7 @@ namespace dreadbot
 			rotate->rotateConstant = -1;
 			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
 			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 		}
 		if (mode == AUTON_MODE_BOTH)
@@ -418,22 +490,21 @@ namespace dreadbot
 		if (mode == AUTON_MODE_STACK2)
 		{
 			i = 0;
-			rotate->rotateConstant = 1;
-			rotate2->rotateConstant = -1;
+			rotateDrive->rotateConstant = -1;
 			pushContainer->pushConstant = -1;
+			pushContainer->enableScaling = true;
 			driveToZone->strafe = false;
+			incrTote(); //We already have a tote
 
-			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
-			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
-			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, rotate};
 			transitionTable[i++] = {pushContainer, HALBot::timerExpired, nullptr, gettingTote};
-			transitionTable[i++] = {rotate, HALBot::timerExpired, nullptr, driveToZone};
-			transitionTable[i++] = {driveToZone, HALBot::timerExpired, nullptr, rotate2};
-			transitionTable[i++] = {rotate2, HALBot::timerExpired, nullptr, stopped};
-			//transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[i++] = {gettingTote, HALBot::timerExpired, nullptr, forkGrab};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
-			transitionTable[i++] = END_STATE_TABLE;
-			defState = gettingTote;
+			transitionTable[i++] = {forkGrab, HALBot::finish, nullptr, strafeLeft};
+			transitionTable[i++] = {forkGrab, HALBot::nextTote, nullptr, pushContainer};
+			transitionTable[i++] = {strafeLeft, HALBot::timerExpired, nullptr, rotateDrive};
+			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
+			defState = pushContainer;
 		}
 		if (mode == AUTON_MODE_STACK3)
 		{
@@ -451,6 +522,7 @@ namespace dreadbot
 			transitionTable[i++] = {rotateDrive, HALBot::timerExpired, nullptr, backAway};
 			transitionTable[i++] = {backAway, HALBot::timerExpired, nullptr, stopped};
 			transitionTable[i++] = {gettingTote, HALBot::eStop, nullptr, stopped};
+			transitionTable[i++] = {stopped, HALBot::no_update, nullptr, stopped};
 			defState = pushContainer;
 		}
 

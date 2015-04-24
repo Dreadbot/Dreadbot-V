@@ -1,16 +1,12 @@
 #pragma once
 
 #include "WPILib.h"
-#include "mathutil.h"
-#include "rps.h"
-#include "SimplePID.h"
 #include <algorithm>
 #include <cmath>
 
-#define SQUARE_INPUTS
 #define MOTOR_COUNT 4
 #define STALL_MOTOR_CURRENT 50
-#define CONTROL_PERIOD 10
+#define CONTROL_PERIOD 3
 
 
 namespace dreadbot {
@@ -28,32 +24,28 @@ namespace dreadbot {
 			m_rightRear = 3
 		};
 
-		void Set(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr);
+		void Set(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr); //Sets the CAN IDs used for the motors.
 		MecanumDrive(int motorId_lf, int motorId_rf, int motorId_lr, int motorId_rr);
 		~MecanumDrive();
 
 		void GoSlow();
 		void GoFast();
-		void Drive_p(double x, double y, double rotation);
-		void Drive_v(double x, double y, double rotation);
+		void GoSpeed(double speed);
+		void Drive_v(double x, double y, double rotation); //Velocity based driving.
 		void SetDriveMode(drivemode newMode);
 		
 		void Engage();
 		void Disengage();
 
 		void SD_RetrievePID();
-		void SD_OutputDiagnostics();
+		void SD_OutputDiagnostics(); //Outputs a bunch of useful motor stats, many of which are disabled (commented out)
 
 	protected:
 		bool m_enabled = false;
 		const uint8_t syncGroup = 0x00;
-		const std::string motorNames[MOTOR_COUNT] = {"Left-front", "Right-front", "Left-rear", "Right-rear"};
+		const std::string motorNames[MOTOR_COUNT] = {"LF Drive [1]", "RF Drive [2]", "LB Drive [3]", "RB Drive [4]"};
 		const double motorReversals[MOTOR_COUNT] = {-1.0, 1.0, -1.0, 1.0};
-		SimplePID* x_ctrl;
-		SimplePID* y_ctrl;
-		SimplePID* r_ctrl;
 		drivemode mode = drivemode::relative;
-		//rps* positioner;
 		CANTalon* motors[4];
 
 	private:

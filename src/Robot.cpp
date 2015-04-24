@@ -68,6 +68,8 @@ namespace dreadbot
 			viewingBack = false;
 			Cam2Enabled = false;
 			Cam1Enabled = StartCamera(1);
+			
+			sysLog->log("Robot ready.");
 		}
 
 		void GlobalInit()
@@ -91,28 +93,32 @@ namespace dreadbot
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
-			AutonBot->setMode(AUTON_MODE_STACK3);
-			sysLog->log("Auton mode is " + (int)GetAutonMode());
+			AutonBot->setMode(GetAutonMode()); //Uses the 10-switch to get the auton mode.
 			AutonBot->init(drivebase, intake, lift);
 			drivebase->GoSlow();
-			if (AutonBot->getMode() == AUTON_MODE_STACK3)
+
+			if (viewingBack)
+			{
+				StopCamera(2);
+				Cam1Enabled = StartCamera(1);
+				Cam2Enabled = false;
+				viewingBack = false;
+			}
+			if (AutonBot->getMode() == AUTON_MODE_STACK3 || AutonBot->getMode() == AUTON_MODE_STACK2)
 			{
 				lift->Set(1);
-				Wait(0.2);
+				Wait(0.2); // May be able to lower this.
 			}
 		}
 
 		void AutonomousPeriodic()
 		{
-			drivebase->SD_RetrievePID();
-			AutonBot->update();
-
-			//Vision during auton, because why not
-			if (viewingBack && Cam2Enabled)
-			{
-				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame2);
-			}
+			//if (ds->GetMatchTime() >= 0.0) {
+				AutonBot->update();
+			//} else {
+			//	drivebase->Drive_v(0, 0, 0);
+			//}
+			
 			if (!viewingBack && Cam1Enabled)
 			{
 				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
@@ -122,25 +128,24 @@ namespace dreadbot
 
 		void TeleopInit()
 		{
-			sysLog->log("Initializing Teleop");
+			sysLog->log("Initializing Teleop.");
 			GlobalInit();
 			drivebase->GoSlow();
 		}
 
 		void TeleopPeriodic()
 		{
-			Input->updateDrivebase();
+			Input->updateDrivebase(); //Makes the robot drive using Config.h controls and a sensitivity curve (tested)
 
-			//Output controls
-			float intakeInput = gamepad->GetRawAxis(3);
-			intake->Set(((float) (intakeInput > 0.15) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
+			// Control mappings
+			intake->Set(((float) (gamepad->GetRawAxis(3) > 0.1f) * -0.74f) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
-
-			if (gamepad->GetRawButton(1)) {
+			if (gamepad->GetRawButton(1) || gamepad2->GetRawButton(1)) {
 				lift->Set(0.0f);
 			} else {
-				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
+				lift->Set(gamepad->GetRawAxis(2) > 0.1f ? -1.0f : 1.0f);
 			}
+			
 			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
 
 			liftArms->Set(-(float) gamepad->GetRawButton(5));
@@ -150,7 +155,6 @@ namespace dreadbot
 				viewerCooldown--;
 			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
 			{
-				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
 				if (viewingBack)
@@ -182,11 +186,21 @@ namespace dreadbot
 		void TestInit()
 		{
 			sysLog->log("Initializing Test mode.");
-			GlobalInit();
+			compressor->Start();
 		}
 
 		void TestPeriodic()
 		{
+			if (viewingBack && Cam2Enabled)
+			{
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
+				CameraServer::GetInstance()->SetImage(frame2);
+			}
+			if (!viewingBack && Cam1Enabled)
+			{
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
+				CameraServer::GetInstance()->SetImage(frame1);
+			}
 		}
 
 		void DisabledInit()
@@ -227,9 +241,9 @@ namespace dreadbot
 				imaqError = IMAQdxCloseCamera(sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam1 IMAQdxCloseCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam1 IMAQdxCloseCamera error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 			}
@@ -239,9 +253,9 @@ namespace dreadbot
 				imaqError = IMAQdxCloseCamera(sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxCloseCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam2 IMAQdxCloseCamera error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 			}
@@ -256,17 +270,17 @@ namespace dreadbot
 					IMAQdxCameraControlModeController, &sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam1 IMAQdxOpenCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam1 IMAQdxOpenCamera error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam1);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxConfigureGrab error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam1 IMAQdxConfigureGrab error - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				// acquire images
@@ -278,17 +292,17 @@ namespace dreadbot
 					IMAQdxCameraControlModeController, &sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxOpenCamera error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam2 IMAQdxOpenCamera - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				imaqError = IMAQdxConfigureGrab(sessionCam2);
 				if (imaqError != IMAQdxErrorSuccess)
 				{
-					DriverStation::ReportError(
-						"cam0 IMAQdxConfigureGrab error: "
-						+ std::to_string((long) imaqError) + "\n");
+					sysLog->log(
+						"cam2 IMAQdxConfigureGrab - "
+						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
 				// acquire images

@@ -1,3 +1,5 @@
+//Due to encountered issues, most of the controls defined here are NOT used.
+
 // Control mappings
 
 #define LOGITECH_F310_X // Use Logitech F310 controllers

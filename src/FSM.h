@@ -9,7 +9,7 @@ namespace dreadbot
 	class FSMState
 	{
 	public:
-		virtual void enter() = 0;
+		virtual void enter() = 0; //Automatically when this state is first entered.
 		virtual int update() = 0;
 		virtual ~FSMState() {}
 	};
