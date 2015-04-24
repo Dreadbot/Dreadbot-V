@@ -156,8 +156,7 @@ namespace dreadbot
 				Wait(0.3); //Totes must engage first
 				lift->Set(0);
 				return HALBot::finish;
-			} 
-			else 
+			} else {
 				return HALBot::no_update;
 			}
 		} else if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= 0.2 && thing) {
@@ -290,7 +289,7 @@ namespace dreadbot
 	{
 		float pushTime = PUSH_TIME;
 		if (enableScaling) //I refuse comment on this bit. Let's just say that it makes the robot push less.
-			pushTime += ((float)HALBot::getToteCount() - 1) / 3; //Scaling for three-tote autonomous, since the second container is farther away than the first
+			pushTime += ((float)HALBot::getToteCount() - 1.f) / 3.f; //Scaling for three-tote autonomous, since the second container is farther away than the first
 		XMLInput::getInstance()->getPGroup("intakeArms")->Set(1); //Intake arms in
 		if (!timerActive)
 		{
