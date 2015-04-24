@@ -15,18 +15,20 @@ using namespace Hydra;
 #define DRIVE_TO_ZONE_TIME 		2.0f 	// How long the robot normally drives forward
 
 // Container evacuation parameter
-#define INTAKE_PUSH_SPEED		1.0f	// Rotational velocity of the intake wheels when pushing a container out of the way
+#define INTAKE_PUSH_SPEED		0.9f	// Rotational velocity of the intake wheels when pushing a container out of the way
 #define PUSH_TIME 				0.9f 	// How long the robot pushes containers out of the way
-#define PUSH_SPEED 				0.75f 	// How fast the robot drives forward when pushing containers
-#define DRIVE_STRAFE_CORRECTION	0.04f 	// Aport drift abbertaion correctional factor
-#define DRIVE_ROTATE_CORRECTION	0.0f 	// Rotate abberation correctional factor
+#define PUSH_SPEED 				0.7f 	// How fast the robot drives forward when pushing containers
+//#define DRIVE_STRAFE_CORRECTION	0.05f 	// Aport drift abbertaion correctional factor
+//#define DRIVE_ROTATE_CORRECTION	0.03f 	// Rotate abberation correctional factor
+#define DRIVE_STRAFE_CORRECTION	0.0f 	// Aport drift abbertaion correctional factor
+#define DRIVE_ROTATE_CORRECTION	0.03f 	// Rotate abberation correctional factor
 
 // Endgame parameters
 #define RD_DRIVE_SPEED 			1.0f 	// Astern speed in RotateDrive.
 #define RD_ROTATE_SPEED 		-0.4f 	// Size of the RotateDrive arc
 #define BACK_AWAY_TIME 			0.6f 	// How long the robot backs up after stopping in 3TA
-#define ROTATE_TIME 			0.8f 	// Also, timing is modified in RotateDrive::update - 1.0 s is subtracted
-#define ROTATE_DRIVE_STRAIGHT 	0.2f 	// How long to drive straight in RotateDrive AFTER rotating
+#define ROTATE_TIME 			0.6f 	// Also, timing is modified in RotateDrive::update - 1.0 s is subtracted
+#define ROTATE_DRIVE_STRAIGHT 	0.3f 	// How long to drive straight in RotateDrive AFTER rotating
 
 // Tote collection parameters
 #define STACK_CORRECTION_TIME 	0.25f 	// How long the robot jerks backward

@@ -141,6 +141,7 @@ namespace dreadbot
 		grabTimer.Reset();
 		grabTimer.Start();
 	}
+	bool thing = true;
 	int ForkGrab::update()
 	{
 		if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= LIFT_ENGAGEMENT_DELAY) 
@@ -158,13 +159,15 @@ namespace dreadbot
 			} 
 			else 
 				return HALBot::no_update;
-		} 
-		else if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= 0.2){ //You win here!
+			}
+		} else if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= 0.2 && thing) {
 			//XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+			thing = false;
 		}
 
 		if (isLiftDown())
 		{
+			//XMLInput::getInstance()->getPGroup("liftArms")->Set(0);
 			HALBot::incrTote(); //Once the lift is down, it is assumed that the tote is actually collected, i.e. in the fork.
 
 			//special 3-tote auton condition. Really kludgy. Causes the robot to NOT lift before rotating/driving
@@ -270,7 +273,7 @@ namespace dreadbot
 			drivebase->GoFast();
 			drivebase->Drive_v(0, -1, 0);
 		}
-		XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
+		//XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 		return HALBot::no_update;
 	}
 
@@ -302,9 +305,11 @@ namespace dreadbot
 			drivebase->Drive_v(0, 0, 0);
 			return HALBot::timerExpired;
 		}
-
-		if (drivebase != nullptr)
+		if (HALBot::getToteCount() >= 2) {
 			drivebase->Drive_v(DRIVE_STRAFE_CORRECTION, -PUSH_SPEED, DRIVE_ROTATE_CORRECTION); //Straight forward
+		} else {
+			drivebase->Drive_v(0.0f, -PUSH_SPEED, 0.0f);
+		}
 		if (pusher1 != nullptr)
 			pusher1->Set(INTAKE_PUSH_SPEED); //Push the container?
 		if (pusher2 != nullptr)
@@ -322,6 +327,7 @@ namespace dreadbot
 		sysLog->log("State: RotateDrive");
 		drivebase->GoFast(); //Gotta go faaaaaaaasssst.
 		driveTimer.Start();
+		//XMLInput::getInstance()->getPGroup("liftArms")->Set(0);
 	}
 	int RotateDrive::update()
 	{
@@ -331,7 +337,7 @@ namespace dreadbot
 			drivebase->GoSpeed(1.0);
 			drivebase->Drive_v(0, 1, 0);
 			
-			// Change: The stack is lowered prior to stopping in order to decelerate properly
+			// The stack is lowered prior to stopping in order to decelerate properly
 			if (HALBot::getToteCount() == 3)
 				XMLInput::getInstance()->getPGroup("lift")->Set(-1); //Lower lift
 
