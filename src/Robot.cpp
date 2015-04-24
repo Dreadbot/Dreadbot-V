@@ -68,6 +68,7 @@ namespace dreadbot
 			viewingBack = false;
 			Cam2Enabled = false;
 			Cam1Enabled = StartCamera(1);
+			viewerCooldown = 0;
 			
 			sysLog->log("Robot ready.");
 		}
@@ -94,36 +95,20 @@ namespace dreadbot
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
 			AutonBot->setMode(GetAutonMode()); //Uses the 10-switch to get the auton mode.
+			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
 			drivebase->GoSlow();
 
-			if (viewingBack)
-			{
-				StopCamera(2);
-				Cam1Enabled = StartCamera(1);
-				Cam2Enabled = false;
-				viewingBack = false;
-			}
 			if (AutonBot->getMode() == AUTON_MODE_STACK3 || AutonBot->getMode() == AUTON_MODE_STACK2)
 			{
 				lift->Set(1);
-				Wait(0.2); // May be able to lower this.
+				Wait(0.2);
 			}
 		}
 
 		void AutonomousPeriodic()
 		{
-			//if (ds->GetMatchTime() >= 0.0) {
-				AutonBot->update();
-			//} else {
-			//	drivebase->Drive_v(0, 0, 0);
-			//}
-			
-			if (!viewingBack && Cam1Enabled)
-			{
-				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame1);
-			}
+			AutonBot->update();
 		}
 
 		void TeleopInit()
@@ -135,9 +120,9 @@ namespace dreadbot
 
 		void TeleopPeriodic()
 		{
-			Input->updateDrivebase(); //Makes the robot drive using Config.h controls and a sensitivity curve (tested)
+			Input->updateDrivebase(); //Makes the robot drive using Config.h controls and a sensativity curve (tested)
 
-			// Control mappings
+			//Output controls
 			intake->Set(((float) (gamepad->GetRawAxis(3) > 0.1f) * -0.74f) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
 			if (gamepad->GetRawButton(1) || gamepad2->GetRawButton(1)) {
