@@ -7,6 +7,7 @@
 #include "FSM.h"
 #include "DreadbotDIO.h"
 #include "../../lib/Logger.h"
+#include "HALBot.h" //Ugh - needed for now
 using namespace Hydra;
 
 /*******************
@@ -48,7 +49,7 @@ namespace dreadbot
 			virtual ~RoboState() {}
 
 		protected:
-			//Hardware for access everywhere
+			//Hardware for access for all states
 			static MecanumDrive* drivebase;
 			static MotorGrouping* intake;
 			static PneumaticGrouping* lift;
