@@ -1,7 +1,5 @@
 #pragma once
 
-#include "WPILib.h"
-
 #define END_STATE_TABLE {nullptr, 0, nullptr, nullptr}
 
 namespace dreadbot

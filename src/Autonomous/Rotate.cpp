@@ -1,6 +1,6 @@
 #include "Rotate.h"
 
-namespace Dreadbot
+namespace dreadbot
 {
 	Rotate::Rotate()
 	{

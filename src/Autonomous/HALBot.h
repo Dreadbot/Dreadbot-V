@@ -13,6 +13,7 @@
 #include "RotateDrive.h"
 #include "Stopped.h"
 #include "StrafeLeft.h"
+using namespace Hydra;
 
 namespace dreadbot 
 {
@@ -40,7 +41,7 @@ namespace dreadbot
 		FSMTransition transitionTable[15]; //The transition table used for transitioning. Changes based on the setMode thingy.
 
 		//State objects. These should be self-explanatory.
-		GettingTote* gettingTote; 
+		GettingTote* gettingTote;
 		DriveToZone* driveToZone;
 		ForkGrab* forkGrab;
 		Rotate* rotate;

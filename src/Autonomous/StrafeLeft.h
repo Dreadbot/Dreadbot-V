@@ -1,10 +1,10 @@
 #pragma once
 
-#include "RoboState.h"
+#include "DriveToZone.h"
 
 namespace dreadbot
 {
-	class StrafeLeft : public RoboState
+	class StrafeLeft : public DriveToZone
 	{
 	public:
 		StrafeLeft();

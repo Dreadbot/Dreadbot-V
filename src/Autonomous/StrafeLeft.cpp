@@ -16,7 +16,6 @@ namespace dreadbot
 	}
 	int StrafeLeft::update()
 	{
-		int rc = HALBot::no_update;
 		if (driveTimer.Get() >= 0.5f) 
 		{
 			driveTimer.Stop();
