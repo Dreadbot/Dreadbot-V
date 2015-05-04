@@ -1,7 +1,7 @@
 #include <WPILib.h>
 #include "MecanumDrive.h"
 #include "XMLInput.h"
-#include "Autonomous.h"
+#include "Autonomous/HALBot.h"
 #include "Robot.h"
 #include "DreadbotDIO.h"
 #include "../lib/Logger.h"

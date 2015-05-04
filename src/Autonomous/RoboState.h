@@ -2,10 +2,10 @@
 
 #include "WPILib.h"
 #include "Timer.h"
-#include "MecanumDrive.h"
-#include "XMLInput.h"
+#include "../MecanumDrive.h"
+#include "../XMLInput.h"
 #include "FSM.h"
-#include "DreadbotDIO.h"
+#include "../DreadbotDIO.h"
 #include "../../lib/Logger.h"
 #include "HALBot.h" //Ugh - needed for now
 using namespace Hydra;
@@ -53,6 +53,7 @@ namespace dreadbot
 			static MecanumDrive* drivebase;
 			static MotorGrouping* intake;
 			static PneumaticGrouping* lift;
+			static PneumaticGrouping* liftArms;
 			static PneumaticGrouping* intakeArms;
 			static Talon* pusher1;
 			static Talon* pusher2;

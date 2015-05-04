@@ -1,3 +1,19 @@
+#pragma once
+
+#include "../../lib/Logger.h"
+#include "RoboState.h"
+
+//All states
+#include "BackAway.h"
+#include "DriveToZone.h"
+#include "ForkGrab.h"
+#include "GettingTote.h"
+#include "PushContainer.h"
+#include "Rotate.h"
+#include "RotateDrive.h"
+#include "Stopped.h"
+#include "StrafeLeft.h"
+
 namespace dreadbot 
 {
 	//Needs to appear in https://en.wikipedia.org/wiki/Kludge#Computer_science

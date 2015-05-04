@@ -32,6 +32,7 @@ namespace dreadbot
 	}
 	HALBot::HALBot()
 	{
+		sysLog = nullptr;
 		stopped = new Stopped;
 		gettingTote = new GettingTote;
 		driveToZone = new DriveToZone;
@@ -66,6 +67,7 @@ namespace dreadbot
 		RoboState::drivebase = drivebase;
 		RoboState::intake = intake;
 		RoboState::lift = lift;
+		RoboState::liftArms = XMLInput::getInstance()->getPGroup("liftArms");
 		RoboState::intakeArms = XMLInput::getInstance()->getPGroup("intakeArms");
 		RoboState::pusher1 = XMLInput::getInstance()->getPWMMotor(0);
 		RoboState::pusher2 = XMLInput::getInstance()->getPWMMotor(1);
