@@ -22,8 +22,8 @@ namespace dreadbot
 			driveTimer.Reset();
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0); //stop
-			return HALBot::timerExpired;
+			return RoboState::timerExpired;
 		}
-		return HALBot::no_update;
+		return RoboState::no_update;
 	}
 }
