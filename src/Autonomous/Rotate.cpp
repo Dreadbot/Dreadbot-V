@@ -20,12 +20,12 @@ namespace dreadbot
 		{ //Rotated far enough; break
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
-			if (HALBot::getToteCount() == 3)
+			if (RoboState::toteCount == 3)
 				lift->Set(-1); //Lower lift
-			return HALBot::timerExpired;
+			return RoboState::timerExpired;
 		}
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
-		return HALBot::no_update;
+		return RoboState::no_update;
 	}
 }

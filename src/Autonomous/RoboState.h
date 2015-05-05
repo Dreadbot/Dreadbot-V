@@ -7,13 +7,11 @@
 #include "FSM.h"
 #include "../DreadbotDIO.h"
 #include "../../lib/Logger.h"
-#include "HALBot.h" //Ugh - needed for now
 using namespace Hydra;
 
 /*******************
 *CALIBRATION VALUES*
 *******************/
-
 #define ESTOP_TIME 				5.0f 	// How long the robot will wait without getting a tote until it e-stops
 #define STRAFE_TO_ZONE_TIME 	3.1f 	// Used in some auton modes (!2TA !3TA) - how long does the robot strafe?
 #define DRIVE_TO_ZONE_TIME 		2.0f 	// How long the robot normally drives forward
@@ -39,15 +37,17 @@ using namespace Hydra;
 #define STACK_CORRECTION_SPEED 	0.85f 	// How quickly the robot jerks backward
 #define LIFT_ENGAGEMENT_DELAY 	0.5f 	// How long the robot waits after starting to lower the lift while collecting the third tote before reversing.
 
+
 namespace dreadbot
 {
 	class RoboState : public FSMState
 	{
 		public:
+			enum rVals {no_update, finish, timerExpired, nextTote, eStop};
+
 			virtual void enter() = 0;
 			virtual int update() = 0;
 			virtual ~RoboState() {}
-
 		protected:
 			//Hardware for access for all states
 			static MecanumDrive* drivebase;
@@ -59,6 +59,9 @@ namespace dreadbot
 			static Talon* pusher2;
 			static Log* sysLog;
 
-			friend class HALBot; //Lets HALBot set values without need for getters/setters
+			static int toteCount;
+			static int neededTCount; //How many totes you need. Substitute for the terrifying HALBot::enoughTotes() function.
+
+			friend class HALBot;
 	};
 }

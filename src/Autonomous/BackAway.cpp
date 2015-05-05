@@ -24,13 +24,13 @@ namespace dreadbot
 				grabTimer.Reset();
 				grabTimer.Start();
 			}
-			return HALBot::no_update;
+			return RoboState::no_update;
 		}
 
 		if (grabTimer.Get() >= BACK_AWAY_TIME)
 		{
 			drivebase->Drive_v(0, 0, 0);
-			return HALBot::timerExpired;
+			return RoboState::timerExpired;
 		}
 
 		if (drivebase != nullptr) 
@@ -39,6 +39,6 @@ namespace dreadbot
 			drivebase->Drive_v(0, -1, 0);
 		}
 		//liftArms->Set(-1);
-		return HALBot::no_update;
+		return RoboState::no_update;
 	}
 }

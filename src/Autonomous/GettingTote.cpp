@@ -27,23 +27,23 @@ namespace dreadbot
 			timerActive = false;
 			eStopTimer.Stop();
 			eStopTimer.Reset();
-			return HALBot::timerExpired;
+			return RoboState::timerExpired;
 		}
 		if (timerActive) 
 		{
 			//Keep sucking a tote in
-			if (HALBot::getToteCount() >= 2) 
+			if (RoboState::toteCount >= 2)
 				intake->Set(-1); 
 			else 
 				intake->Set(-0.5);
 
-			return HALBot::no_update;
+			return RoboState::no_update;
 		}
-		if (HALBot::getToteCount() != 0) //Open the intake arms for grabbing totes after the first tote is collected
+		if (RoboState::toteCount != 0) //Open the intake arms for grabbing totes after the first tote is collected
 			intakeArms->Set(-1);
 	
 		drivebase->Drive_v(0, -0.65, 0);
-		if (HALBot::getToteCount() >= 2) 
+		if (RoboState::toteCount >= 2)
 			intake->Set(-1);
 		else
 			intake->Set(-0.6);
@@ -62,9 +62,9 @@ namespace dreadbot
 			drivebase->Drive_v(0, 0, 0);intake->Set(0);
 			lift->Set(1); // Raise the lift
 			sysLog->log("Emergency-stopped in GettingTote", Hydra::error);
-			return HALBot::eStop;
+			return RoboState::eStop;
 		}
 
-		return HALBot::no_update;
+		return RoboState::no_update;
 	}	
 }

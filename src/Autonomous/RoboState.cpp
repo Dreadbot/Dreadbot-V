@@ -3,12 +3,15 @@
 namespace dreadbot
 {
 	//These are needed for static members... ugh. 1.5 hours.
-	MecanumDrive* RoboState::drivebase;
-	MotorGrouping* RoboState::intake;
-	PneumaticGrouping* RoboState::lift;
-	PneumaticGrouping* RoboState::liftArms;
-	PneumaticGrouping* RoboState::intakeArms;
-	Talon* RoboState::pusher1;
-	Talon* RoboState::pusher2;
-	Log* RoboState::sysLog;
+	MecanumDrive* RoboState::drivebase = nullptr;
+	MotorGrouping* RoboState::intake = nullptr;
+	PneumaticGrouping* RoboState::lift = nullptr;
+	PneumaticGrouping* RoboState::liftArms = nullptr;
+	PneumaticGrouping* RoboState::intakeArms = nullptr;
+	Talon* RoboState::pusher1 = nullptr;
+	Talon* RoboState::pusher2 = nullptr;
+	Log* RoboState::sysLog = nullptr;
+
+	int RoboState::toteCount = 0;
+	int RoboState::neededTCount = 0;
 }

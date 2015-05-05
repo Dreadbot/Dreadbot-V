@@ -15,7 +15,7 @@ namespace dreadbot
 	bool thing = true; //PARKER, NO!
 	int ForkGrab::update()
 	{
-		if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= LIFT_ENGAGEMENT_DELAY) 
+		if (RoboState::toteCount >= 2 && grabTimer.Get() >= LIFT_ENGAGEMENT_DELAY)
 		{
 			intakeArms->Set(1);
 			drivebase->GoFast();
@@ -26,11 +26,11 @@ namespace dreadbot
 				lift->Set(1); //Raise lift
 				Wait(0.3); //Totes must engage first
 				lift->Set(0);
-				return HALBot::finish;
+				return RoboState::finish;
 			} else {
-				return HALBot::no_update;
+				return RoboState::no_update;
 			}
-		} else if (HALBot::getToteCount() >= 2 && grabTimer.Get() >= 0.2 && thing) {
+		} else if (RoboState::toteCount >= 2 && grabTimer.Get() >= 0.2 && thing) {
 			//XMLInput::getInstance()->getPGroup("liftArms")->Set(-1);
 			thing = false;
 		}
@@ -38,15 +38,15 @@ namespace dreadbot
 		if (isLiftDown())
 		{
 			//XMLInput::getInstance()->getPGroup("liftArms")->Set(0);
-			HALBot::incrTote(); //Once the lift is down, it is assumed that the tote is actually collected, i.e. in the fork.
+			RoboState::toteCount++; //Once the lift is down, it is assumed that the tote is actually collected, i.e. in the fork.
 
 			//special 3-tote auton condition. Really kludgy. Causes the robot to NOT lift before rotating/driving
-			if (HALBot::getToteCount() >= 3 && HALBot::enoughTotes())
+			if (RoboState::toteCount >= 3 && RoboState::toteCount >= RoboState::neededTCount)
 			{
 				lift->Set(1); //Raise lift
 				Wait(0.25); //Totes must engage first
 				lift->Set(0);
-				return HALBot::finish;
+				return RoboState::finish;
 			}
 			//Raise the lift and cheat to alight the tote
 			drivebase->GoFast();
@@ -56,14 +56,14 @@ namespace dreadbot
 			drivebase->GoSlow();
 			lift->Set(1);
 			Wait(0.3);
-			if (HALBot::enoughTotes())
-				return HALBot::finish;
+			if (RoboState::toteCount >= RoboState::neededTCount)
+				return RoboState::finish;
 			else
-				return HALBot::nextTote;
+				return RoboState::nextTote;
 		}
 		drivebase->Drive_v(0, 0, 0);
 		if (lift != nullptr)
 			lift->Set(-1); //Lower the lift for grabbing
-		return HALBot::no_update;
+		return RoboState::no_update;
 	}
 }

@@ -23,15 +23,15 @@ namespace dreadbot
 			drivebase->Drive_v(0, 1, 0);
 			
 			// The stack is lowered prior to stopping in order to decelerate properly
-			if (HALBot::getToteCount() == 3)
+			if (RoboState::toteCount == 3)
 				lift->Set(-1); //Lower lift
 
 			Wait(ROTATE_DRIVE_STRAIGHT);
 
-			return HALBot::timerExpired;
+			return RoboState::timerExpired;
 		}
 		if (drivebase != nullptr)
 			drivebase->Drive_v(0, RD_DRIVE_SPEED, RD_ROTATE_SPEED);
-		return HALBot::no_update;
+		return RoboState::no_update;
 	}
 }
