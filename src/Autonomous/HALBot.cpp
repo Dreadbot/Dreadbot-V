@@ -31,7 +31,7 @@ namespace dreadbot
 		delete fsm;
 		delete strafeLeft;
 		RoboState::toteCount = 0;
-		RoboState::neededTCount = 1;
+		RoboState::neededTCount = 0;
 	}
 	void HALBot::init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift)
 	{
@@ -47,7 +47,7 @@ namespace dreadbot
 		RoboState::sysLog = sysLog;
 		pushContainer->pushConstant = 1;
 
-		//Apply state tables and set the starting state
+		//Apply state tables and set the starting state. Note that RoboState::neededTCount is 0 before this.
 		FSMState* defState = nullptr;
 		if (mode == AUTON_MODE_STOP)
 		{
@@ -70,6 +70,7 @@ namespace dreadbot
 		if (mode == AUTON_MODE_TOTE)
 		{
 			i = 0;
+			RoboState::neededTCount = 1;
 			rotate->rotateConstant = 1;
 			driveToZone->strafe = false;
 			transitionTable[i++] = {gettingTote, RoboState::timerExpired, nullptr, forkGrab};
@@ -93,7 +94,9 @@ namespace dreadbot
 		}
 		if (mode == AUTON_MODE_BOTH)
 		{
+			//Not really used.
 			i = 0;
+			RoboState::neededTCount = 1;
 			transitionTable[i++] = {stopped, RoboState::no_update, nullptr, stopped};
 			transitionTable[i++] = END_STATE_TABLE;
 			defState = stopped;
@@ -106,6 +109,7 @@ namespace dreadbot
 			pushContainer->enableScaling = true;
 			driveToZone->strafe = false;
 			RoboState::toteCount++; //We already have a tote
+			RoboState::neededTCount = 2;
 
 			transitionTable[i++] = {pushContainer, RoboState::timerExpired, nullptr, gettingTote};
 			transitionTable[i++] = {gettingTote, RoboState::timerExpired, nullptr, forkGrab};
@@ -125,6 +129,7 @@ namespace dreadbot
 			pushContainer->enableScaling = true;
 			driveToZone->strafe = false;
 			RoboState::toteCount++; //We already have a tote
+			RoboState::neededTCount = 3;
 
 			transitionTable[i++] = {pushContainer, RoboState::timerExpired, nullptr, gettingTote};
 			transitionTable[i++] = {gettingTote, RoboState::timerExpired, nullptr, forkGrab};
