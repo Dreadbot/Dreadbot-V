@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../lib/Logger.h"
+#include "../DreadbotDIO.h"
 
 //All states
 #include "BackAway.h"
@@ -24,16 +25,13 @@ namespace dreadbot
 	public:
 		HALBot();
 		~HALBot();
-		void setMode(AutonMode newMode); //Called during AutonomousInit. Determines what autonomous mode to run.
-		AutonMode getMode(); //Gets the mode. Used in AutonomousInit. Also really, really dumb/stupid.
+		void setMode(AutonMode newMode); //Called during AutonomousInit. Determines what autonomous mode to run
 		void init(MecanumDrive* drivebase, MotorGrouping* intake, PneumaticGrouping* lift); //Sets hardware, intializes stuff, and prepares the transition tables. Assumes that the setMode thing has been used already.
 		void update(); //Basically just a cheap call to FiniteStateMachine::update. 
 	private:
 		FiniteStateMachine* fsm;
-		AutonMode mode; //The mode that the robot is in. Also dumb.
-		Log* sysLog;
-
 		FSMTransition transitionTable[15]; //The transition table used for transitioning. Changes based on the setMode thingy.
+		Log* sysLog;
 
 		//State objects. These should be self-explanatory.
 		GettingTote* gettingTote;

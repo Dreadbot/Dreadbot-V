@@ -16,7 +16,6 @@ namespace dreadbot
 		fsm = new FiniteStateMachine;
 		rotateDrive = new RotateDrive;
 		strafeLeft = new StrafeLeft;
-		mode = AUTON_MODE_DRIVE; //Just drive straight forward. Assumes a spherical cow.
 	}
 	HALBot::~HALBot()
 	{
@@ -49,6 +48,7 @@ namespace dreadbot
 
 		//Apply state tables and set the starting state. Note that RoboState::neededTCount is 0 before this.
 		FSMState* defState = nullptr;
+		AutonMode mode = GetAutonMode();
 		if (mode == AUTON_MODE_STOP)
 		{
 			i = 0;
@@ -146,13 +146,5 @@ namespace dreadbot
 	void HALBot::update()
 	{
 		fsm->update();
-	}
-	void HALBot::setMode(AutonMode newMode)
-	{
-		mode = newMode;
-	}
-	AutonMode HALBot::getMode()
-	{
-		return mode; //Used exactly once, in AutonInit(). This must be killed with fire when possible.
 	}
 }

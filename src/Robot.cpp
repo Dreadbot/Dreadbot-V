@@ -3,13 +3,12 @@
 #include "XMLInput.h"
 #include "Autonomous/HALBot.h"
 #include "Robot.h"
-#include "DreadbotDIO.h"
 #include "../lib/Logger.h"
 using namespace Hydra;
 
 namespace dreadbot 
 {
-	class Robot: public IterativeRobot 
+	class Robot : public IterativeRobot
 	{
 		DriverStation *ds;
 		Joystick* gamepad;
@@ -94,12 +93,11 @@ namespace dreadbot
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
-			AutonBot->setMode(GetAutonMode()); //Uses the 10-switch to get the auton mode.
 			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
 			drivebase->GoSlow();
 
-			if (AutonBot->getMode() == AUTON_MODE_STACK3 || AutonBot->getMode() == AUTON_MODE_STACK2)
+			if (GetAutonMode() == AUTON_MODE_STACK3 || GetAutonMode() == AUTON_MODE_STACK2)
 			{
 				lift->Set(1);
 				Wait(0.2);
