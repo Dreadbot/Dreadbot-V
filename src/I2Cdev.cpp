@@ -2,14 +2,8 @@
 
 using namespace dreadbot;
 
-// Turns out that the I2C interface we've been using is fundamentally flawed.
-// wooohoooo
-// In essence, the firmware is making attempts to access some buffers on the device by
-// opening entirely new device channels. As much as it's bad practice, it's necessary for
-// basic functionality.  The problem is that while writing the interface for I2C, I disregarded
-// all passed device channel parameters in favor of speed (i.e. reading from a static costant
-// inside the class).
-// Also, you're required to create a new I2C object specifically for the magnetometer.
+// td;lr: It's impossible to interface with the I2C interface of the mpu-9150 without
+// specifying an alternate channel for the magnetometer?
 
 I2C* I2Cdev::device;
 
