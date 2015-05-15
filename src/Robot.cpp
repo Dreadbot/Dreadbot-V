@@ -113,7 +113,7 @@ namespace dreadbot
 		{
 			sysLog->log("Initializing Teleop.");
 			GlobalInit();
-			drivebase->GoSlow();
+			drivebase->GoFast();
 		}
 
 		void TeleopPeriodic()
