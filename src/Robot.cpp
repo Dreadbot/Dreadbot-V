@@ -1,15 +1,14 @@
 #include <WPILib.h>
 #include "MecanumDrive.h"
 #include "XMLInput.h"
-#include "Autonomous.h"
+#include "Autonomous/HALBot.h"
 #include "Robot.h"
-#include "DreadbotDIO.h"
 #include "../lib/Logger.h"
 using namespace Hydra;
 
 namespace dreadbot 
 {
-	class Robot: public IterativeRobot 
+	class Robot : public IterativeRobot
 	{
 		DriverStation *ds;
 		Joystick* gamepad;
@@ -68,6 +67,9 @@ namespace dreadbot
 			viewingBack = false;
 			Cam2Enabled = false;
 			Cam1Enabled = StartCamera(1);
+			viewerCooldown = 0;
+			
+			sysLog->log("Robot ready.");
 		}
 
 		void GlobalInit()
@@ -75,7 +77,7 @@ namespace dreadbot
 			compressor->Start();
 			drivebase->Engage();
 
-			Input->loadXMLConfig(); //ABSOLUTELY NEEDED! IF THIS IS DELETED, THE WHOLE ROBOT STOPS WORKING!
+			Input->loadXMLConfig();
 			gamepad = Input->getController(COM_PRIMARY_DRIVER);
 			gamepad2 = Input->getController(COM_BACKUP_DRIVER);
 
@@ -91,18 +93,11 @@ namespace dreadbot
 			GlobalInit();
 			if (AutonBot == nullptr)
 				AutonBot = new HALBot;
-			AutonBot->setMode(GetAutonMode()); //Uses the 10-switch to get the auton mode.
+			sysLog->log("Auton mode is " + (int)GetAutonMode());
 			AutonBot->init(drivebase, intake, lift);
 			drivebase->GoSlow();
 
-			if (viewingBack)
-			{
-				StopCamera(2);
-				Cam1Enabled = StartCamera(1);
-				Cam2Enabled = false;
-				viewingBack = false;
-			}
-			if (AutonBot->getMode() == AUTON_MODE_STACK3 || AutonBot->getMode() == AUTON_MODE_STACK2)
+			if (GetAutonMode() == AUTON_MODE_STACK3 || GetAutonMode() == AUTON_MODE_STACK2)
 			{
 				lift->Set(1);
 				Wait(0.2);
@@ -112,20 +107,13 @@ namespace dreadbot
 		void AutonomousPeriodic()
 		{
 			AutonBot->update();
-
-			//Vision during auton, because why not?
-			if (!viewingBack && Cam1Enabled)
-			{
-				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
-				CameraServer::GetInstance()->SetImage(frame1);
-			}
 		}
 
 		void TeleopInit()
 		{
 			sysLog->log("Initializing Teleop.");
 			GlobalInit();
-			drivebase->GoSlow();
+			drivebase->GoFast();
 		}
 
 		void TeleopPeriodic()
@@ -133,17 +121,12 @@ namespace dreadbot
 			Input->updateDrivebase(); //Makes the robot drive using Config.h controls and a sensativity curve (tested)
 
 			//Output controls
-			float intakeInput = gamepad->GetRawAxis(3);
-			intake->Set(((float) (intakeInput > 0.1) * -0.8) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
+			intake->Set(((float) (gamepad->GetRawAxis(3) > 0.1f) * -0.74f) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));
 
-
-			if (gamepad->GetRawButton(1)) 
-			{
+			if (gamepad->GetRawButton(1) || gamepad2->GetRawButton(1)) {
 				lift->Set(0.0f);
-			} 
-			else 
-			{
-				lift->Set(gamepad->GetRawAxis(2) > 0.1 ? -1.0f : 1.0f);
+			} else {
+				lift->Set(gamepad->GetRawAxis(2) > 0.1f ? -1.0f : 1.0f);
 			}
 			
 			intakeArms->Set(-(float) gamepad->GetRawButton(6) + (float) gamepad2->GetRawButton(2) - (float) gamepad2->GetRawButton(3));
@@ -155,7 +138,6 @@ namespace dreadbot
 				viewerCooldown--;
 			if ((gamepad->GetRawButton(8) || gamepad2->GetRawButton(8)) && viewerCooldown == 0) //Start button
 			{
-				SmartDashboard::PutBoolean("Switched camera", true);
 				viewerCooldown = 10;
 				viewingBack =! viewingBack;
 				if (viewingBack)
@@ -192,6 +174,16 @@ namespace dreadbot
 
 		void TestPeriodic()
 		{
+			if (viewingBack && Cam2Enabled)
+			{
+				IMAQdxGrab(sessionCam2, frame2, true, nullptr);
+				CameraServer::GetInstance()->SetImage(frame2);
+			}
+			if (!viewingBack && Cam1Enabled)
+			{
+				IMAQdxGrab(sessionCam1, frame1, true, nullptr);
+				CameraServer::GetInstance()->SetImage(frame1);
+			}
 		}
 
 		void DisabledInit()
@@ -245,7 +237,7 @@ namespace dreadbot
 				if (imaqError != IMAQdxErrorSuccess)
 				{
 					sysLog->log(
-						"cam0 IMAQdxCloseCamera error - "
+						"cam2 IMAQdxCloseCamera error - "
 						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}
@@ -270,7 +262,7 @@ namespace dreadbot
 				if (imaqError != IMAQdxErrorSuccess)
 				{
 					sysLog->log(
-						"cam0 IMAQdxConfigureGrab error - "
+						"cam1 IMAQdxConfigureGrab error - "
 						+ std::to_string((long) imaqError), Hydra::error);
 					return false;
 				}

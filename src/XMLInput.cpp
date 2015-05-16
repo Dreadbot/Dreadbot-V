@@ -209,16 +209,14 @@ namespace dreadbot
 	}
 	MotorGrouping* XMLInput::getMGroup(string name)
 	{
-		for (auto iter = mGroups.begin(); iter != mGroups.end(); iter++)
-			if (iter->name == name)
-				return &(*iter);
+		if (mGroups.count(name) > 0) //Checks how many elements have this key. If none do, return nullptr.
+			return &mGroups[name]; //This syntax is awesome; note that mGroups absolutely is NOT an array!
 		return nullptr;
 	}
 	PneumaticGrouping* XMLInput::getPGroup(string name)
 	{
-		for (auto iter = pGroups.begin(); iter != pGroups.end(); iter++)
-			if (iter->name == name)
-				return &(*iter);
+		if (pGroups.count(name) > 0) //Checks out many elements have this key. If none do, return nullptr.
+			return &pGroups[name];
 		return nullptr;
 	}
 	void XMLInput::loadXMLConfig()
@@ -301,9 +299,8 @@ namespace dreadbot
 			MotorGrouping newMGroup;
 			newMGroup.name = motorgroup.attribute("name").as_string();
 			//Check for duplicate motor groups, and output if there are
-			for (auto iter = mGroups.begin(); iter != mGroups.end(); iter++)
-				if (iter->name == newMGroup.name)
-					SmartDashboard::PutBoolean("Duplicate Motor Groups", true);
+			if (mGroups.count(newMGroup.name) > 0)
+				SmartDashboard::PutBoolean("Duplicate Motor Groups", true);
 
 			newMGroup.deadzone = fabs(motorgroup.attribute("deadzone").as_float());
 			for (auto motor = motorgroup.child("motor"); motor; motor = motor.next_sibling())
@@ -318,7 +315,7 @@ namespace dreadbot
 				newMotor.invert = motor.attribute("invert").as_bool();
 				newMGroup.motors.push_back(newMotor);
 			}
-			mGroups.push_back(newMGroup);
+			mGroups[newMGroup.name] = newMGroup; //Synatx is beautiful; mGroups is NOT an array!
 		}
 
 		//Load all pneumatic groups
@@ -328,9 +325,8 @@ namespace dreadbot
 			PneumaticGrouping newPGroup;
 			newPGroup.name = pneumgroup.attribute("name").as_string();
 			//Check for duplicate motor groups, and output if there are
-			for (auto iter = pGroups.begin(); iter != pGroups.end(); iter++)
-				if (iter->name == newPGroup.name)
-					SmartDashboard::PutBoolean("Duplicate Pneumatic Groups", true);
+			if (pGroups.count(newPGroup.name) > 0)
+				SmartDashboard::PutBoolean("Duplicate Pneumatic Groups", true);
 
 			newPGroup.deadzone = fabs(pneumgroup.attribute("deadzone").as_float());
 
@@ -356,7 +352,7 @@ namespace dreadbot
 					newPneum.sPneumatic = getSPneum(pneumatic.attribute("ID").as_int());
 				newPGroup.pneumatics.push_back(newPneum);
 			}
-			pGroups.push_back(newPGroup);
+			pGroups[newPGroup.name] = newPGroup;
 		}
 	}
 }
