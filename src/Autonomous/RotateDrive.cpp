@@ -20,18 +20,18 @@ namespace dreadbot
 		{ //Rotated far enough; break
 			timerActive = false;
 			drivebase->GoSpeed(1.0);
-			drivebase->Drive_v(0, 1, 0);
+			drive(0, 1, 0);
 			
 			// The stack is lowered prior to stopping in order to decelerate properly
 			if (RoboState::toteCount == 3)
-				lift->Set(-1); //Lower lift
+				lowerLift();
 
 			Wait(ROTATE_DRIVE_STRAIGHT);
 
 			return RoboState::timerExpired;
 		}
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, RD_DRIVE_SPEED, RD_ROTATE_SPEED);
+			drive(0, RD_DRIVE_SPEED, RD_ROTATE_SPEED);
 		return RoboState::no_update;
 	}
 }

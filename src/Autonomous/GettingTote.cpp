@@ -8,7 +8,7 @@ namespace dreadbot
 	}
 	void GettingTote::enter()
 	{
-		lift->Set(1); //Raise the lift
+		raiseLift();
 		eStopTimer.Start(); //estop timer - if limit is passed, automatically estops the robot.
 		sysLog->log("State: GettingTote");
 	}
@@ -18,12 +18,12 @@ namespace dreadbot
 		{
 			//Stay still while a tote is loaded
 			timerActive = true; //This doesn't really control a timer anymore...
-			drivebase->Drive_v(0, 0, 0);
+			drive(0, 0, 0);
 		}
 		if (!isToteInTransit() && timerActive)
 		{
 			//Tote successfully collected - it should have just left contact with the transit wheels.
-			intake->Set(0);
+			intake(0);
 			timerActive = false;
 			eStopTimer.Stop();
 			eStopTimer.Reset();
@@ -33,34 +33,35 @@ namespace dreadbot
 		{
 			//Keep sucking a tote in
 			if (RoboState::toteCount >= 2)
-				intake->Set(-1); 
+				intake(-1);
 			else 
-				intake->Set(-0.5);
+				intake(-0.5);
 
 			return RoboState::no_update;
 		}
 		if (RoboState::toteCount != 0) //Open the intake arms for grabbing totes after the first tote is collected
-			intakeArms->Set(-1);
+			intakeArmsOut();
 	
 		drivebase->Drive_v(0, -0.65, 0);
 		if (RoboState::toteCount >= 2)
-			intake->Set(-1);
+			intake(-1);
 		else
-			intake->Set(-0.6);
+			intake(-0.6);
 
 		if (eStopTimer.Get() >= 3.5)
-			intakeArms->Set(1);
+			intakeArmsIn();
 		else if (eStopTimer.Get() >= 2.5 && eStopTimer.Get() < 3.5)
-			intakeArms->Set(0);
+			intakeArmsLax(); //this used to be an intakeArms->set(0). This *should* set the arms to lax... or something.
 
 		// Emergeny stop in case the tote is missed.
-		// Stop the drivebase, raise the lift, passify the intake arms, and stop the transit wheels.
+		// Stop the drivebase, raise the lift, pacify the intake arms, and stop the transit wheels.
 		if (eStopTimer.Get() >= ESTOP_TIME) 
 		{
 			eStopTimer.Stop();
 			eStopTimer.Reset();
-			drivebase->Drive_v(0, 0, 0);intake->Set(0);
-			lift->Set(1); // Raise the lift
+			drive(0, 0, 0);
+			intake(0);
+			raiseLift(); // Raise the lift
 			sysLog->log("Emergency-stopped in GettingTote", Hydra::error);
 			return RoboState::eStop;
 		}

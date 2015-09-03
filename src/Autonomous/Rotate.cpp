@@ -21,11 +21,11 @@ namespace dreadbot
 			timerActive = false;
 			drivebase->Drive_v(0, 0, 0);
 			if (RoboState::toteCount == 3)
-				lift->Set(-1); //Lower lift
+				lowerLift(); //Lower lift
 			return RoboState::timerExpired;
 		}
 		if (drivebase != nullptr)
-			drivebase->Drive_v(0, 0, 0.5 * rotateConstant);
+			drive(0, 0, 0.5 * rotateConstant);
 		return RoboState::no_update;
 	}
 }

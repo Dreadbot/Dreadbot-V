@@ -49,9 +49,21 @@ namespace dreadbot
 			virtual int update() = 0;
 			virtual ~RoboState() {}
 		protected:
+			static void drive(double x, double y, double r);
+			static void intake(double magnitude);
+			static void push(double magnitude);
+			static void raiseLift();
+			static void lowerLift();
+			static void stopLift();
+			static void intakeArmsIn();
+			static void intakeArmsOut();
+			static void intakeArmsLax();
+			static void liftArmsIn();
+			static void liftArmsOut();
+
 			//Hardware for access for all states
 			static MecanumDrive* drivebase;
-			static MotorGrouping* intake;
+			static MotorGrouping* intakeWheels;
 			static PneumaticGrouping* lift;
 			static PneumaticGrouping* liftArms;
 			static PneumaticGrouping* intakeArms;

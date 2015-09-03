@@ -37,7 +37,7 @@ namespace dreadbot
 		int i;
 		sysLog = Logger::getInstance()->getLog("sysLog");
 		RoboState::drivebase = drivebase;
-		RoboState::intake = intake;
+		RoboState::intakeWheels = intake;
 		RoboState::lift = lift;
 		RoboState::liftArms = XMLInput::getInstance()->getPGroup("liftArms");
 		RoboState::intakeArms = XMLInput::getInstance()->getPGroup("intakeArms");

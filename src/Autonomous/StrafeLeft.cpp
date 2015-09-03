@@ -12,7 +12,7 @@ namespace dreadbot
 		driveTimer.Start();
 		timerActive = true;
 		drivebase->GoFast(); //Gotta go faaaaaaaasssst.
-		drivebase->Drive_v(-1, 0, 0); //Left
+		drive(-1, 0, 0); //Left
 	}
 	int StrafeLeft::update()
 	{
@@ -21,7 +21,7 @@ namespace dreadbot
 			driveTimer.Stop();
 			driveTimer.Reset();
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0); //stop
+			drive(0, 0, 0); //stop
 			return RoboState::timerExpired;
 		}
 		return RoboState::no_update;

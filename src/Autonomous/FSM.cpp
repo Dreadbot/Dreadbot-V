@@ -15,10 +15,12 @@ namespace dreadbot
 		{
 			if (state->input == input && state->currentState == this->currentState)
 			{
-				if (state->action != nullptr) {
+				if (state->action != nullptr)
+				{
 					state->action(input, state->currentState, state->nextState);
 				}
-				if (state->nextState != this->currentState) {
+				if (state->nextState != this->currentState)
+				{
 					state->nextState->enter();
 				}
 				this->currentState = state->nextState;

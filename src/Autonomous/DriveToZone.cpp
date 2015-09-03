@@ -13,8 +13,7 @@ namespace dreadbot
 		driveTimer.Reset();
 		driveTimer.Start();
 		timerActive = true;
-		if (RoboState::toteCount < 3)
-			lift->Set(1); //Raise the lift for tote transit - it's more stable that way.
+		raiseLift(); //Raise the lift for tote transit - it's more stable that way.
 		sysLog->log("State: DriveToZone");
 	}
 	int DriveToZone::update()
@@ -29,7 +28,7 @@ namespace dreadbot
 			driveTimer.Stop();
 			driveTimer.Reset();
 			timerActive = false;
-			drivebase->Drive_v(0, 0, 0);
+			drive(0, 0, 0);
 			return RoboState::timerExpired;
 		}
 
@@ -37,9 +36,9 @@ namespace dreadbot
 		if (drivebase != nullptr)
 		{
 			if (strafe)
-				drivebase->Drive_v(1, 0, 0); //Right
+				drive(1, 0, 0); //Right
 			else
-				drivebase->Drive_v(0, 0.8 * dir, 0); // Do a short dance
+				drive(0, 0.8 * dir, 0); // Do a short dance
 		}
 
 		return RoboState::no_update;
