@@ -125,7 +125,9 @@ namespace dreadbot
 
 			if (gamepad->GetRawButton(1) || gamepad2->GetRawButton(1)) {
 				lift->Set(0.0f);
-			} else {
+			}
+			else
+			{
 				lift->Set(gamepad->GetRawAxis(2) > 0.1f ? -1.0f : 1.0f);
 			}
 			

@@ -95,7 +95,7 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	}
 	*/
 	for (uint8_t i = 0; i < MOTOR_COUNT; ++i) {
-		motors[i]->Set(wspeeds[i]*motorReversals[i]*SmartDashboard::GetNumber("Speed", 1023.f), syncGroup);
+		motors[i]->Set(wspeeds[i]*motorReversals[i]*512.f, syncGroup);
 	}
 }
 
