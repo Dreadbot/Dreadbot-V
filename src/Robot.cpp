@@ -10,7 +10,6 @@ namespace dreadbot
 {
 	class Robot : public IterativeRobot
 	{
-		DriverStation *ds;
 		Joystick* gamepad;
 		Joystick* gamepad2;
 		PowerDistributionPanel *pdp;
@@ -42,7 +41,6 @@ namespace dreadbot
 	public:
 		void RobotInit()
 		{
-			ds = DriverStation::GetInstance();
 			SmartDashboard::init();
 			pdp = new PowerDistributionPanel();
 			compressor = new Compressor(0);
@@ -119,6 +117,7 @@ namespace dreadbot
 		void TeleopPeriodic()
 		{
 			Input->updateDrivebase(); //Makes the robot drive using Config.h controls and a sensativity curve (tested)
+			drivebase->SD_OutputDiagnostics();
 
 			//Output controls
 			intake->Set(((float) (gamepad->GetRawAxis(3) > 0.1f) * -0.74f) + gamepad2->GetRawAxis(3) - gamepad2->GetRawAxis(2));

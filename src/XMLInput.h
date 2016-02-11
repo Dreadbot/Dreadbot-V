@@ -108,7 +108,5 @@ namespace dreadbot
 		int axes[3];
 		bool inverts[3];
 		float deadzones[3];;
-
-		DISALLOW_COPY_AND_ASSIGN(XMLInput); //Prevents copying/assigning - critical for a singleton. That's a cool macro.
 	};
 }

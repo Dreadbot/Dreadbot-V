@@ -72,8 +72,8 @@ void MecanumDrive::Drive_v(double x, double y, double rotation) {
 	double wspeeds[4];
 	wspeeds[m_leftFront] = x_out + y_out + rot_out;
 	wspeeds[m_rightFront] = -x_out + y_out - rot_out;
-	wspeeds[m_leftRear] = -x_out + y_out + rot_out;
 	wspeeds[m_rightRear] = x_out + y_out - rot_out;
+	wspeeds[m_leftRear] = -x_out + y_out + rot_out;
 
 	float absSpeeds[4];
 	for (int i = 0; i < 4; ++i)

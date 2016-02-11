@@ -48,8 +48,5 @@ namespace dreadbot {
 		const double motorReversals[MOTOR_COUNT] = {-1.0, 1.0, -1.0, 1.0};
 		drivemode mode = drivemode::relative;
 		CANTalon* motors[4];
-
-	private:
-		DISALLOW_COPY_AND_ASSIGN(MecanumDrive);
 	};
 }
